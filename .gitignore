@@ -3,6 +3,7 @@
 *.log
 *.pdf
 vc.tex
+.coverage*
 
 .gitignore
 
