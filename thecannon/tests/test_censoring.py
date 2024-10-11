@@ -12,12 +12,24 @@ from ..censoring import Censors
 @pytest.mark.parametrize("num_pixels", [2, 4, 6, 8, 10, 100, 1000, 10000])
 def test_censors_init(label_names, num_pixels):
     dummy_items = {l: np.ones(num_pixels, dtype=bool) for l in label_names}
+
+    # This creation line implicitly tests Censors.__setitem__
     c = Censors(label_names, num_pixels, items=dummy_items)
+
+    # Check that everything has been set correctly
     assert c._label_names == label_names
     assert c._num_pixels == num_pixels
     assert c.keys() == dummy_items.keys()
     for k in c.keys():
         assert np.all(c[k] == dummy_items[k])
+
+    # Check the __getstate__ return
+    gs = c.__getstate__()
+    assert gs["label_names"] == label_names
+    assert gs["num_pixels"] == num_pixels
+    assert gs["items"].keys() == dummy_items.keys()
+    for k in gs["items"].keys():
+        assert np.all(gs["items"][k] == dummy_items[k])
 
 
 class TestCensorsBadSetitem:
@@ -33,3 +45,6 @@ class TestCensorsBadSetitem:
     def test_censors_setitem_bad_mask(self, bad_mask):
         with pytest.raises(ValueError):
             self.c["x"] = bad_mask
+
+
+
