@@ -18,3 +18,18 @@ def test_censors_init(label_names, num_pixels):
     assert c.keys() == dummy_items.keys()
     for k in c.keys():
         assert np.all(c[k] == dummy_items[k])
+
+
+class TestCensorsBadSetitem:
+
+    c = Censors(["x", "y", "z"], 100)
+
+    @pytest.mark.parametrize("bad_label", [1, 2, 3, "a", "b", "c"])
+    def test_censors_setitem_bad_label(self, bad_label):
+        with pytest.raises(ValueError):
+            self.c[bad_label] = None
+
+    @pytest.mark.parametrize("bad_mask", [np.ones(n, dtype=bool) for n in [1, 10, 1000, 10000]])
+    def test_censors_setitem_bad_mask(self, bad_mask):
+        with pytest.raises(ValueError):
+            self.c["x"] = bad_mask
