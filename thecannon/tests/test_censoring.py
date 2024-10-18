@@ -1,30 +1,37 @@
 """
 Unit tests for `thecannon.censoring`.
 """
+
 import pytest
 import numpy as np
 
 from ..censoring import Censors
 
 # Censors tests
-   
-@pytest.mark.parametrize("label_names", [("a", "b", "c", 2, 3, 4),])
+
+
+@pytest.mark.parametrize(
+    "label_names",
+    [
+        ("a", "b", "c", 2, 3, 4),
+    ],
+)
 @pytest.mark.parametrize("num_pixels", [2, 4, 6, 8, 10, 100, 1000, 10000])
 def test_censors_init(label_names, num_pixels):
     dummy_items = {l: np.ones(num_pixels, dtype=bool) for l in label_names}
 
     # This creation line implicitly tests Censors.__setitem__
-    c = Censors(label_names, num_pixels, items=dummy_items)
+    cn = Censors(label_names, num_pixels, items=dummy_items)
 
     # Check that everything has been set correctly
-    assert c._label_names == label_names
-    assert c._num_pixels == num_pixels
-    assert c.keys() == dummy_items.keys()
-    for k in c.keys():
-        assert np.all(c[k] == dummy_items[k])
+    assert cn._label_names == label_names
+    assert cn._num_pixels == num_pixels
+    assert cn.keys() == dummy_items.keys()
+    for k in cn.keys():
+        assert np.all(cn[k] == dummy_items[k])
 
     # Check the __getstate__ return
-    gs = c.__getstate__()
+    gs = cn.__getstate__()
     assert gs["label_names"] == label_names
     assert gs["num_pixels"] == num_pixels
     assert gs["items"].keys() == dummy_items.keys()
@@ -34,17 +41,57 @@ def test_censors_init(label_names, num_pixels):
 
 class TestCensorsBadSetitem:
 
-    c = Censors(["x", "y", "z"], 100)
+    cn = Censors(["x", "y", "z"], 100)
 
     @pytest.mark.parametrize("bad_label", [1, 2, 3, "a", "b", "c"])
     def test_censors_setitem_bad_label(self, bad_label):
         with pytest.raises(ValueError):
-            self.c[bad_label] = None
+            self.cn[bad_label] = None
 
-    @pytest.mark.parametrize("bad_mask", [np.ones(n, dtype=bool) for n in [1, 10, 1000, 10000]])
+    @pytest.mark.parametrize(
+        "bad_mask", [np.ones(n, dtype=bool) for n in [1, 10, 1000, 10000]]
+    )
     def test_censors_setitem_bad_mask(self, bad_mask):
         with pytest.raises(ValueError):
-            self.c["x"] = bad_mask
+            self.cn["x"] = bad_mask
 
 
+@pytest.mark.parametrize(
+    "a",
+    [
+        [],
+        [{"args_key_1": np.ones(100, dtype=bool)}],
+        [
+            {
+                "args_key_1": np.ones(100, dtype=bool),
+                "args_key_2": np.zeros(100, dtype=bool),
+            }
+        ],
+    ],
+)
+@pytest.mark.parametrize(
+    "k",
+    [
+        {},
+        {"kwargs_key_1": np.ones(100, dtype=bool)},
+        {
+            "kwargs_key_1": np.ones(100, dtype=bool),
+            "kwargs_key_2": np.zeros(100, dtype=bool),
+        },
+    ],
+)
+def test_censors_update(a, k):
+    label_list = (
+        [_ for _ in a[0].keys()] + [_ for _ in k.keys()]
+        if len(a) > 0
+        else [_ for _ in k.keys()]
+    )
+    cn = Censors(label_list, 100)  # Set labels as per coming inputs, num_pixels = 100
+    # import pdb; pdb.set_trace()
 
+    cn.update(*a, **k)
+    for key in label_list:
+        if "kwargs" in key:
+            assert np.all(cn[key] == k[key]), f"Failed to update key {key}"
+        else:
+            assert np.all(cn[key] == a[0][key]), f"Failed to update key {key}"
