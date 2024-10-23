@@ -397,7 +397,8 @@ def terminator(label_names, order, cross_term_order=-1, **kwargs):
     :returns:
         A human-readable form of the label vector.
     """
-    sep, mul, pow = kwargs.pop(["sep", "mul", "pow"], "+*^")
+
+    sep, mul, pow = (kwargs.pop(k, d) for (k,d) in [("sep", "+"), ("mul", "*"), ("pow", "^")])
 
     # I make no apologies: it's fun to code like this for short complex functions
     items = []

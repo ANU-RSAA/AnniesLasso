@@ -14,7 +14,17 @@ import numpy as np
 
 class BaseVectorizer(object):
     """
-    A vectorizer class that models spectral fluxes and its derivatives.
+    A vectorizer that models spectral fluxes as combination of polynomial terms.
+    Note that either `label_names` *and* `order` must be provided, or the `terms`
+    keyword argument needs to be explicitly specified.
+
+
+    :param label_names:
+        A list of label names that are terms in the label vector.
+
+    :param terms:
+        A structured list of tuples that defines the full extent of the label
+        vector.
     """
 
     def __init__(self, label_names, terms, **kwargs):
