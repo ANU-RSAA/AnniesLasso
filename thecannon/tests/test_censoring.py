@@ -133,8 +133,23 @@ def test_censors_setdefault(labels, default):
             np.asarray([True, False, False, True, False]),
         ),
         (np.asarray([1, 2, 3]), [(0, 5)], np.ones(3, dtype=bool)),
+        (np.asarray([0.2, 0.4, 0.6]), [0.3, 0.5], np.asarray([False, True, False])),  # Flat censored_region
     ],
 )
 def test_create_mask(dispersion, censored_regions, expected_mask):
     m = create_mask(dispersion, censored_regions)
     assert np.all(m == expected_mask), "Failed to create expected mask"
+
+
+@pytest.mark.parametrize("dispersion,censored_regions,expected_error", [
+    (np.ones(3), [0.1, 0.2, 0.3], ValueError),  # Too many values in flat censored_regions
+    (np.ones(3), ["1", 2], ValueError),  # Bad value in flat censored_regions, first value
+    (np.ones(3), [1, "2"], ValueError),  # Bad value in flat censored_regions, second value
+    (np.ones(3), [(1, 2), ("2", 3)], ValueError), # Bad value in list of tuples (posn 1)
+    (np.ones(3), [("1", 2), (2, 3)], ValueError), # Bad value in list of tuples (posn 1)
+    (np.ones(3), [(1, 2), (2, "3")], ValueError), # Bad value in list of tuples (posn 2)
+    (np.ones(3), [(1, "2"), (2, 3)], ValueError), # Bad value in list of tuples (posn 2)
+])
+def test_create_mask_bad(dispersion, censored_regions, expected_error):
+    with pytest.raises(expected_error):
+        _ = create_mask(dispersion, censored_regions)
