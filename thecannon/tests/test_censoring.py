@@ -5,7 +5,8 @@ Unit tests for `thecannon.censoring`.
 import pytest
 import numpy as np
 
-from ..censoring import Censors, create_mask
+from ..censoring import Censors, create_mask, design_matrix_mask
+from ..vectorizer.base import BaseVectorizer
 
 # Censors tests
 
@@ -188,3 +189,26 @@ def test_create_mask(dispersion, censored_regions, expected_mask):
 def test_create_mask_bad(dispersion, censored_regions, expected_error):
     with pytest.raises(expected_error):
         _ = create_mask(dispersion, censored_regions)
+
+
+@pytest.mark.parametrize("censor", [
+    "a", 1, 1.6, BaseVectorizer(["a"], [0.0])
+])
+@pytest.mark.parametrize("vectorizer", [
+    BaseVectorizer(["a"], [0.0])
+])
+def test_design_matrix_mask_bad_censor(censor, vectorizer):
+    with pytest.raises(TypeError):
+        _ = design_matrix_mask(censor, vectorizer)
+
+
+@pytest.mark.parametrize("vectorizer", [
+    "a", 1, 1.6, Censors(["a"], 10)
+])
+@pytest.mark.parametrize("censor", [
+    Censors(["a"], 10)
+])
+def test_design_matrix_mask_bad_vectorizer(censor, vectorizer):
+    with pytest.raises(TypeError):
+        _ = design_matrix_mask(censor, vectorizer)
+

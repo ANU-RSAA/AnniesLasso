@@ -140,6 +140,7 @@ def create_mask(dispersion, censored_regions):
     return mask
 
 
+# TODO this function is not used in the package - confirm it is still required
 def design_matrix_mask(censors, vectorizer):
     """
     Return a mask of which indices in the design matrix columns should be
