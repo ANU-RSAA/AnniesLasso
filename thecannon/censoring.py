@@ -122,6 +122,9 @@ def create_mask(dispersion, censored_regions):
 
     mask = np.zeros(dispersion.size, dtype=bool)
 
+    if len(censored_regions) == 0:  # No-op
+        return mask
+
     if isinstance(censored_regions[0], (int, float)):
         censored_regions = [censored_regions]
 

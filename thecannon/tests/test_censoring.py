@@ -5,7 +5,7 @@ Unit tests for `thecannon.censoring`.
 import pytest
 import numpy as np
 
-from ..censoring import Censors
+from ..censoring import Censors, create_mask
 
 # Censors tests
 
@@ -37,6 +37,10 @@ def test_censors_init(label_names, num_pixels):
     assert gs["items"].keys() == dummy_items.keys()
     for k in gs["items"].keys():
         assert np.all(gs["items"][k] == dummy_items[k])
+
+    # Check the property returns
+    assert cn.label_names == label_names
+    assert cn.num_pixels == num_pixels
 
 
 class TestCensorsBadSetitem:
@@ -95,3 +99,42 @@ def test_censors_update(a, k):
             assert np.all(cn[key] == k[key]), f"Failed to update key {key}"
         else:
             assert np.all(cn[key] == a[0][key]), f"Failed to update key {key}"
+
+
+@pytest.mark.parametrize("a", [[{}, {}]])
+def test_censors_update_multiargs(a):
+    with pytest.raises(TypeError):
+        cn = Censors(["a", "b"], 10)
+        cn.update(*a)
+
+
+@pytest.mark.parametrize("labels", [("a", "b", "c")])
+@pytest.mark.parametrize(
+    "default",
+    [
+        "a",
+        "b",
+        "c",
+    ],
+)
+def test_censors_setdefault(labels, default):
+    cn = Censors(labels, 10)
+    x = cn.setdefault(default, value=np.ones(10))
+    assert np.all(x == np.ones(10)), "Failed to set default correctly"
+
+
+@pytest.mark.parametrize(
+    "dispersion,censored_regions, expected_mask",
+    [
+        (np.ones(4), [], np.zeros(4, dtype=bool)),
+        (
+            np.asarray([0.1, 0.2, 0.3, 0.4, 0.5]),
+            [(0.0, 0.15), (0.35, 0.45)],
+            np.asarray([True, False, False, True, False]),
+        ),
+        (np.asarray([1, 2, 3]), [(0, 5)], np.ones(3, dtype=bool)),
+    ],
+)
+def test_create_mask(dispersion, censored_regions, expected_mask):
+    m = create_mask(dispersion, censored_regions)
+    assert np.all(m == expected_mask), "Failed to create expected mask"
