@@ -25,6 +25,21 @@ class BaseVectorizer(object):
     :param terms:
         A structured list of tuples that defines the full extent of the label
         vector.
+
+        The list describes the terms of the label vector as follows:
+        ```
+        [
+            [(<label index>, <label power>), (<label index>, <label power>), ...],
+            ...
+        ]
+        ```
+
+        So, for example, if `label_names=['a', 'b']`, then the following element in `terms`:
+        ```
+        [(0, 1), (1, 2)]
+        ```
+        is equivalent to `a^1 + b^2`. The actual label names can also be used as the first
+        element of each tuple.
     """
 
     def __init__(self, label_names, terms, **kwargs):
@@ -61,6 +76,8 @@ class BaseVectorizer(object):
         self._label_names = kwds["label_names"]
         self._terms = kwds["terms"]
         self.metadata = kwds["metadata"]
+
+    # FIXME add co-dependent setters for label_names, terms
 
     @property
     def terms(self):

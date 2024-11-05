@@ -32,7 +32,7 @@ class PolynomialVectorizer(BaseVectorizer):
 
     :param terms: [optional]
         A structured list of tuples that defines the full extent of the label
-        vector. Note that `terms` *must* be `None` if `label_names` or `order`
+        vector. Note that `terms` *must* be `None` if `label_names` and `order`
         are provided.
     """
 

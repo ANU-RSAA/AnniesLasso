@@ -8,6 +8,28 @@ from ..vectorizer.base import BaseVectorizer
 from ..vectorizer.polynomial import PolynomialVectorizer, terminator
 
 
+@pytest.mark.parametrize("vectorizer", [
+    BaseVectorizer, PolynomialVectorizer
+])
+@pytest.mark.parametrize("label_names,terms,terms_out", [
+    [("a", "b", "c"), [[("a", 0)], [("b", 1)], [("c", 2)]], None],
+    [["a", "b", "c"], [[(0, 0)], [(1, 1)], [(2, 2)]], None],
+    (["Teff", "g"], [[(0, 1)], [(0,2), (1, 1)], [(1, 2), (0, 2)]], None),
+])
+def test_vectorizer_basic_init(vectorizer, label_names, terms, terms_out):
+    vec = vectorizer(label_names=label_names, terms=terms)
+    assert vec.label_names == tuple(label_names), "Label names not initialized correctly"
+    assert vec.terms == (terms_out if terms_out is not None else terms), "Terms not initialized correctly"
+
+@pytest.mark.parametrize("label_names,terms,terms_out,order", [
+    [("a", "b", "c"), "a^0 + b + c^2", [[(1, 1)], [(2, 2)]], None],
+    (["Teff", "g"], "Teff + Teff^2*g + g^2*Teff^2", [[(0, 1)], [(0,2), (1, 1)], [(1, 2), (0, 2)]], None),
+])
+def test_polynomial_vectorizer_basic_init(label_names, terms, terms_out, order):
+    vec = PolynomialVectorizer(label_names=label_names, order=order, terms=terms)
+    assert vec.label_names == tuple(label_names), "Label names not initialized correctly"
+    assert vec.terms == (terms_out if terms_out is not None else terms), "Terms not initialized correctly"
+
 @pytest.mark.parametrize(
     "label_names,order,cross_term_order,expected",
     [
