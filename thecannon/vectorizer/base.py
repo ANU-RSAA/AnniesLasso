@@ -23,26 +23,29 @@ class BaseVectorizer(object):
         A list of label names that are terms in the label vector.
 
     :param terms:
-        A structured list of tuples that defines the full extent of the label
+        A structured list of lists of tuples that defines the full extent of the label
         vector.
 
         The list describes the terms of the label vector as follows:
         ```
         [
-            [(<label index>, <label power>), (<label index>, <label power>), ...],
+            [[(<label index>, <label power>), ...], [(<label index>, <label power>), ...)], ...],
             ...
         ]
         ```
 
         So, for example, if `label_names=['a', 'b']`, then the following element in `terms`:
         ```
-        [(0, 1), (1, 2)]
+        [[(0, 1), (1, 1)], [(1, 2)]]
         ```
-        is equivalent to `a^1 + b^2`. The actual label names can also be used as the first
+        is equivalent to `a^1 * b^1 + b^2`. The actual label names can also be used as the first
         element of each tuple.
     """
 
-    def __init__(self, label_names, terms, **kwargs):
+    def __init__(self, 
+                 label_names : list[str], 
+                 terms : list[list[tuple[int | str, int]]], 
+                 **kwargs):
         self._terms = terms
         self._label_names = tuple(label_names)
         self.metadata = kwargs.get("metadata", {})
@@ -78,6 +81,42 @@ class BaseVectorizer(object):
         self.metadata = kwds["metadata"]
 
     # FIXME add co-dependent setters for label_names, terms
+    def update_labels_terms(self, 
+                            label_names : list[str], 
+                            terms : list[list[tuple[int | str, int]]]
+                            ) -> None:
+        """_summary_
+
+        Parameters
+        ----------
+        label_names : list[str]
+            _description_
+        terms : list[list[tuple[int  |  str, int]]]
+            _description_
+
+        Raises
+        ------
+        ValueError
+            _description_
+        """
+
+        # Sanity-check the inputs
+
+        # Ensure that all of the label references (name or index) are valid
+        # FIXME surely this can be a list comprehension...
+        label_refs = set()
+        for l in terms:
+            for t in l:
+                label_refs.add(t[0])
+        label_refs_str = {l for l in label_refs if isinstance(l, str)}
+        label_refs_int = {l for l in label_refs if isinstance(l, int)}
+
+        try:
+            assert np.all([label in label_names for label in [lb for lb in label_refs if isinstance(lb, str)]])
+        except AssertionError:
+            raise ValueError(f"Unknown labels found in terms : {[l for l in label_refs_str if l not in terms]}")
+        
+        # FIXME Make sure that every term contains only one reference to each label
 
     @property
     def terms(self):
