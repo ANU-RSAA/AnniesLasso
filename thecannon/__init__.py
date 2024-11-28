@@ -5,7 +5,7 @@ __version__ = "0.2.93"
 
 import logging
 from numpy import RankWarning
-from warnings import simplefilter
+import warnings
 
 from .model import CannonModel
 from . import censoring, fitting, plot, utils, vectorizer
@@ -17,8 +17,8 @@ handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
 logger.addHandler(handler)
 
-simplefilter("ignore", RankWarning)
-simplefilter("ignore", RuntimeWarning)
+warnings.simplefilter("ignore", RankWarning)
+warnings.simplefilter("ignore", RuntimeWarning)
 
 
 def load_model(path, **kwargs):
@@ -31,9 +31,9 @@ def load_model(path, **kwargs):
         a labelled data set.
     """
 
-    print("deprecated; use CannonModel.read")  # TODO
+    warnings.warn("deprecated; use CannonModel.read", DeprecationWarning)  # TODO
     return CannonModel.read(path, **kwargs)
 
 
 # Clean up the top-level namespace for this module.
-del handler, logger, logging, RankWarning, simplefilter
+del handler, logger, logging, RankWarning
