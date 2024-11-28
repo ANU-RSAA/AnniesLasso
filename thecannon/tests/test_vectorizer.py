@@ -21,6 +21,29 @@ def test_vectorizer_basic_init(vectorizer, label_names, terms, terms_out):
     assert vec.label_names == tuple(label_names), "Label names not initialized correctly"
     assert vec.terms == (terms_out if terms_out is not None else terms), "Terms not initialized correctly"
 
+@pytest.mark.parametrize("vectorizer", [
+    BaseVectorizer, PolynomialVectorizer,
+])
+@pytest.mark.parametrize("label_names,terms", [
+    [("a", "b"), [[("b", 1)]]],  # Unused term
+    [("a", ), [[("a", 1), ("b", 1), ("c", 1)]]],  # Excess term (term number mismatch)
+    [("a", "b"), [[("c", 1), ("a", 1)]]],  # Invalid term (str)
+    [("a", "b"), [[(2, 1), (0, 1)]]],  # Invalid term (int)
+])
+def test_vectorizer_basic_init_bad_inputs(vectorizer, label_names, terms):
+    with pytest.raises(ValueError):
+        vec = vectorizer(label_names=label_names, terms=terms)
+
+@pytest.mark.parametrize("vectorizer", [
+    BaseVectorizer, PolynomialVectorizer
+])
+def test_vectorizer_no_direct_sets(vectorizer):
+    vec = vectorizer(label_names=("a"), terms=[[("a", 1)]])  # Basic
+    with pytest.raises(RuntimeError):
+        vec.label_names = ("a", "b")
+    with pytest.raises(RuntimeError):
+        vec.terms = [[("a", 1), ("a", 2)]]
+
 @pytest.mark.parametrize("label_names,terms,terms_out,order", [
     [("a", "b", "c"), "a^3 + b + c^2", [[(0, 3)], [(1, 1)], [(2, 2)]], None],
     (["Teff", "g"], "Teff + Teff^2*g + g^2*Teff^2", [[(0, 1)], [(0,2), (1, 1)], [(1, 2), (0, 2)]], None),
