@@ -10,6 +10,7 @@ from __future__ import division, print_function, absolute_import, unicode_litera
 __all__ = ["BaseVectorizer"]
 
 import numpy as np
+from typing import Union
 
 
 class BaseVectorizer(object):
@@ -44,7 +45,7 @@ class BaseVectorizer(object):
 
     def __init__(self, 
                  label_names : list[str], 
-                 terms : list[list[tuple[int | str, int]]], 
+                 terms : list[list[tuple[Union[int, str], int]]], 
                  **kwargs):
         self._terms = terms
         self._label_names = tuple(label_names)
@@ -83,7 +84,7 @@ class BaseVectorizer(object):
     # FIXME add co-dependent setters for label_names, terms
     def update_labels_terms(self, 
                             label_names : list[str], 
-                            terms : list[list[tuple[int | str, int]]]
+                            terms : list[list[tuple[Union[int, str], int]]]
                             ) -> None:
         """_summary_
 
