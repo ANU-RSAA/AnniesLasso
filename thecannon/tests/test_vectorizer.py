@@ -22,7 +22,7 @@ def test_vectorizer_basic_init(vectorizer, label_names, terms, terms_out):
     assert vec.terms == (terms_out if terms_out is not None else terms), "Terms not initialized correctly"
 
 @pytest.mark.parametrize("label_names,terms,terms_out,order", [
-    [("a", "b", "c"), "a^0 + b + c^2", [[(1, 1)], [(2, 2)]], None],
+    [("a", "b", "c"), "a^3 + b + c^2", [[(0, 3)], [(1, 1)], [(2, 2)]], None],
     (["Teff", "g"], "Teff + Teff^2*g + g^2*Teff^2", [[(0, 1)], [(0,2), (1, 1)], [(1, 2), (0, 2)]], None),
 ])
 def test_polynomial_vectorizer_basic_init(label_names, terms, terms_out, order):

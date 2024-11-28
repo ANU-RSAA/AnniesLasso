@@ -47,8 +47,9 @@ class BaseVectorizer(object):
                  label_names : list[str], 
                  terms : list[list[tuple[Union[int, str], int]]], 
                  **kwargs):
-        self._terms = terms
-        self._label_names = tuple(label_names)
+        self.update_labels_terms(tuple(label_names), terms)
+        # self._terms = terms
+        # self._label_names = tuple(label_names)
         self.metadata = kwargs.get("metadata", {})
         return None
 
@@ -86,20 +87,6 @@ class BaseVectorizer(object):
                             label_names : list[str], 
                             terms : list[list[tuple[Union[int, str], int]]]
                             ) -> None:
-        """_summary_
-
-        Parameters
-        ----------
-        label_names : list[str]
-            _description_
-        terms : list[list[tuple[int  |  str, int]]]
-            _description_
-
-        Raises
-        ------
-        ValueError
-            _description_
-        """
 
         # Sanity-check the inputs
 
@@ -109,20 +96,45 @@ class BaseVectorizer(object):
         for l in terms:
             for t in l:
                 label_refs.add(t[0])
-        label_refs_str = {l for l in label_refs if isinstance(l, str)}
-        label_refs_int = {l for l in label_refs if isinstance(l, int)}
+
+        if len(label_refs) > len(label_names):
+            raise ValueError(f"Your `terms` contain more labels than are in `label_names`.")
+        elif len(label_names) > len(label_refs):
+            raise ValueError("Your `label_names` contains unused labels.")
+
+        # We now know that the number of labels is the same between the two arguments.
+        # Now to check if they are all reasonable...
+        try:
+            assert np.all([_ in label_names for _ in label_refs if isinstance(_, str)])
+        except AssertionError:
+            raise ValueError(
+                f"Unknown labels {[_ for _ in label_refs if isinstance(_, str) and _ not in label_names]} in terms"
+            )
 
         try:
-            assert np.all([label in label_names for label in [lb for lb in label_refs if isinstance(lb, str)]])
+            assert np.all(
+                [-1 < _ < len(label_names) for _ in label_refs if isinstance(_, int)]
+            )
         except AssertionError:
-            raise ValueError(f"Unknown labels found in terms : {[l for l in label_refs_str if l not in terms]}")
-        
-        # FIXME Make sure that every term contains only one reference to each label
+            raise ValueError(
+                f"Index terms references must be between 0 and {len(label_names)}"
+            )
+
+        # Don't check the powers in the terms - users may want something unusual,
+        # or procedurally generate terms that include power 0, etc
+
+        # Make the settings
+        self._label_names = label_names
+        self._terms = terms
 
     @property
     def terms(self):
         """Return the terms provided for this vectorizer."""
         return self._terms
+    
+    @terms.setter
+    def terms(self, v):
+        raise RuntimeError("terms must be set using update_labels_terms")
 
     @property
     def label_names(self):
@@ -130,6 +142,10 @@ class BaseVectorizer(object):
         Return the label names that are used in this vectorizer.
         """
         return self._label_names
+    
+    @label_names.setter
+    def label_names(self, v):
+        raise RuntimeError("label_names must be set using update_labels_terms")
 
     def __call__(self, *args, **kwargs):
         """
