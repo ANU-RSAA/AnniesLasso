@@ -8,14 +8,13 @@ from numpy import RankWarning
 from warnings import simplefilter
 
 from .model import CannonModel
-from . import (censoring, fitting, plot, utils, vectorizer)
+from . import censoring, fitting, plot, utils, vectorizer
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG) # TODO: Remove this when stable.
+logger.setLevel(logging.DEBUG)  # TODO: Remove this when stable.
 
 handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter(
-    "%(asctime)s [%(levelname)s] %(message)s"))
+handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
 logger.addHandler(handler)
 
 simplefilter("ignore", RankWarning)
@@ -32,7 +31,7 @@ def load_model(path, **kwargs):
         a labelled data set.
     """
 
-    print("deprecated; use CannonModel.read") # TODO
+    print("deprecated; use CannonModel.read")  # TODO
     return CannonModel.read(path, **kwargs)
 
 
