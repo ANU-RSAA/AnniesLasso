@@ -57,7 +57,7 @@ class BaseVectorizer(object):
     # basic information if the sub-classes do not overwrite it.
     def __str__(self):
         return "<{module}.{name} object consisting of {K} labels and {D} terms>".format(
-            module=self.__module__, name=type(self).__name__, D=len(self.terms), K=len()
+            module=self.__module__, name=type(self).__name__, D=len(self.terms), K=len(self.label_names)
         )
 
     def __repr__(self):
@@ -77,7 +77,7 @@ class BaseVectorizer(object):
 
     def __setstate__(self, state):
         """Set the state of the vectorizer."""
-        model_name, kwds = kwds
+        model_name, kwds = state
         self._label_names = kwds["label_names"]
         self._terms = kwds["terms"]
         self.metadata = kwds["metadata"]
