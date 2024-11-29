@@ -47,6 +47,8 @@ class BaseVectorizer(object):
                  label_names : list[str], 
                  terms : list[list[tuple[Union[int, str], int]]], 
                  **kwargs):
+        if label_names is None: label_names = []
+        if terms is None: terms = []
         self.update_labels_terms(tuple(label_names), terms)
         # self._terms = terms
         # self._label_names = tuple(label_names)

@@ -72,6 +72,21 @@ class TestVectorizersCommon:
             and vec.metadata == blank_vec.metadata
         ), "__setstate__ failed to copy across vectorizer status!"
 
+def test_base_vectorizer__call__():
+    vec = BaseVectorizer(label_names=None, terms=None)
+    with pytest.raises(NotImplementedError):
+        vec.__call__(None)
+
+def test_base_vectorizer_get_label_vector():
+    vec = BaseVectorizer(label_names=None, terms=None)
+    with pytest.raises(NotImplementedError):
+        vec.get_label_vector(None)
+
+def test_base_vectorizer_get_label_vector_derivative():
+    vec = BaseVectorizer(label_names=None, terms=None)
+    with pytest.raises(NotImplementedError):
+        vec.get_label_vector_derivative(None)
+
 
 @pytest.mark.parametrize("label_names,terms,terms_out,order", [
     [("a", "b", "c"), "a^3 + b + c^2", [[(0, 3)], [(1, 1)], [(2, 2)]], None],
