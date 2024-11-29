@@ -266,7 +266,7 @@ def parse_label_vector_description(description, label_names=None, **kwargs):
     description = [_.strip() for _ in description]
 
     # Functions to parse the parameter (or index) and order for each term.
-    get_power = lambda t: float(t.split(pow)[1].strip()) if pow in t else 1
+    get_power = lambda t: int(t.split(pow)[1].strip()) if pow in t else 1
     if label_names is None:
         get_label = lambda d: d.split(pow)[0].strip()
     else:
