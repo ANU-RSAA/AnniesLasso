@@ -36,7 +36,11 @@ class PolynomialVectorizer(BaseVectorizer):
         are provided.
     """
 
-    def __init__(self, label_names=None, order=None, terms=None, **kwargs):
+    def __init__(self, 
+                 label_names=None, 
+                 order=None, 
+                 terms=None, 
+                 **kwargs):
 
         # Check to see if we have a terms/(label_names and order) dichotamy/
         if (terms is None and None in (label_names, order)) or (
@@ -55,8 +59,9 @@ class PolynomialVectorizer(BaseVectorizer):
             # Parse label names from the terms.
             label_names = get_label_names(parse_label_vector_description(terms))
 
-        # Convert terms to use indices.
-        terms = parse_label_vector_description(terms, label_names=label_names)
+        # Convert terms from a string to standard structure
+        if not isinstance(terms, list):
+            terms = parse_label_vector_description(terms, label_names=label_names)
 
         super(PolynomialVectorizer, self).__init__(
             label_names=label_names, terms=terms, **kwargs

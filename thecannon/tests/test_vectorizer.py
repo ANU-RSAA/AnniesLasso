@@ -60,7 +60,18 @@ class TestVectorizersCommon:
         assert "label_names" in state[1].keys(), "Could not ID label_names in state return!"
         assert "terms" in state[1].keys(), "Could not ID terms in state return!"
         assert "metadata" in state[1].keys(), "Could not ID metadata in state return!"
-        
+
+    def test_vectorizer__setstate__(self, vectorizer):
+        vec = vectorizer(label_names=("a"), terms=[[("a", 1)]])
+        blank_vec = vectorizer(label_names=(), terms=[])
+        blank_vec.__setstate__(vec.__getstate__())
+        assert (
+            str(vec) == str(blank_vec)
+            and vec.terms == blank_vec.terms
+            and vec.label_names == blank_vec.label_names
+            and vec.metadata == blank_vec.metadata
+        ), "__setstate__ failed to copy across vectorizer status!"
+
 
 @pytest.mark.parametrize("label_names,terms,terms_out,order", [
     [("a", "b", "c"), "a^3 + b + c^2", [[(0, 3)], [(1, 1)], [(2, 2)]], None],
