@@ -46,31 +46,39 @@ class PolynomialVectorizer(BaseVectorizer):
                 "order must be None if terms are provided, "
                 "and terms must be None if label_names and order are provided"
             )
-        investigate = False
+
         if terms is None:
             # Parse human-readable terms.
             terms = terminator(label_names, order, **kwargs)
-            investigate = False
         elif label_names is None:
             # Parse label names from the terms.
             label_names = get_label_names(parse_label_vector_description(terms))
 
-        if investigate:
-            import pdb
-
-            pdb.set_trace()
         # Convert terms from a string to standard structure
         if not isinstance(terms, list):
             terms = parse_label_vector_description(terms, label_names=None)
 
-        if investigate:
-            import pdb
-
-            pdb.set_trace()
         super(PolynomialVectorizer, self).__init__(
             label_names=label_names, terms=terms, **kwargs
         )
         return None
+    
+    def index_labels(self):
+        """Re-compile `self.terms` to use indices.
+
+        This function can be run regardless of the current state of `self.terms`
+        (i.e., whether or not `self.terms` currently uses indices).
+
+        Raises
+        ------
+        ValueError
+            If `self.terms` and/or `self.label_names` are not set.
+        """
+
+        if self.terms is None or self.label_names is None:
+            raise ValueError("terms and/or label_names haven't been set!")
+        terms = parse_label_vector_description(self.terms, label_names=self.label_names)
+        self.update_labels_terms(self.label_names, terms)
 
     def get_label_vector(self, labels):
         """

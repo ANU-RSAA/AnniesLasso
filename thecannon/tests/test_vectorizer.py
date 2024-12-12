@@ -126,6 +126,15 @@ def test_polynomial_vectorizer_basic_init(label_names, terms, terms_out, order):
     ), "Terms not initialized correctly"
 
 
+@pytest.mark.parametrize("bad_labels", [
+    [[["a", ]]],  # 3-dim
+    [[[["a", ]]]],  # 4-dim
+])
+def test_polynomial_vectorizer_get_label_vector_bad_input(bad_labels):
+    vec = PolynomialVectorizer(label_names=["a"], order=1)
+    with pytest.raises(ValueError):
+        vec.get_label_vector(bad_labels)
+
 @pytest.mark.parametrize(
     "label_names,order,cross_term_order,expected",
     [
@@ -191,22 +200,31 @@ def test_polynomial_vectorizer_argument_dichotomy(label_names, order, terms):
 
 
 @pytest.mark.parametrize(
-    "label_names,order,terms",
+    "label_names,order,terms,terms_indexed",
     [
         (
             ["a", "b"],
             2,
             [[("a", 1)], [("b", 1)], [("a", 2)], [("a", 1), ("b", 1)], [("b", 2)]],
+            [[(0, 1)], [(1, 1)], [(0, 2)], [(0, 1), (1, 1)], [(1, 2)]],
         ),
-        (["a", "b"], 2, "a + b + a^2 + a*b + b^2"),
+        (["a", "b"], 2, "a + b + a^2 + a*b + b^2", 
+        [[(0, 1),], [(1, 1),], [(0, 2),], [(0,1), (1,1)], [(1,2),]]),
     ],
 )
-def test_polynomial_vectorizer_argument_equivalence(label_names, order, terms):
-    vec1 = PolynomialVectorizer(label_names=label_names, order=order)
-    vec2 = PolynomialVectorizer(label_names=label_names, terms=terms)
-    vec3 = PolynomialVectorizer(terms=terms)
-    assert str(vec1) == str(vec2) == str(vec3), "String comparison failed!"
-    assert vec1.terms == vec2.terms == vec3.terms, "Terms comparison failed!"
-    assert (
-        vec1.label_names == vec2.label_names == vec3.label_names
-    ), "Label names comparison failed"
+class VectorizerInitTests:
+
+    def test_polynomial_vectorizer_argument_equivalence(self, label_names, order, terms, terms_indexed):
+
+        vec1 = PolynomialVectorizer(label_names=label_names, order=order)
+        vec2 = PolynomialVectorizer(label_names=label_names, terms=terms)
+        vec3 = PolynomialVectorizer(terms=terms)
+
+        assert str(vec1) == str(vec2) == str(vec3), "String comparison failed!"
+        assert vec1.terms == vec2.terms == vec3.terms, "Terms comparison failed!"
+        assert (
+            vec1.label_names == vec2.label_names == vec3.label_names
+        ), "Label names comparison failed"
+
+        for i, v in enumerate([vec1, vec2, vec3]):
+            assert v.terms == terms_indexed, f"Indexed terms comparison failed for vec{i+1}"
