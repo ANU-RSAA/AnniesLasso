@@ -8,26 +8,37 @@ from ..vectorizer.base import BaseVectorizer
 from ..vectorizer.polynomial import PolynomialVectorizer, terminator
 
 
-@pytest.mark.parametrize("vectorizer", [
-    BaseVectorizer, PolynomialVectorizer
-])
+@pytest.mark.parametrize("vectorizer", [BaseVectorizer, PolynomialVectorizer])
 class TestVectorizersCommon:
-    @pytest.mark.parametrize("label_names,terms,terms_out", [
-        [("a", "b", "c"), [[("a", 0)], [("b", 1)], [("c", 2)]], None],
-        [["a", "b", "c"], [[(0, 0)], [(1, 1)], [(2, 2)]], None],
-        (["Teff", "g"], [[(0, 1)], [(0,2), (1, 1)], [(1, 2), (0, 2)]], None),
-    ])
+    @pytest.mark.parametrize(
+        "label_names,terms,terms_out",
+        [
+            [("a", "b", "c"), [[("a", 0)], [("b", 1)], [("c", 2)]], None],
+            [["a", "b", "c"], [[(0, 0)], [(1, 1)], [(2, 2)]], None],
+            (["Teff", "g"], [[(0, 1)], [(0, 2), (1, 1)], [(1, 2), (0, 2)]], None),
+        ],
+    )
     def test_vectorizer_basic_init(self, vectorizer, label_names, terms, terms_out):
         vec = vectorizer(label_names=label_names, terms=terms)
-        assert vec.label_names == tuple(label_names), "Label names not initialized correctly"
-        assert vec.terms == (terms_out if terms_out is not None else terms), "Terms not initialized correctly"
+        assert vec.label_names == tuple(
+            label_names
+        ), "Label names not initialized correctly"
+        assert vec.terms == (
+            terms_out if terms_out is not None else terms
+        ), "Terms not initialized correctly"
 
-    @pytest.mark.parametrize("label_names,terms", [
-        [("a", "b"), [[("b", 1)]]],  # Unused term
-        [("a", ), [[("a", 1), ("b", 1), ("c", 1)]]],  # Excess term (term number mismatch)
-        [("a", "b"), [[("c", 1), ("a", 1)]]],  # Invalid term (str)
-        [("a", "b"), [[(2, 1), (0, 1)]]],  # Invalid term (int)
-    ])
+    @pytest.mark.parametrize(
+        "label_names,terms",
+        [
+            [("a", "b"), [[("b", 1)]]],  # Unused term
+            [
+                ("a",),
+                [[("a", 1), ("b", 1), ("c", 1)]],
+            ],  # Excess term (term number mismatch)
+            [("a", "b"), [[("c", 1), ("a", 1)]]],  # Invalid term (str)
+            [("a", "b"), [[(2, 1), (0, 1)]]],  # Invalid term (int)
+        ],
+    )
     def test_vectorizer_basic_init_bad_inputs(self, vectorizer, label_names, terms):
         with pytest.raises(ValueError):
             vec = vectorizer(label_names=label_names, terms=terms)
@@ -57,7 +68,9 @@ class TestVectorizersCommon:
         state = vec.__getstate__()
         assert state[0] == type(vec).__name__, "Name not first element of state return!"
         assert isinstance(state[1], dict), "Dict not second element of state return!"
-        assert "label_names" in state[1].keys(), "Could not ID label_names in state return!"
+        assert (
+            "label_names" in state[1].keys()
+        ), "Could not ID label_names in state return!"
         assert "terms" in state[1].keys(), "Could not ID terms in state return!"
         assert "metadata" in state[1].keys(), "Could not ID metadata in state return!"
 
@@ -72,15 +85,18 @@ class TestVectorizersCommon:
             and vec.metadata == blank_vec.metadata
         ), "__setstate__ failed to copy across vectorizer status!"
 
+
 def test_base_vectorizer__call__():
     vec = BaseVectorizer(label_names=None, terms=None)
     with pytest.raises(NotImplementedError):
         vec.__call__(None)
 
+
 def test_base_vectorizer_get_label_vector():
     vec = BaseVectorizer(label_names=None, terms=None)
     with pytest.raises(NotImplementedError):
         vec.get_label_vector(None)
+
 
 def test_base_vectorizer_get_label_vector_derivative():
     vec = BaseVectorizer(label_names=None, terms=None)
@@ -88,14 +104,27 @@ def test_base_vectorizer_get_label_vector_derivative():
         vec.get_label_vector_derivative(None)
 
 
-@pytest.mark.parametrize("label_names,terms,terms_out,order", [
-    [("a", "b", "c"), "a^3 + b + c^2", [[(0, 3)], [(1, 1)], [(2, 2)]], None],
-    (["Teff", "g"], "Teff + Teff^2*g + g^2*Teff^2", [[(0, 1)], [(0,2), (1, 1)], [(1, 2), (0, 2)]], None),
-])
+@pytest.mark.parametrize(
+    "label_names,terms,terms_out,order",
+    [
+        [("a", "b", "c"), "a^3 + b + c^2", [[("a", 3)], [("b", 1)], [("c", 2)]], None],
+        (
+            ["Teff", "g"],
+            "Teff + Teff^2*g + g^2*Teff^2",
+            [[("Teff", 1)], [("Teff", 2), ("g", 1)], [("g", 2), ("Teff", 2)]],
+            None,
+        ),
+    ],
+)
 def test_polynomial_vectorizer_basic_init(label_names, terms, terms_out, order):
     vec = PolynomialVectorizer(label_names=label_names, order=order, terms=terms)
-    assert vec.label_names == tuple(label_names), "Label names not initialized correctly"
-    assert vec.terms == (terms_out if terms_out is not None else terms), "Terms not initialized correctly"
+    assert vec.label_names == tuple(
+        label_names
+    ), "Label names not initialized correctly"
+    assert vec.terms == (
+        terms_out if terms_out is not None else terms
+    ), "Terms not initialized correctly"
+
 
 @pytest.mark.parametrize(
     "label_names,order,cross_term_order,expected",
@@ -119,18 +148,65 @@ def test_terminator(label_names, order, cross_term_order, expected):
     ), f"Expected return {expected} does not match actual return {ret}"
 
 
-@pytest.mark.parametrize("sep,mul,pow", [
-    ("s", "x", "p"),
-])
+@pytest.mark.parametrize(
+    "sep,mul,pow",
+    [
+        ("s", "x", "p"),
+    ],
+)
 def test_terminator_format_kwargs(sep, mul, pow):
     ret = terminator(["a", "b"], 2, -1, sep=sep, mul=mul, pow=pow)
     default_ret = terminator(["a", "b"], 2, -1)
     assert ret == default_ret.replace("+", sep).replace("*", mul).replace("^", pow)
 
-@pytest.mark.parametrize("bad_cross_term_order", [
-    "a", 19.2, "11",
-    # -44.8  # This is actually OK - anything that succeeds the < 0 comparison will be set to order - 1
-])
+
+@pytest.mark.parametrize(
+    "bad_cross_term_order",
+    [
+        "a",
+        19.2,
+        "11",
+        # -44.8  # This is actually OK - anything that succeeds the < 0 comparison will be set to order - 1
+    ],
+)
 def test_terminator_bad_cross_term_order(bad_cross_term_order):
     with pytest.raises(TypeError):
         _ = terminator(["a", "b"], 2, bad_cross_term_order)
+
+
+# Arguments here are garbage - deliberate to ensure error is thrown
+# before they are looked at
+@pytest.mark.parametrize(
+    "label_names,order,terms",
+    [
+        (None, "a", None),  # terms is None and None in (label_names, order)
+        ("a", None, None),  # terms is None and None in (label_names, order)
+        ("a", "a", "a"),  # terms is not None and order is not None
+        (None, "a", "a"),  # terms is not None and order is not None
+    ],
+)
+def test_polynomial_vectorizer_argument_dichotomy(label_names, order, terms):
+    with pytest.raises(ValueError):
+        PolynomialVectorizer(label_names=label_names, terms=terms, order=order)
+
+
+@pytest.mark.parametrize(
+    "label_names,order,terms",
+    [
+        (
+            ["a", "b"],
+            2,
+            [[("a", 1)], [("b", 1)], [("a", 2)], [("a", 1), ("b", 1)], [("b", 2)]],
+        ),
+        (["a", "b"], 2, "a + b + a^2 + a*b + b^2"),
+    ],
+)
+def test_polynomial_vectorizer_argument_equivalence(label_names, order, terms):
+    vec1 = PolynomialVectorizer(label_names=label_names, order=order)
+    vec2 = PolynomialVectorizer(label_names=label_names, terms=terms)
+    vec3 = PolynomialVectorizer(terms=terms)
+    assert str(vec1) == str(vec2) == str(vec3), "String comparison failed!"
+    assert vec1.terms == vec2.terms == vec3.terms, "Terms comparison failed!"
+    assert (
+        vec1.label_names == vec2.label_names == vec3.label_names
+    ), "Label names comparison failed"
