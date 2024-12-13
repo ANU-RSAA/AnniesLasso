@@ -58,6 +58,8 @@ class PolynomialVectorizer(BaseVectorizer):
         if not isinstance(terms, list):
             terms = parse_label_vector_description(terms, label_names=None)
 
+        # FIXME work out if, by this stage, we should have settled on labels or 
+        # ints in the terms vector
         super(PolynomialVectorizer, self).__init__(
             label_names=label_names, terms=terms, **kwargs
         )
@@ -75,6 +77,7 @@ class PolynomialVectorizer(BaseVectorizer):
             If `self.terms` and/or `self.label_names` are not set.
         """
 
+        # FIXME doesn't seem to work as intended, check term parsing flow
         if self.terms is None or self.label_names is None:
             raise ValueError("terms and/or label_names haven't been set!")
         terms = parse_label_vector_description(self.terms, label_names=self.label_names)
@@ -90,11 +93,14 @@ class PolynomialVectorizer(BaseVectorizer):
             two-dimensional array of `N` by `K` labels.
         """
 
+        # TODO determine what this function does in the scheme of things
         labels = np.atleast_2d(labels)
         if labels.ndim > 2:
             raise ValueError("labels must be a 1-d or 2-d array")
 
+
         columns = [np.ones(labels.shape[0], dtype=float)]
+        import pdb; pdb.set_trace()
         for term in self.terms:
             column = 1.0  # This works; don't use np.multiply/np.product.
             for index, order in term:
@@ -379,6 +385,7 @@ def human_readable_label_vector(
     if not isinstance(terms, (list, tuple)):
         raise TypeError("label vector is not a structured set of terms")
 
+    # TODO/FIXME why does this add a constant term?
     human_terms = ["1"]
     for term in terms:
         human_terms.append(
