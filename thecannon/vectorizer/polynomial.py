@@ -78,7 +78,9 @@ class PolynomialVectorizer(BaseVectorizer):
             If `self.terms` and/or `self.label_names` are not set.
         """
 
-        # FIXME doesn't seem to work as intended, check term parsing flow
+        # FIXME doesn't seem to work as intended
+        # Now that the terms are always created as 'structured' by the __init__,
+        # parse_label_vector_description no-ops that input
         if self.terms is None or self.label_names is None:
             raise ValueError("terms and/or label_names haven't been set!")
         terms = parse_label_vector_description(self.terms, label_names=self.label_names)
