@@ -92,15 +92,17 @@ class PolynomialVectorizer(BaseVectorizer):
             This can be a ond-dimensional vector of `K` labels, or a
             two-dimensional array of `N` by `K` labels.
         """
-
+        
         # TODO determine what this function does in the scheme of things
         labels = np.atleast_2d(labels)
         if labels.ndim > 2:
             raise ValueError("labels must be a 1-d or 2-d array")
 
+        if self.terms is None:
+            raise RuntimeError("Vectorizer terms need to be set before calling get_label_vector")
+
 
         columns = [np.ones(labels.shape[0], dtype=float)]
-        import pdb; pdb.set_trace()
         for term in self.terms:
             column = 1.0  # This works; don't use np.multiply/np.product.
             for index, order in term:
