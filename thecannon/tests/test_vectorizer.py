@@ -198,7 +198,6 @@ def test_polynomial_vectorizer_argument_dichotomy(label_names, order, terms):
     with pytest.raises(ValueError):
         PolynomialVectorizer(label_names=label_names, terms=terms, order=order)
 
-
 @pytest.mark.parametrize(
     "label_names,order,terms,terms_indexed",
     [
@@ -214,16 +213,17 @@ def test_polynomial_vectorizer_argument_dichotomy(label_names, order, terms):
 )
 class TestVectorizerInits:
 
-    def test_polynomial_vectorizer_argument_equivalence(self, label_names, order, terms, terms_indexed):
-
+    def __init__(label_names, order, terms):
         vec1 = PolynomialVectorizer(label_names=label_names, order=order)
         vec2 = PolynomialVectorizer(label_names=label_names, terms=terms)
         vec3 = PolynomialVectorizer(terms=terms, label_names=None, order=None)
 
-        assert str(vec1) == str(vec2) == str(vec3), "String comparison failed!"
-        assert vec1.terms == vec2.terms == vec3.terms, "Terms comparison failed!"
+    def test_polynomial_vectorizer_argument_equivalence(self, label_names, order, terms, terms_indexed):
+
+        assert str(self.vec1) == str(self.vec2) == str(vec3), "String comparison failed!"
+        assert self.vec1.terms == self.vec2.terms == self.vec3.terms, "Terms comparison failed!"
         assert (
-            vec1.label_names == vec2.label_names == vec3.label_names
+            self.vec1.label_names == self.vec2.label_names == self.vec3.label_names
         ), "Label names comparison failed"
 
         # for i, v in enumerate([vec1, vec2, vec3]):

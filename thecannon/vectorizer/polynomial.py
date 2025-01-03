@@ -60,6 +60,7 @@ class PolynomialVectorizer(BaseVectorizer):
 
         # FIXME work out if, by this stage, we should have settled on labels or 
         # ints in the terms vector
+        # Currently seem to be on label strs at this point
         super(PolynomialVectorizer, self).__init__(
             label_names=label_names, terms=terms, **kwargs
         )
