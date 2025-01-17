@@ -225,8 +225,8 @@ class TestVectorizerInits:
             vec1.label_names == vec2.label_names == vec3.label_names
         ), "Label names comparison failed"
 
-    def test_polynomial_vectorizer_index_labels(self, label_names, order, terms, terms_indexed):
+    # def test_polynomial_vectorizer_index_labels(self, label_names, order, terms, terms_indexed):
 
-        vec = PolynomialVectorizer(label_names=label_names, order=order)
-        vec.index_labels()
-        assert vec.terms == terms_indexed, "index_labels did not work as expected!"
+    #     vec = PolynomialVectorizer(label_names=label_names, order=order)
+    #     vec.index_labels()
+    #     assert vec.terms == terms_indexed, "index_labels did not work as expected!"

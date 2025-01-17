@@ -66,25 +66,25 @@ class PolynomialVectorizer(BaseVectorizer):
         )
         return None
     
-    def index_labels(self):
-        """Re-compile `self.terms` to use indices.
+    # def index_labels(self):
+    #     """Re-compile `self.terms` to use indices.
 
-        This function can be run regardless of the current state of `self.terms`
-        (i.e., whether or not `self.terms` currently uses indices).
+    #     This function can be run regardless of the current state of `self.terms`
+    #     (i.e., whether or not `self.terms` currently uses indices).
 
-        Raises
-        ------
-        ValueError
-            If `self.terms` and/or `self.label_names` are not set.
-        """
+    #     Raises
+    #     ------
+    #     ValueError
+    #         If `self.terms` and/or `self.label_names` are not set.
+    #     """
 
-        # FIXME doesn't seem to work as intended
-        # Now that the terms are always created as 'structured' by the __init__,
-        # parse_label_vector_description no-ops that input
-        if self.terms is None or self.label_names is None:
-            raise ValueError("terms and/or label_names haven't been set!")
-        terms = parse_label_vector_description(self.terms, label_names=self.label_names)
-        self.update_labels_terms(self.label_names, terms)
+    #     # FIXME doesn't seem to work as intended
+    #     # Now that the terms are always created as 'structured' by the __init__,
+    #     # parse_label_vector_description no-ops that input
+    #     if self.terms is None or self.label_names is None:
+    #         raise ValueError("terms and/or label_names haven't been set!")
+    #     terms = parse_label_vector_description(self.terms, label_names=self.label_names)
+    #     self.update_labels_terms(self.label_names, terms)
 
     def get_label_vector(self, labels):
         """
