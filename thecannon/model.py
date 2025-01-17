@@ -104,7 +104,6 @@ class CannonModel(object):
             raise TypeError(
                 "vectorizer must be a sub-class of vectorizer.BaseVectorizer"
             )
-
         self._vectorizer = vectorizer
 
         if training_set_flux is None and training_set_ivar is None:
@@ -114,7 +113,7 @@ class CannonModel(object):
             self._training_set_flux = None
             self._training_set_ivar = None
             self._training_set_labels = training_set_labels
-
+            # TODO check if above line is valid if training_set_labels is None as well
         else:
             self._training_set_flux = np.atleast_2d(training_set_flux)
             self._training_set_ivar = np.atleast_2d(training_set_ivar)
@@ -142,9 +141,11 @@ class CannonModel(object):
         # Set useful private attributes.
         __scale_labels_function = kwargs.get(
             "__scale_labels_function",
+            # FIXME update to module variable
             lambda l: np.ptp(np.percentile(l, [2.5, 97.5], axis=0), axis=0),
         )
         __fiducial_labels_function = kwargs.get(
+            # FIXME update to module variable
             "__fiducial_labels_function", lambda l: np.percentile(l, 50, axis=0)
         )
 
@@ -366,7 +367,7 @@ class CannonModel(object):
         )
 
     def reset(self):
-        """Clear any attributes that have been trained."""
+        """Clear any Model attributes that have been trained."""
         for attribute in self._trained_attributes:
             setattr(self, "_{}".format(attribute), None)
         return None
@@ -650,6 +651,7 @@ class CannonModel(object):
         )
 
         # Parallelise out.
+        # TODO check current standard for parallelization
         if threads in (1, None):
             mapper, pool = (map, None)
 

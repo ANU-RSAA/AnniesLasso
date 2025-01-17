@@ -507,6 +507,7 @@ def fit_pixel_fixed_scatter(
         if op_method == "l_bfgs_b":
             op_kwds = dict()
             op_kwds.update(base_op_kwds)
+            # FIXME shift to constants
             op_kwds.update(m=design_matrix.shape[1], maxls=20, factr=10.0, pgtol=1e-6)
             op_kwds.update((kwargs.get("op_kwds", {}) or {}))
 

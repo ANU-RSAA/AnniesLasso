@@ -3,6 +3,7 @@ Unit tests for `thecannon.vectorizer`.
 """
 
 import pytest
+from unittest import mock
 
 from ..vectorizer.base import BaseVectorizer
 from ..vectorizer.polynomial import PolynomialVectorizer, terminator
@@ -230,3 +231,9 @@ class TestVectorizerInits:
     #     vec = PolynomialVectorizer(label_names=label_names, order=order)
     #     vec.index_labels()
     #     assert vec.terms == terms_indexed, "index_labels did not work as expected!"
+
+    def test_polynomial_vectorizer_get_label_vector_noterms(self, label_names, order, terms, terms_indexed):
+        vec = PolynomialVectorizer(order=order, label_names=label_names)
+        with mock.patch.object(vec, "_terms", None):  # Must patch underlying value, not getter
+            with pytest.raises(RuntimeError):
+                vec.get_label_vector(label_names)
