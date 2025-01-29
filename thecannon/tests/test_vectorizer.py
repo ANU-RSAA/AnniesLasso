@@ -220,6 +220,8 @@ class TestVectorizerInits:
         vec2 = PolynomialVectorizer(label_names=label_names, terms=terms)
         vec3 = PolynomialVectorizer(terms=terms, label_names=None, order=None)
 
+        # import pdb; pdb.set_trace()
+
         assert str(vec1) == str(vec2) == str(vec3), "String comparison failed!"
         assert vec1.terms == vec2.terms == vec3.terms, "Terms comparison failed!"
         assert (
