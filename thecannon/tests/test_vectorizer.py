@@ -228,14 +228,20 @@ class TestVectorizerInits:
             vec1.label_names == vec2.label_names == vec3.label_names
         ), "Label names comparison failed"
 
-    # def test_polynomial_vectorizer_index_labels(self, label_names, order, terms, terms_indexed):
+    def test_polynomial_vectorizer_index_labels(self, label_names, order, terms, terms_indexed):
 
-    #     vec = PolynomialVectorizer(label_names=label_names, order=order)
-    #     vec.index_labels()
-    #     assert vec.terms == terms_indexed, "index_labels did not work as expected!"
+        vec = PolynomialVectorizer(label_names=label_names, order=order)
+        vec.index_labels()
+        assert vec.terms == terms_indexed, "index_labels did not work as expected!"
 
     def test_polynomial_vectorizer_get_label_vector_noterms(self, label_names, order, terms, terms_indexed):
         vec = PolynomialVectorizer(order=order, label_names=label_names)
         with mock.patch.object(vec, "_terms", None):  # Must patch underlying value, not getter
             with pytest.raises(RuntimeError):
                 vec.get_label_vector(label_names)
+
+    # def test_polynomial_vectorizer_get_label_vector(self, label_names, order, terms, terms_indexed):
+    #     vec = PolynomialVectorizer(label_names=label_names, order=order)
+    #     t = vec.get_label_vector(vec.label_names)
+
+        # import pdb; pdb.set_trace()

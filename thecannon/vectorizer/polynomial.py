@@ -66,25 +66,23 @@ class PolynomialVectorizer(BaseVectorizer):
         )
         return None
     
-    # def index_labels(self):
-    #     """Re-compile `self.terms` to use indices.
+    def index_labels(self):
+        """Re-compile `self.terms` to use indices.
 
-    #     This function can be run regardless of the current state of `self.terms`
-    #     (i.e., whether or not `self.terms` currently uses indices).
+        This function can be run regardless of the current state of `self.terms`
+        (i.e., whether or not `self.terms` currently uses indices).
 
-    #     Raises
-    #     ------
-    #     ValueError
-    #         If `self.terms` and/or `self.label_names` are not set.
-    #     """
+        Raises
+        ------
+        ValueError
+            If `self.terms` and/or `self.label_names` are not set.
+        """
 
-    #     # FIXME doesn't seem to work as intended
-    #     # Now that the terms are always created as 'structured' by the __init__,
-    #     # parse_label_vector_description no-ops that input
-    #     if self.terms is None or self.label_names is None:
-    #         raise ValueError("terms and/or label_names haven't been set!")
-    #     terms = parse_label_vector_description(self.terms, label_names=self.label_names)
-    #     self.update_labels_terms(self.label_names, terms)
+        if self.terms is None or self.label_names is None:
+            raise ValueError("terms and/or label_names haven't been set!")
+        terms = parse_label_vector_description(human_readable_label_vector(self.terms, const=False), 
+                                               label_names=self.label_names)
+        self.update_labels_terms(self.label_names, terms)
 
     def get_label_vector(self, labels):
         """
@@ -362,7 +360,7 @@ def human_readable_label_term(term, label_names=None, mul="*", pow="^", bracket=
 
 
 def human_readable_label_vector(
-    terms, label_names=None, mul="*", pow="^", bracket=False
+    terms, label_names=None, mul="*", pow="^", bracket=False, const=True
 ):
     """
     Return a human-readable form of the label vector.
@@ -384,6 +382,9 @@ def human_readable_label_vector(
     :param bracket: [optional]
         Show brackets around each term.
 
+    :param const: [optional]
+        Add a constant "1" to the start of the label vector.
+
     :returns:
         A human-readable string representing the label vector.
     """
@@ -391,7 +392,9 @@ def human_readable_label_vector(
         raise TypeError("label vector is not a structured set of terms")
 
     # TODO/FIXME why does this add a constant term?
-    human_terms = ["1"]
+    human_terms = []
+    if const:
+        human_terms = ["1"]
     for term in terms:
         human_terms.append(
             human_readable_label_term(term, label_names=label_names, mul=mul, pow=pow)
