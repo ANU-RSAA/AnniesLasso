@@ -56,7 +56,7 @@ class PolynomialVectorizer(BaseVectorizer):
 
         # Convert terms from a string to standard structure
         if not isinstance(terms, list):
-            terms = parse_label_vector_description(terms, label_names=None)
+            terms = parse_label_vector_description(terms, label_names=label_names)
 
         # FIXME work out if, by this stage, we should have settled on labels or 
         # ints in the terms vector
@@ -64,6 +64,7 @@ class PolynomialVectorizer(BaseVectorizer):
         super(PolynomialVectorizer, self).__init__(
             label_names=label_names, terms=terms, **kwargs
         )
+        self.index_labels()
         return None
     
     def index_labels(self):
@@ -80,7 +81,8 @@ class PolynomialVectorizer(BaseVectorizer):
 
         if self.terms is None or self.label_names is None:
             raise ValueError("terms and/or label_names haven't been set!")
-        terms = parse_label_vector_description(human_readable_label_vector(self.terms, const=False), 
+        terms = parse_label_vector_description(human_readable_label_vector(self.terms, const=False,
+                                                                           label_names=self.label_names), 
                                                label_names=self.label_names)
         self.update_labels_terms(self.label_names, terms)
 
@@ -345,6 +347,8 @@ def human_readable_label_term(term, label_names=None, mul="*", pow="^", bracket=
     for i, o in term:
         if isinstance(i, int) and label_names is not None:
             label_name = label_names[i]
+        elif isinstance(i, int) and label_names is None:
+            raise ValueError("Need label_names to convert indexed labels to strings")
         else:
             label_name = i
         if o > 1:

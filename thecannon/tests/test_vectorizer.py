@@ -14,8 +14,8 @@ class TestVectorizersCommon:
     @pytest.mark.parametrize(
         "label_names,terms,terms_out",
         [
-            [("a", "b", "c"), [[("a", 0)], [("b", 1)], [("c", 2)]], None],
-            [["a", "b", "c"], [[(0, 0)], [(1, 1)], [(2, 2)]], None],
+            [("a", "b", "c"), [[("a", 4)], [("b", 1)], [("c", 2)]], [[(0, 4)], [(1, 1)], [(2, 2)]]],
+            [["a", "b", "c"], [[(0, 4)], [(1, 1)], [(2, 2)]], None],
             (["Teff", "g"], [[(0, 1)], [(0, 2), (1, 1)], [(1, 2), (0, 2)]], None),
         ],
     )
@@ -25,7 +25,7 @@ class TestVectorizersCommon:
             label_names
         ), "Label names not initialized correctly"
         assert vec.terms == (
-            terms_out if terms_out is not None else terms
+            terms_out if (terms_out is not None and isinstance(vec, PolynomialVectorizer)) else terms
         ), "Terms not initialized correctly"
 
     @pytest.mark.parametrize(
@@ -77,7 +77,7 @@ class TestVectorizersCommon:
 
     def test_vectorizer__setstate__(self, vectorizer):
         vec = vectorizer(label_names=("a"), terms=[[("a", 1)]])
-        blank_vec = vectorizer(label_names=(), terms=[])
+        blank_vec = vectorizer(label_names=("b"), terms=[[("b", 9)]])
         blank_vec.__setstate__(vec.__getstate__())
         assert (
             str(vec) == str(blank_vec)
@@ -108,11 +108,12 @@ def test_base_vectorizer_get_label_vector_derivative():
 @pytest.mark.parametrize(
     "label_names,terms,terms_out,order",
     [
-        [("a", "b", "c"), "a^3 + b + c^2", [[("a", 3)], [("b", 1)], [("c", 2)]], None],
+        [("a", "b", "c"), "a^3 + b + c^2", 
+         [[(0, 3)], [(1, 1)], [(2, 2)]], None],
         (
             ["Teff", "g"],
             "Teff + Teff^2*g + g^2*Teff^2",
-            [[("Teff", 1)], [("Teff", 2), ("g", 1)], [("g", 2), ("Teff", 2)]],
+            [[(0, 1)], [(0, 2), (1, 1)], [(1, 2), (0, 2)]],
             None,
         ),
     ],
