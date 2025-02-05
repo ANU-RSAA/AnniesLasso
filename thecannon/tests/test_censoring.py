@@ -192,10 +192,10 @@ def test_create_mask_bad(dispersion, censored_regions, expected_error):
 
 
 @pytest.mark.parametrize("censor", [
-    "a", 1, 1.6, BaseVectorizer(["a"], [[("a", 0.0)]])
+    "a", 1, 1.6, BaseVectorizer(["a"], [[("a", 1)]])
 ])
 @pytest.mark.parametrize("vectorizer", [
-    BaseVectorizer(["a"], [[("a", 0.0)]])
+    BaseVectorizer(["a"], [[("a", 1)]])
 ])
 def test_design_matrix_mask_bad_censor(censor, vectorizer):
     with pytest.raises(TypeError):

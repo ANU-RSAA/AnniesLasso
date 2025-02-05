@@ -38,6 +38,8 @@ class TestVectorizersCommon:
             ],  # Excess term (term number mismatch)
             [("a", "b"), [[("c", 1), ("a", 1)]]],  # Invalid term (str)
             [("a", "b"), [[(2, 1), (0, 1)]]],  # Invalid term (int)
+            [("a", "b"), [[(1, 1), (0, 0)]]],  # Invalid power (int terms)
+            [("a", "b"), [[("b", 1), ("a", 0)]]],  # Invalid power (str terms)
         ],
     )
     def test_vectorizer_basic_init_bad_inputs(self, vectorizer, label_names, terms):

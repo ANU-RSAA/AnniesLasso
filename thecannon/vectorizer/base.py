@@ -95,9 +95,11 @@ class BaseVectorizer(object):
         # Ensure that all of the label references (name or index) are valid
         # FIXME surely this can be a list comprehension...
         label_refs = set()
+        powers = set()
         for l in terms:
             for t in l:
                 label_refs.add(t[0])
+                powers.add(int(t[1]))
 
         if len(label_refs) > len(label_names):
             raise ValueError(f"Your `terms` contain more labels than are in `label_names`.")
@@ -122,8 +124,13 @@ class BaseVectorizer(object):
                 f"Index terms references must be between 0 and {len(label_names)}"
             )
 
-        # Don't check the powers in the terms - users may want something unusual,
-        # or procedurally generate terms that include power 0, etc
+        # Don't check the powers in the terms, except to make sure that there's no power
+        # 0 in there - that would be meaningless
+        # import pdb; pdb.set_trace()
+        try:
+            assert ~np.any(np.isclose(list(powers), 0))
+        except AssertionError:
+            raise ValueError("0th-power terms are not permitted.")
 
         # Make the settings
         self._label_names = label_names
