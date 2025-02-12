@@ -146,7 +146,8 @@ class CannonModel(object):
         )
         __fiducial_labels_function = kwargs.get(
             # FIXME update to module variable
-            "__fiducial_labels_function", lambda l: np.percentile(l, 50, axis=0)
+            "__fiducial_labels_function",
+            lambda l: np.percentile(l, 50, axis=0),
         )
 
         self._scales = __scale_labels_function(self.training_set_labels)

@@ -43,12 +43,16 @@ class BaseVectorizer(object):
         element of each tuple.
     """
 
-    def __init__(self, 
-                 label_names : list[str], 
-                 terms : list[list[tuple[Union[int, str], int]]], 
-                 **kwargs):
-        if label_names is None: label_names = []
-        if terms is None: terms = []
+    def __init__(
+        self,
+        label_names: list[str],
+        terms: list[list[tuple[Union[int, str], int]]],
+        **kwargs,
+    ):
+        if label_names is None:
+            label_names = []
+        if terms is None:
+            terms = []
         self.update_labels_terms(tuple(label_names), terms)
         # self._terms = terms
         # self._label_names = tuple(label_names)
@@ -59,7 +63,10 @@ class BaseVectorizer(object):
     # basic information if the sub-classes do not overwrite it.
     def __str__(self):
         return "<{module}.{name} object consisting of {K} labels and {D} terms>".format(
-            module=self.__module__, name=type(self).__name__, D=len(self.terms), K=len(self.label_names)
+            module=self.__module__,
+            name=type(self).__name__,
+            D=len(self.terms),
+            K=len(self.label_names),
         )
 
     def __repr__(self):
@@ -85,10 +92,9 @@ class BaseVectorizer(object):
         self.metadata = kwds["metadata"]
 
     # FIXME add co-dependent setters for label_names, terms
-    def update_labels_terms(self, 
-                            label_names : list[str], 
-                            terms : list[list[tuple[Union[int, str], int]]]
-                            ) -> None:
+    def update_labels_terms(
+        self, label_names: list[str], terms: list[list[tuple[Union[int, str], int]]]
+    ) -> None:
 
         # Sanity-check the inputs
 
@@ -102,7 +108,9 @@ class BaseVectorizer(object):
                 powers.add(int(t[1]))
 
         if len(label_refs) > len(label_names):
-            raise ValueError(f"Your `terms` contain more labels than are in `label_names`.")
+            raise ValueError(
+                f"Your `terms` contain more labels than are in `label_names`."
+            )
         elif len(label_names) > len(label_refs):
             raise ValueError("Your `label_names` contains unused labels.")
 
@@ -140,7 +148,7 @@ class BaseVectorizer(object):
     def terms(self):
         """Return the terms provided for this vectorizer."""
         return self._terms
-    
+
     @terms.setter
     def terms(self, v):
         raise RuntimeError("terms must be set using update_labels_terms")
@@ -151,7 +159,7 @@ class BaseVectorizer(object):
         Return the label names that are used in this vectorizer.
         """
         return self._label_names
-    
+
     @label_names.setter
     def label_names(self, v):
         raise RuntimeError("label_names must be set using update_labels_terms")
