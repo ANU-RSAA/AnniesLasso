@@ -4,6 +4,7 @@ Unit tests for `thecannon.vectorizer`.
 
 import pytest
 from unittest import mock
+import numpy as np
 
 from ..vectorizer.base import BaseVectorizer
 from ..vectorizer.polynomial import PolynomialVectorizer, terminator
@@ -243,8 +244,20 @@ class TestVectorizerInits:
             with pytest.raises(RuntimeError):
                 vec.get_label_vector(label_names)
 
-    # def test_polynomial_vectorizer_get_label_vector(self, label_names, order, terms, terms_indexed):
-    #     vec = PolynomialVectorizer(label_names=label_names, order=order)
-    #     t = vec.get_label_vector(vec.label_names)
+    @pytest.mark.parametrize("N", [1, 3, 6, 10, 100])
+    def test_polynomial_vectorizer_get_label_vector(self, label_names, order, terms, terms_indexed, N):
+        vec = PolynomialVectorizer(label_names=label_names, order=order)
+        t = vec.get_label_vector(np.ones((N, len(vec.terms))))
 
-        # import pdb; pdb.set_trace()
+        assert t.shape == (len(vec.terms) + 1, N), "Unexpected label_vector output size"
+
+    @pytest.mark.parametrize("N", [1, 3, 6, 10, 100])
+    def test_polynomial_vectorizer_get_label_vector(self, label_names, order, terms, terms_indexed, N):
+        vec = PolynomialVectorizer(label_names=label_names, order=order)
+        with pytest.raises(ValueError):
+            _ = vec.get_label_vector(np.ones((N, len(vec.terms) - 1)))
+        with pytest.raises(ValueError):
+            _ = vec.get_label_vector(np.ones((N, len(vec.terms) + 1)))
+        with pytest.raises(ValueError):
+            vec.get_label_vector(np.ones((N, N)))
+

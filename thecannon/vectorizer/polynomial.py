@@ -58,7 +58,7 @@ class PolynomialVectorizer(BaseVectorizer):
         if not isinstance(terms, list):
             terms = parse_label_vector_description(terms, label_names=label_names)
 
-        # FIXME work out if, by this stage, we should have settled on labels or 
+        # FIXME work out if, by this stage, we should have settled on labels or
         # ints in the terms vector
         # Currently seem to be on label strs at this point
         super(PolynomialVectorizer, self).__init__(
@@ -66,7 +66,7 @@ class PolynomialVectorizer(BaseVectorizer):
         )
         self.index_labels()
         return None
-    
+
     def index_labels(self):
         """Re-compile `self.terms` to use indices.
 
@@ -81,29 +81,60 @@ class PolynomialVectorizer(BaseVectorizer):
 
         if self.terms is None or self.label_names is None:
             raise ValueError("terms and/or label_names haven't been set!")
-        terms = parse_label_vector_description(human_readable_label_vector(self.terms, const=False,
-                                                                           label_names=self.label_names), 
-                                               label_names=self.label_names)
+        terms = parse_label_vector_description(
+            human_readable_label_vector(
+                self.terms, const=False, label_names=self.label_names
+            ),
+            label_names=self.label_names,
+        )
         self.update_labels_terms(self.label_names, terms)
 
     def get_label_vector(self, labels):
         """
         Return the values of the label vector, given the scaled labels.
 
+        This function computes term-by-term values of the model terms, for the input
+        vector of individual label values/input array of label values for a number of
+        test cases.
+
         :param labels:
             The scaled and offset labels to use to calculate the label vector(s).
             This can be a ond-dimensional vector of `K` labels, or a
             two-dimensional array of `N` by `K` labels.
+
+            Note that `K` must *exactly* match the number of labels in the vectorizer.
+            This is because the labels are mapped using their position (index) in the 
+            `labels` input. Therefore, having `K != len(self.label_names)` means there 
+            is ambiguity in the mapping of label names to input label values. (Note that 
+            this also means that `labels` must be ordered in the same way as, e.g., 
+            `self.label_names`, but there is no way to test/enforce this.)
         """
-        
+
         # TODO determine what this function does in the scheme of things
         labels = np.atleast_2d(labels)
         if labels.ndim > 2:
             raise ValueError("labels must be a 1-d or 2-d array")
 
         if self.terms is None:
-            raise RuntimeError("Vectorizer terms need to be set before calling get_label_vector")
+            raise RuntimeError(
+                "Vectorizer terms need to be set before calling get_label_vector"
+            )
 
+        # Sanity check the inputs
+        if labels.ndim == 1:
+            try:
+                assert labels.shape[0] == len(self.label_names)
+            except AssertionError as e:
+                raise ValueError(
+                    f"1D labels input must have length {len(self.terms)}"
+                ) from e
+        elif labels.ndim == 2:
+            try:
+                assert labels.shape[1] == len(self.label_names)
+            except AssertionError as e:
+                raise ValueError(
+                    f"Your array of `N` training values must each have {len(self.terms)} labels assigned"
+                ) from e
 
         columns = [np.ones(labels.shape[0], dtype=float)]
         for term in self.terms:
@@ -203,7 +234,7 @@ class PolynomialVectorizer(BaseVectorizer):
             return human_readable_label_term(
                 self.terms[term_index - 1],
                 label_names=label_names or self.label_names,
-                **kwargs
+                **kwargs,
             )
 
 
