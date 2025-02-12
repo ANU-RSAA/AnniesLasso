@@ -15,7 +15,11 @@ class TestVectorizersCommon:
     @pytest.mark.parametrize(
         "label_names,terms,terms_out",
         [
-            [("a", "b", "c"), [[("a", 4)], [("b", 1)], [("c", 2)]], [[(0, 4)], [(1, 1)], [(2, 2)]]],
+            [
+                ("a", "b", "c"),
+                [[("a", 4)], [("b", 1)], [("c", 2)]],
+                [[(0, 4)], [(1, 1)], [(2, 2)]],
+            ],
             [["a", "b", "c"], [[(0, 4)], [(1, 1)], [(2, 2)]], None],
             (["Teff", "g"], [[(0, 1)], [(0, 2), (1, 1)], [(1, 2), (0, 2)]], None),
         ],
@@ -26,7 +30,9 @@ class TestVectorizersCommon:
             label_names
         ), "Label names not initialized correctly"
         assert vec.terms == (
-            terms_out if (terms_out is not None and isinstance(vec, PolynomialVectorizer)) else terms
+            terms_out
+            if (terms_out is not None and isinstance(vec, PolynomialVectorizer))
+            else terms
         ), "Terms not initialized correctly"
 
     @pytest.mark.parametrize(
@@ -111,8 +117,7 @@ def test_base_vectorizer_get_label_vector_derivative():
 @pytest.mark.parametrize(
     "label_names,terms,terms_out,order",
     [
-        [("a", "b", "c"), "a^3 + b + c^2", 
-         [[(0, 3)], [(1, 1)], [(2, 2)]], None],
+        [("a", "b", "c"), "a^3 + b + c^2", [[(0, 3)], [(1, 1)], [(2, 2)]], None],
         (
             ["Teff", "g"],
             "Teff + Teff^2*g + g^2*Teff^2",
@@ -131,14 +136,32 @@ def test_polynomial_vectorizer_basic_init(label_names, terms, terms_out, order):
     ), "Terms not initialized correctly"
 
 
-@pytest.mark.parametrize("bad_labels", [
-    [[["a", ]]],  # 3-dim
-    [[[["a", ]]]],  # 4-dim
-])
+@pytest.mark.parametrize(
+    "bad_labels",
+    [
+        [
+            [
+                [
+                    "a",
+                ]
+            ]
+        ],  # 3-dim
+        [
+            [
+                [
+                    [
+                        "a",
+                    ]
+                ]
+            ]
+        ],  # 4-dim
+    ],
+)
 def test_polynomial_vectorizer_get_label_vector_bad_input(bad_labels):
     vec = PolynomialVectorizer(label_names=["a"], order=1)
     with pytest.raises(ValueError):
         vec.get_label_vector(bad_labels)
+
 
 @pytest.mark.parametrize(
     "label_names,order,cross_term_order,expected",
@@ -211,6 +234,7 @@ def test_polynomial_vectorizer_index_labels_bad_vec(aspect):
         with pytest.raises(ValueError):
             vec.index_labels()
 
+
 @pytest.mark.parametrize(
     "label_names,order,terms,terms_indexed",
     [
@@ -220,13 +244,33 @@ def test_polynomial_vectorizer_index_labels_bad_vec(aspect):
             [[("a", 1)], [("b", 1)], [("a", 2)], [("a", 1), ("b", 1)], [("b", 2)]],
             [[(0, 1)], [(1, 1)], [(0, 2)], [(0, 1), (1, 1)], [(1, 2)]],
         ),
-        (["a", "b"], 2, "a + b + a^2 + a*b + b^2", 
-        [[(0, 1),], [(1, 1),], [(0, 2),], [(0,1), (1,1)], [(1,2),]]),
+        (
+            ["a", "b"],
+            2,
+            "a + b + a^2 + a*b + b^2",
+            [
+                [
+                    (0, 1),
+                ],
+                [
+                    (1, 1),
+                ],
+                [
+                    (0, 2),
+                ],
+                [(0, 1), (1, 1)],
+                [
+                    (1, 2),
+                ],
+            ],
+        ),
     ],
 )
 class TestVectorizerInits:
 
-    def test_polynomial_vectorizer_argument_equivalence(self, label_names, order, terms, terms_indexed):
+    def test_polynomial_vectorizer_argument_equivalence(
+        self, label_names, order, terms, terms_indexed
+    ):
 
         vec1 = PolynomialVectorizer(label_names=label_names, order=order)
         vec2 = PolynomialVectorizer(label_names=label_names, terms=terms)
@@ -238,32 +282,55 @@ class TestVectorizerInits:
             vec1.label_names == vec2.label_names == vec3.label_names
         ), "Label names comparison failed"
 
-    def test_polynomial_vectorizer_index_labels(self, label_names, order, terms, terms_indexed):
+    def test_polynomial_vectorizer_index_labels(
+        self, label_names, order, terms, terms_indexed
+    ):
 
         vec = PolynomialVectorizer(label_names=label_names, order=order)
         vec.index_labels()
         assert vec.terms == terms_indexed, "index_labels did not work as expected!"
 
-    def test_polynomial_vectorizer_get_label_vector_noterms(self, label_names, order, terms, terms_indexed):
+    def test_polynomial_vectorizer_get_label_vector_noterms(
+        self, label_names, order, terms, terms_indexed
+    ):
         vec = PolynomialVectorizer(order=order, label_names=label_names)
-        with mock.patch.object(vec, "_terms", None):  # Must patch underlying value, not getter
+        with mock.patch.object(
+            vec, "_terms", None
+        ):  # Must patch underlying value, not getter
             with pytest.raises(RuntimeError):
                 vec.get_label_vector(label_names)
 
-    @pytest.mark.parametrize("N", [1, 3, 6, 10, 100])
-    def test_polynomial_vectorizer_get_label_vector(self, label_names, order, terms, terms_indexed, N):
+    def test_polynomial_vectorizer_get_label_vector_1D(
+        self, label_names, order, terms, terms_indexed
+    ):
         vec = PolynomialVectorizer(label_names=label_names, order=order)
-        t = vec.get_label_vector(np.ones((N, len(vec.terms))))
+        t = vec.get_label_vector(np.ones(len(vec.label_names)))
 
-        assert t.shape == (len(vec.terms) + 1, N), "Unexpected label_vector output size"
+        assert t.shape == (
+            len(vec.terms) + 1,
+            1,
+        ), "Unexpected label_vector output size (1D)"
 
     @pytest.mark.parametrize("N", [1, 3, 6, 10, 100])
-    def test_polynomial_vectorizer_get_label_vector(self, label_names, order, terms, terms_indexed, N):
+    def test_polynomial_vectorizer_get_label_vector(
+        self, label_names, order, terms, terms_indexed, N
+    ):
+        vec = PolynomialVectorizer(label_names=label_names, order=order)
+        t = vec.get_label_vector(np.ones((N, len(vec.label_names))))
+
+        assert t.shape == (
+            len(vec.terms) + 1,
+            N,
+        ), "Unexpected label_vector output size (2D)"
+
+    @pytest.mark.parametrize("N", [1, 3, 6, 10, 100])
+    def test_polynomial_vectorizer_get_label_vector(
+        self, label_names, order, terms, terms_indexed, N
+    ):
         vec = PolynomialVectorizer(label_names=label_names, order=order)
         with pytest.raises(ValueError):
-            _ = vec.get_label_vector(np.ones((N, len(vec.terms) - 1)))
+            _ = vec.get_label_vector(np.ones((N, len(vec.label_names) - 1)))
         with pytest.raises(ValueError):
-            _ = vec.get_label_vector(np.ones((N, len(vec.terms) + 1)))
+            _ = vec.get_label_vector(np.ones((N, len(vec.label_names) + 1)))
         with pytest.raises(ValueError):
             vec.get_label_vector(np.ones((N, N)))
-

@@ -126,20 +126,12 @@ class PolynomialVectorizer(BaseVectorizer):
             )
 
         # Sanity check the inputs
-        if labels.ndim == 1:
-            try:
-                assert labels.shape[0] == len(self.label_names)
-            except AssertionError as e:
-                raise ValueError(
-                    f"1D labels input must have length {len(self.terms)}"
-                ) from e
-        elif labels.ndim == 2:
-            try:
-                assert labels.shape[1] == len(self.label_names)
-            except AssertionError as e:
-                raise ValueError(
-                    f"Your array of `N` training values must each have {len(self.terms)} labels assigned"
-                ) from e
+        try:
+            assert labels.shape[1] == len(self.label_names)
+        except AssertionError as e:
+            raise ValueError(
+                f"Your array of `N` ({labels.shape[0]}) training values must each have {len(self.label_names)} labels assigned"
+            ) from e
 
         columns = [np.ones(labels.shape[0], dtype=float)]
         for term in self.terms:
