@@ -103,11 +103,16 @@ class PolynomialVectorizer(BaseVectorizer):
             two-dimensional array of `N` by `K` labels.
 
             Note that `K` must *exactly* match the number of labels in the vectorizer.
-            This is because the labels are mapped using their position (index) in the 
-            `labels` input. Therefore, having `K != len(self.label_names)` means there 
-            is ambiguity in the mapping of label names to input label values. (Note that 
-            this also means that `labels` must be ordered in the same way as, e.g., 
+            This is because the labels are mapped using their position (index) in the
+            `labels` input. Therefore, having `K != len(self.label_names)` means there
+            is ambiguity in the mapping of label names to input label values. (Note that
+            this also means that `labels` must be ordered in the same way as, e.g.,
             `self.label_names`, but there is no way to test/enforce this.)
+
+        :returns:
+            The returning array will be of shape `(N, D+1)`,
+            where `D` is the number of terms in the label vector description. The extra term
+            (which is always a representation of "+1") stores the model mean.
         """
 
         # TODO determine what this function does in the scheme of things
@@ -152,7 +157,10 @@ class PolynomialVectorizer(BaseVectorizer):
             The scaled labels to calculate the label vector derivatives. This can
             be a one-dimensional vector of `K` labels (using the same order and
             length provided by self.label_names), or a two-dimensional array of
-            `N` by `K` values. The returning array will be of shape `(N, D)`,
+            `N` by `K` values.
+
+        :returns:
+            The returning array will be of shape `(N, D)`,
             where `D` is the number of terms in the label vector description.
         """
 

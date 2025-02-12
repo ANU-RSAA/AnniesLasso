@@ -203,6 +203,14 @@ def test_polynomial_vectorizer_argument_dichotomy(label_names, order, terms):
     with pytest.raises(ValueError):
         PolynomialVectorizer(label_names=label_names, terms=terms, order=order)
 
+
+@pytest.mark.parametrize("aspect", ["_terms", "_label_names"])
+def test_polynomial_vectorizer_index_labels_bad_vec(aspect):
+    vec = PolynomialVectorizer(label_names=["a", "b"], order=2)
+    with mock.patch.object(vec, aspect, None):
+        with pytest.raises(ValueError):
+            vec.index_labels()
+
 @pytest.mark.parametrize(
     "label_names,order,terms,terms_indexed",
     [
@@ -223,8 +231,6 @@ class TestVectorizerInits:
         vec1 = PolynomialVectorizer(label_names=label_names, order=order)
         vec2 = PolynomialVectorizer(label_names=label_names, terms=terms)
         vec3 = PolynomialVectorizer(terms=terms, label_names=None, order=None)
-
-        # import pdb; pdb.set_trace()
 
         assert str(vec1) == str(vec2) == str(vec3), "String comparison failed!"
         assert vec1.terms == vec2.terms == vec3.terms, "Terms comparison failed!"
