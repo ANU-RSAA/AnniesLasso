@@ -379,7 +379,11 @@ def human_readable_label_term(term, label_names=None, mul="*", pow="^", bracket=
     """
     # Input checking
     try:
-        assert _is_structured_label_vector([term, ])
+        assert _is_structured_label_vector(
+            [
+                term,
+            ]
+        )
     except AssertionError:
         raise ValueError(f"{term} is not a valid structured term")
 
