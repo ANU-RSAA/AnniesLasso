@@ -565,23 +565,26 @@ def test_human_readable_label_term_no_names(term):
         _ = human_readable_label_term(term)
 
 
-@pytest.mark.parametrize("term,label_names,mul,pow,bracket,ret", [
-    ([("a", 2)], None, "*", "^", False, "a^2"),
-    ([("a", 2), ("b", 4)], None, "*", "^", False, "a^2*b^4"),
-    ([("a", 2), ("b", 4)], None, "x", "**", False, "a**2xb**4"),
-    ([("a", 2), ("b", 4)], None, "*", "^", True, "(a^2*b^4)"),
-    ([("a", 2), ("b", 4)], None, "x", "**", True, "(a**2xb**4)"),
-    ([("a", 2)], ["a", "b"], "*", "^", False, "a^2"),
-    ([("a", 2), ("b", 4)], ["a", "b"], "*", "^", False, "a^2*b^4"),
-    ([("a", 2), ("b", 4)], ["a", "b"], "x", "**", False, "a**2xb**4"),
-    ([("a", 2), ("b", 4)], ["a", "b"], "*", "^", True, "(a^2*b^4)"),
-    ([("a", 2), ("b", 4)], ["a", "b"], "x", "**", True, "(a**2xb**4)"),
-    ([(0, 2)], ["a", "b"], "*", "^", False, "a^2"),
-    ([(0, 2), (1, 4)], ["a", "b"], "*", "^", False, "a^2*b^4"),
-    ([(0, 2), (1, 4)], ["a", "b"], "x", "**", False, "a**2xb**4"),
-    ([(0, 2), (1, 4)], ["a", "b"], "*", "^", True, "(a^2*b^4)"),
-    ([(0, 2), (1, 4)], ["a", "b"], "x", "**", True, "(a**2xb**4)"),
-])
+@pytest.mark.parametrize(
+    "term,label_names,mul,pow,bracket,ret",
+    [
+        ([("a", 2)], None, "*", "^", False, "a^2"),
+        ([("a", 2), ("b", 4)], None, "*", "^", False, "a^2*b^4"),
+        ([("a", 2), ("b", 4)], None, "x", "**", False, "a**2xb**4"),
+        ([("a", 2), ("b", 4)], None, "*", "^", True, "(a^2*b^4)"),
+        ([("a", 2), ("b", 4)], None, "x", "**", True, "(a**2xb**4)"),
+        ([("a", 2)], ["a", "b"], "*", "^", False, "a^2"),
+        ([("a", 2), ("b", 4)], ["a", "b"], "*", "^", False, "a^2*b^4"),
+        ([("a", 2), ("b", 4)], ["a", "b"], "x", "**", False, "a**2xb**4"),
+        ([("a", 2), ("b", 4)], ["a", "b"], "*", "^", True, "(a^2*b^4)"),
+        ([("a", 2), ("b", 4)], ["a", "b"], "x", "**", True, "(a**2xb**4)"),
+        ([(0, 2)], ["a", "b"], "*", "^", False, "a^2"),
+        ([(0, 2), (1, 4)], ["a", "b"], "*", "^", False, "a^2*b^4"),
+        ([(0, 2), (1, 4)], ["a", "b"], "x", "**", False, "a**2xb**4"),
+        ([(0, 2), (1, 4)], ["a", "b"], "*", "^", True, "(a^2*b^4)"),
+        ([(0, 2), (1, 4)], ["a", "b"], "x", "**", True, "(a**2xb**4)"),
+    ],
+)
 def test_human_readable_label_term(term, label_names, mul, pow, bracket, ret):
     assert (
         human_readable_label_term(
