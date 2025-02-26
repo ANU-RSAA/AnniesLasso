@@ -37,7 +37,6 @@ class PolynomialVectorizer(BaseVectorizer):
     """
 
     def __init__(self, label_names=None, order=None, terms=None, **kwargs):
-
         # Check to see if we have a terms/(label_names and order) dichotamy/
         if (terms is None and None in (label_names, order)) or (
             terms is not None and order is not None
@@ -115,7 +114,6 @@ class PolynomialVectorizer(BaseVectorizer):
             (which is always a representation of "+1") stores the model mean.
         """
 
-        # TODO determine what this function does in the scheme of things
         labels = np.atleast_2d(labels)
         if labels.ndim > 2:
             raise ValueError("labels must be a 1-d or 2-d array")
@@ -146,30 +144,35 @@ class PolynomialVectorizer(BaseVectorizer):
         Return the derivatives of the label vector with respect to fluxes.
 
         :param labels:
-            The scaled labels to calculate the label vector derivatives. This can
+            The scaled labels to calculate the label vector derivatives. This should
             be a one-dimensional vector of `K` labels (using the same order and
-            length provided by self.label_names), or a two-dimensional array of
-            `N` by `K` values.
+            length provided by self.label_names).
 
         :returns:
             The returning array will be of shape `(N, D)`,
             where `D` is the number of terms in the label vector description.
         """
 
-        L, T = (len(labels), len(self.terms))
+        N, T = (len(labels), len(self.terms))
+        if np.asarray(labels).ndim != 1:
+            raise ValueError(
+                "get_label_vector_derivative only accepts 1D arrays/lists for labels"
+            )
+        if N != len(self.label_names):
+            raise ValueError(
+                f"Number of input label values {N} does not match number of vectorizer labels {T}"
+            )
 
-        slicer = np.arange(L)
-        indices_used = np.zeros(L, dtype=bool)
+        slicer = np.arange(N)
+        indices_used = np.zeros(N, dtype=bool)
 
-        columns = np.ones((T + 1, L), dtype=float)
+        columns = np.ones((T + 1, N), dtype=float)
         columns[0] = 0.0  # First theta derivative always zero.
 
         for t, term in enumerate(self.terms, start=1):
-
             indices_used[:] = False
 
             for index, order in term:
-
                 dy = order * (labels[index] ** (order - 1))
                 y = labels[index] ** order
 
@@ -328,7 +331,6 @@ def parse_label_vector_description(description, label_names=None, **kwargs):
 
     label_vector = []
     for descriptor in (item.split(mul) for item in description):
-
         labels = map(get_label, descriptor)
         orders = map(get_power, descriptor)
 

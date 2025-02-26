@@ -267,11 +267,9 @@ def test_polynomial_vectorizer_index_labels_bad_vec(aspect):
     ],
 )
 class TestVectorizerInits:
-
     def test_polynomial_vectorizer_argument_equivalence(
         self, label_names, order, terms, terms_indexed
     ):
-
         vec1 = PolynomialVectorizer(label_names=label_names, order=order)
         vec2 = PolynomialVectorizer(label_names=label_names, terms=terms)
         vec3 = PolynomialVectorizer(terms=terms, label_names=None, order=None)
@@ -285,7 +283,6 @@ class TestVectorizerInits:
     def test_polynomial_vectorizer_index_labels(
         self, label_names, order, terms, terms_indexed
     ):
-
         vec = PolynomialVectorizer(label_names=label_names, order=order)
         vec.index_labels()
         assert vec.terms == terms_indexed, "index_labels did not work as expected!"
@@ -334,3 +331,30 @@ class TestVectorizerInits:
             _ = vec.get_label_vector(np.ones((N, len(vec.label_names) + 1)))
         with pytest.raises(ValueError):
             vec.get_label_vector(np.ones((N, N)))
+
+    def test_polynomial_vectorizer_get_label_vector_derivative(
+        self, label_names, order, terms, terms_indexed
+    ):
+        vec = PolynomialVectorizer(label_names=label_names, order=order)
+        dt = vec.get_label_vector_derivative(
+            np.asarray(range(len(vec.label_names))) + 1
+        )
+        assert dt.shape == (
+            len(vec.terms) + 1,
+            len(vec.label_names),
+        ), "Wrong return shape"
+
+    @pytest.mark.parametrize(
+        "bad_input",
+        (
+            [],  # Too short
+            np.arange(100),  # Too long
+            [[1, 2]],  # Bad dimensions
+        ),
+    )
+    def test_polynomial_vectorizer_get_label_vector_derivative_bad_input(
+        self, label_names, order, terms, terms_indexed, bad_input
+    ):
+        vec = PolynomialVectorizer(label_names=label_names, order=order)
+        with pytest.raises(ValueError):
+            _ = vec.get_label_vector_derivative(bad_input)
