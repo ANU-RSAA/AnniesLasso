@@ -583,12 +583,12 @@ def test_human_readable_label_term_no_names(term):
         ([(0, 2), (1, 4)], ["a", "b"], "x", "**", False, "a**2xb**4"),
         ([(0, 2), (1, 4)], ["a", "b"], "*", "^", True, "(a^2*b^4)"),
         ([(0, 2), (1, 4)], ["a", "b"], "x", "**", True, "(a**2xb**4)"),
-        ([("a", 2)], None, "*", "^", False, "a^2"),
+        ([("a", 2)], None, "*", "^", True, "a^2"),
         ([("a", 2), ("Teff", 4)], None, "*", "^", False, "a^2*Teff^4"),
         ([("a", 2), ("Teff", 4)], None, "x", "**", False, "a**2xTeff**4"),
         ([("a", 2), ("Teff", 4)], None, "*", "^", True, "(a^2*Teff^4)"),
         ([("a", 2), ("Teff", 4)], None, "x", "**", True, "(a**2xTeff**4)"),
-        ([("a", 2)], ["a", "Teff"], "*", "^", False, "a^2"),
+        ([("a", 2)], ["a", "Teff"], "*", "^", True, "a^2"),
         ([("a", 2), ("Teff", 4)], ["a", "Teff"], "*", "^", False, "a^2*Teff^4"),
         ([("a", 2), ("Teff", 4)], ["a", "Teff"], "x", "**", False, "a**2xTeff**4"),
         ([("a", 2), ("Teff", 4)], ["a", "Teff"], "*", "^", True, "(a^2*Teff^4)"),
@@ -607,3 +607,55 @@ def test_human_readable_label_term(term, label_names, mul, pow, bracket, ret):
         )
         == ret
     ), "human_readable_label_term gave wrong return"
+
+
+@pytest.mark.parametrize(
+    "terms",
+    [
+        [("a", 2)],  # Single-term only, not deep enough
+        "a^2 + b^2",  # Not a structured term set
+        [[("a", 2)], ["x"]],  # Invalid term embedded in sequence
+        [],  # Empty list
+        [[(0, 2), (1, 4)], [(2, 3)]],  # Indices given with no label_names
+    ],
+)
+def test_human_readable_label_vector_bad_input(terms):
+    with pytest.raises(ValueError):
+        _ = human_readable_label_vector(terms)
+
+
+@pytest.mark.parametrize("terms,label_names,mul,pow,sep,bracket,const,ret", [
+    ([[("a", 2)]], None, "*", "^", "+", False, True, "1 + a^2"),
+    ([[("a", 2), ("b", 3)]], None, "*", "^", "+", False, True, "1 + a^2*b^3"),
+    ([[("a", 2), ("b", 3)], [("c", 9)]], None, "*", "^", "+", False, True, "1 + a^2*b^3 + c^9"),
+    ([[("a", 2)]], None, "*", "^", "+", False, False, "a^2"),
+    ([[("a", 2), ("b", 3)]], None, "*", "^", "+", False, False, "a^2*b^3"),
+    ([[("a", 2), ("b", 3)], [("c", 9)]], None, "*", "^", "+", False, False, "a^2*b^3 + c^9"),
+    ([[("a", 2)]], None, "*", "^", "+", True, True, "1 + a^2"),
+    ([[("a", 2), ("b", 3)]], None, "*", "^", "+", True, True, "1 + (a^2*b^3)"),
+    ([[("a", 2), ("b", 3)], [("c", 9)]], None, "*", "^", "+", True, True, "1 + (a^2*b^3) + c^9"),
+    ([[("a", 2)]], None, "x", "**", "p", False, True, "1 p a**2"),
+    ([[("a", 2), ("b", 3)]], None, "x", "**", "p", False, True, "1 p a**2xb**3"),
+    ([[("a", 2), ("b", 3)], [("c", 9)]], None, "x", "**", "p", False, True, "1 p a**2xb**3 p c**9"),
+    ([[("a", 2)]], None, "x", "**", "p", False, False, "a**2"),
+    ([[("a", 2), ("b", 3)]], None, "x", "**", "p", False, False, "a**2xb**3"),
+    ([[("a", 2), ("b", 3)], [("c", 9)]], None, "x", "**", "p", False, False, "a**2xb**3 p c**9"),
+    ([[("a", 2)]], None, "x", "**", "p", True, True, "1 p a**2"),
+    ([[("a", 2), ("b", 3)]], None, "x", "**", "p", True, True, "1 p (a**2xb**3)"),
+    ([[("a", 2), ("b", 3)], [("c", 9)]], None, "x", "**", "p", True, True, "1 p (a**2xb**3) p c**9"),
+])
+def test_human_readable_label_vector(
+    terms, label_names, mul, pow, sep, bracket, const, ret
+):
+    assert (
+        human_readable_label_vector(
+            terms,
+            label_names=label_names,
+            mul=mul,
+            pow=pow,
+            sep=sep,
+            bracket=bracket,
+            const=const,
+        )
+        == ret
+    ), "human_readable_label_vector gave wrong return"

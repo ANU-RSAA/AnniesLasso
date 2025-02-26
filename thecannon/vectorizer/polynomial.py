@@ -408,7 +408,7 @@ def human_readable_label_term(term, label_names=None, mul="*", pow="^", bracket=
 
 
 def human_readable_label_vector(
-    terms, label_names=None, mul="*", pow="^", bracket=False, const=True
+    terms, label_names=None, mul="*", pow="^", sep="+", bracket=False, const=True
 ):
     """
     Return a human-readable form of the label vector.
@@ -436,17 +436,17 @@ def human_readable_label_vector(
     :returns:
         A human-readable string representing the label vector.
     """
-    if not isinstance(terms, (list, tuple)):
-        raise TypeError("label vector is not a structured set of terms")
+    if not _is_structured_label_vector(terms):
+        raise ValueError("label vector is not a structured set of terms")
 
     human_terms = []
     if const:
         human_terms = ["1"]
     for term in terms:
         human_terms.append(
-            human_readable_label_term(term, label_names=label_names, mul=mul, pow=pow)
+            human_readable_label_term(term, label_names=label_names, mul=mul, pow=pow, bracket=bracket)
         )
-    return " + ".join(human_terms)
+    return f" {sep} ".join(human_terms)
 
 
 def terminator(label_names, order, cross_term_order=-1, **kwargs):
