@@ -7,7 +7,11 @@ from unittest import mock
 import numpy as np
 
 from ..vectorizer.base import BaseVectorizer
-from ..vectorizer.polynomial import PolynomialVectorizer, terminator
+from ..vectorizer.polynomial import (
+    PolynomialVectorizer,
+    terminator,
+    human_readable_label_vector,
+)
 
 
 @pytest.mark.parametrize("vectorizer", [BaseVectorizer, PolynomialVectorizer])
@@ -358,3 +362,25 @@ class TestVectorizerInits:
         vec = PolynomialVectorizer(label_names=label_names, order=order)
         with pytest.raises(ValueError):
             _ = vec.get_label_vector_derivative(bad_input)
+
+    @pytest.mark.parametrize("mul", ["*", "x"])
+    @pytest.mark.parametrize("pow", ["^", "**"])
+    @pytest.mark.parametrize("bracket", [True, False])
+    def test_polynomial_vectorizer_get_human_readable_label_vector(
+        self, label_names, order, terms, terms_indexed, mul, pow, bracket
+    ):
+        vec = PolynomialVectorizer(label_names=label_names, order=order)
+
+        assert vec.get_human_readable_label_vector(
+            mul=mul, pow=pow, bracket=bracket
+        ) == human_readable_label_vector(
+            vec.terms, vec.label_names, mul=mul, pow=pow, bracket=bracket
+        ), "get_human_readable_label_vector not mapped to instance method correctly"
+
+    def test_polynomial_vectorizer_human_readable_label_vector(
+        self, label_names, order, terms, terms_indexed
+    ):
+        vec = PolynomialVectorizer(label_names=label_names, order=order)
+        assert (
+            vec.human_readable_label_vector == vec.get_human_readable_label_vector()
+        ), "human_readable_label_vector property not correctly mapped"
