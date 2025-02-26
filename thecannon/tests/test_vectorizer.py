@@ -519,15 +519,73 @@ def test_parse_label_vector_description(description, label_vector, kwargs):
     ), "Unexpected return from parse_label_vector_description"
 
 
-@pytest.mark.parametrize("description", [
-    "a^2 + a * b + b^n", # Rubbish power
-    "",  # No valid terms provided
-])
+@pytest.mark.parametrize(
+    "description",
+    [
+        "a^2 + a * b + b^n",  # Rubbish power
+        "",  # No valid terms provided
+    ],
+)
 def test_parse_label_vector_description_bad(description):
     with pytest.raises(ValueError):
         _ = parse_label_vector_description(description)
+
 
 @mock.patch("numpy.isfinite", return_value=False)
 def test_parse_label_vector_description_infinite_powers(isfinite):
     with pytest.raises(ValueError, match="non-finite"):
         _ = parse_label_vector_description("a^2")
+
+
+@pytest.mark.parametrize(
+    "term",
+    [
+        ("a", 4),  # Not deep enough
+        "a^4",  # Not a structure term
+        [("a", 4), "b", 6],  # Broken term
+        [
+            ("a", 1, 4),
+        ],  # Too many parts
+    ],
+)
+def test_human_readable_label_term_bad_input(term):
+    with pytest.raises(ValueError, match="valid structured term"):
+        _ = human_readable_label_term(term)
+
+
+@pytest.mark.parametrize(
+    "term",
+    [
+        [(1, 4)],
+        [(1, 3), (0, 9)],
+    ],
+)
+def test_human_readable_label_term_no_names(term):
+    with pytest.raises(ValueError, match="Need label_names"):
+        _ = human_readable_label_term(term)
+
+
+@pytest.mark.parametrize("term,label_names,mul,pow,bracket,ret", [
+    ([("a", 2)], None, "*", "^", False, "a^2"),
+    ([("a", 2), ("b", 4)], None, "*", "^", False, "a^2*b^4"),
+    ([("a", 2), ("b", 4)], None, "x", "**", False, "a**2xb**4"),
+    ([("a", 2), ("b", 4)], None, "*", "^", True, "(a^2*b^4)"),
+    ([("a", 2), ("b", 4)], None, "x", "**", True, "(a**2xb**4)"),
+    ([("a", 2)], ["a", "b"], "*", "^", False, "a^2"),
+    ([("a", 2), ("b", 4)], ["a", "b"], "*", "^", False, "a^2*b^4"),
+    ([("a", 2), ("b", 4)], ["a", "b"], "x", "**", False, "a**2xb**4"),
+    ([("a", 2), ("b", 4)], ["a", "b"], "*", "^", True, "(a^2*b^4)"),
+    ([("a", 2), ("b", 4)], ["a", "b"], "x", "**", True, "(a**2xb**4)"),
+    ([(0, 2)], ["a", "b"], "*", "^", False, "a^2"),
+    ([(0, 2), (1, 4)], ["a", "b"], "*", "^", False, "a^2*b^4"),
+    ([(0, 2), (1, 4)], ["a", "b"], "x", "**", False, "a**2xb**4"),
+    ([(0, 2), (1, 4)], ["a", "b"], "*", "^", True, "(a^2*b^4)"),
+    ([(0, 2), (1, 4)], ["a", "b"], "x", "**", True, "(a**2xb**4)"),
+])
+def test_human_readable_label_term(term, label_names, mul, pow, bracket, ret):
+    assert (
+        human_readable_label_term(
+            term, label_names=label_names, mul=mul, pow=pow, bracket=bracket
+        )
+        == ret
+    ), "human_readable_label_term gave wrong return"

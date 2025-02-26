@@ -377,6 +377,12 @@ def human_readable_label_term(term, label_names=None, mul="*", pow="^", bracket=
     :returns:
         A human-readable string representing the label vector.
     """
+    # Input checking
+    try:
+        assert _is_structured_label_vector([term, ])
+    except AssertionError:
+        raise ValueError(f"{term} is not a valid structured term")
+
     ct = []
     for i, o in term:
         if isinstance(i, int) and label_names is not None:
@@ -429,7 +435,6 @@ def human_readable_label_vector(
     if not isinstance(terms, (list, tuple)):
         raise TypeError("label vector is not a structured set of terms")
 
-    # TODO/FIXME why does this add a constant term?
     human_terms = []
     if const:
         human_terms = ["1"]
