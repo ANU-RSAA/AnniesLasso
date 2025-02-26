@@ -290,7 +290,7 @@ def parse_label_vector_description(description, label_names=None, **kwargs):
 
     :Example:
 
-    >>> parse_label_vector("Teff^4 + logg*Teff^3 + feh + feh^0*Teff")
+    >>> parse_label_vector_description("Teff^4 + logg*Teff^3 + feh + feh^0*Teff")
     [
         [
             ("Teff", 4),
@@ -339,7 +339,8 @@ def parse_label_vector_description(description, label_names=None, **kwargs):
             term[label] = term.get(label, 0) + order  # Sum repeat term powers.
 
         # Prevent uses of x^0 etc clogging up the label vector.
-        valid_terms = [(l, o) for l, o in term.items() if o != 0]
+        # MCW - also prevent the empty string getting through as a label name
+        valid_terms = [(l, o) for l, o in term.items() if o != 0 and l != ""]
         if not np.all(np.isfinite([o for l, o in valid_terms])):
             raise ValueError("non-finite power provided")
 

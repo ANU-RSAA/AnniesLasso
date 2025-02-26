@@ -12,6 +12,8 @@ from ..vectorizer.polynomial import (
     terminator,
     human_readable_label_vector,
     human_readable_label_term,
+    _is_structured_label_vector,
+    parse_label_vector_description,
 )
 
 
@@ -406,3 +408,126 @@ class TestVectorizerInits:
             ) == human_readable_label_term(
                 t, label_names=["a"] * len(vec.label_names)
             ), "human_readable_label_term not mapped correctly for label_terms specified"
+
+
+@pytest.mark.parametrize(
+    "input,output",
+    [
+        ("a", False),
+        (1, False),
+        (1.0, False),
+        (1e3, False),
+        ([], False),
+        (
+            [
+                [],
+                [],
+            ],
+            False,
+        ),
+        (["a", ("a", 3)], False),
+        ([("a", 3), "a"], False),
+        (
+            [
+                [
+                    ("a", 4),
+                ],
+                ("b", 6),
+            ],
+            False,
+        ),
+        (
+            [
+                [
+                    ("a", 4),
+                ],
+                [
+                    ("b", 6),
+                ],
+            ],
+            True,
+        ),
+        (
+            [
+                [
+                    ("a", 4),
+                    ("c", 1),
+                ],
+                [
+                    ("b", 6),
+                ],
+            ],
+            True,
+        ),
+    ],
+)
+def test__is_structured_label_vector(input, output):
+    assert (
+        _is_structured_label_vector(input) == output
+    ), "_is_structured_label_vector output wrong"
+
+
+@pytest.mark.parametrize(
+    "description,label_vector,kwargs",
+    [
+        (
+            [
+                [
+                    ("a", 4),
+                    ("c", 1),
+                ],
+                [
+                    ("b", 6),
+                ],
+            ],
+            [
+                [
+                    ("a", 4),
+                    ("c", 1),
+                ],
+                [
+                    ("b", 6),
+                ],
+            ],
+            {},
+        ),  # Pass-through
+        (
+            "a^2 + a * b + b^2",
+            [[("a", 2)], [("a", 1), ("b", 1)], [("b", 2)]],
+            {},
+        ),  # Basic
+        (
+            "a^2 + a * b + b^2 + b^0",
+            [[("a", 2)], [("a", 1), ("b", 1)], [("b", 2)]],
+            {},
+        ),  # Drop 0-powers
+        (
+            "a^2+a*b+b^2",
+            [[("a", 2)], [("a", 1), ("b", 1)], [("b", 2)]],
+            {},
+        ),  # No whitespace
+        (
+            "a**2 p axb p b**2",
+            [[("a", 2)], [("a", 1), ("b", 1)], [("b", 2)]],
+            {"sep": "p", "mul": "x", "pow": "**"},
+        ),  # Secret kwargs
+    ],
+)
+def test_parse_label_vector_description(description, label_vector, kwargs):
+    assert (
+        parse_label_vector_description(description, **kwargs) == label_vector
+    ), "Unexpected return from parse_label_vector_description"
+
+
+@pytest.mark.parametrize("description", [
+    "a^2 + a * b + b^n", # Rubbish power
+    "",  # No valid terms provided
+])
+def test_parse_label_vector_description_bad(description):
+    with pytest.raises(ValueError):
+        _ = parse_label_vector_description(description)
+
+@mock.patch("numpy.isfinite", return_value=False)
+def test_parse_label_vector_description_infinite_powers(isfinite):
+    with pytest.raises(ValueError, match="non-finite"):
+        _ = parse_label_vector_description("a^2")
