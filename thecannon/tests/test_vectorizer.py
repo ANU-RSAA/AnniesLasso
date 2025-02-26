@@ -11,6 +11,7 @@ from ..vectorizer.polynomial import (
     PolynomialVectorizer,
     terminator,
     human_readable_label_vector,
+    human_readable_label_term,
 )
 
 
@@ -384,3 +385,24 @@ class TestVectorizerInits:
         assert (
             vec.human_readable_label_vector == vec.get_human_readable_label_vector()
         ), "human_readable_label_vector property not correctly mapped"
+
+    def test_polynomial_vectorizer_get_human_readable_label_term(
+        self, label_names, order, terms, terms_indexed
+    ):
+        vec = PolynomialVectorizer(label_names=label_names, order=order)
+
+        assert (
+            vec.get_human_readable_label_term(0) == "1"
+        ), "Did not return correct term for term_index = 0"
+
+        for i, t in enumerate(vec.terms):
+            assert vec.get_human_readable_label_term(
+                i + 1
+            ) == human_readable_label_term(
+                t, label_names=vec.label_names
+            ), "human_readable_label_term not mapped correctly for label_terms=None"
+            assert vec.get_human_readable_label_term(
+                i + 1, label_names=["a"] * len(vec.label_names)
+            ) == human_readable_label_term(
+                t, label_names=["a"] * len(vec.label_names)
+            ), "human_readable_label_term not mapped correctly for label_terms specified"
