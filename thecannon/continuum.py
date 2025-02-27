@@ -27,8 +27,12 @@ def _continuum_design_matrix(dispersion, L, order):
     :param order:
         The number of sines and cosines to use in the fit.
     """
+    try:
+        L, dispersion, order = float(L), np.array(dispersion), int(order)
+        assert order > 0, "Order must be > 0"
+    except (TypeError, AssertionError) as e:  # Convert to ValueError
+        raise ValueError from e
 
-    L, dispersion = float(L), np.array(dispersion)
     scale = 2 * (np.pi / L)
     return np.vstack(
         [
@@ -112,7 +116,6 @@ def sines_and_cosines(
     continuum_matrices = []
     pixel_included_in_regions = np.zeros_like(flux).astype(int)
     for start, end in regions:
-
         # Build the masks for this region.
         si, ei = np.searchsorted(dispersion, (start, end))
         region_mask = (end >= dispersion) * (dispersion >= start)
@@ -140,7 +143,6 @@ def sines_and_cosines(
     metadata = []
     continuum = np.ones_like(flux) * fill_value
     for i in range(flux.shape[0]):
-
         warn_indices = np.where(warn_on_pixels[i])[0]
         if any(warn_indices):
             # Split by deltas so that we give useful warning messages.
