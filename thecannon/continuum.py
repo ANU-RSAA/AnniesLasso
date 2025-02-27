@@ -30,6 +30,7 @@ def _continuum_design_matrix(dispersion, L, order):
     try:
         L, dispersion, order = float(L), np.array(dispersion), int(order)
         assert order > 0, "Order must be > 0"
+        assert ~np.isclose(L, 0), "L cannot be 0"
     except (TypeError, AssertionError) as e:  # Convert to ValueError
         raise ValueError from e
 
