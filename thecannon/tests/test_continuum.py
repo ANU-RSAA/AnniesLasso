@@ -21,6 +21,7 @@ def test__continuum_design_matrix_bad_L(L):
     "dispersion",
     [
         [1, [2, 3]],  # Inhomogeneous shape
+        [[1, ], ]  # Too many dimensions
     ],
 )
 def test__continuum_design_matrix_bad_dispersion(dispersion):
@@ -38,9 +39,9 @@ def test__continuum_design_matrix_bad_order(order):
     "dispersion",
     [
         np.ones(3),
-        np.ones((3, 2)),
-        np.ones((2, 3, 4)),
-        np.ones((5, 4, 3, 2)),
+        np.ones(30),
+        np.ones(300),
+        np.ones(int(1e4))
     ],
 )
 @pytest.mark.parametrize("L", [-1.0, 1.0])
