@@ -58,7 +58,7 @@ def sines_and_cosines(
     order=3,
     regions=None,
     fill_value=1.0,
-    **kwargs
+    **kwargs,
 ):
     """
     Fit the flux values of pre-defined continuum pixels using a sum of sine and
@@ -106,8 +106,16 @@ def sines_and_cosines(
         metadata about the fit.
     """
 
+    # TODO work out if this is used somewhere else
     scalar = kwargs.pop("__magic_scalar", 1e-6)  # MAGIC
     flux, ivar = np.atleast_2d(flux), np.atleast_2d(ivar)
+    try:
+        assert (
+            flux.shape[1] == ivar.shape[1] == dispersion.size
+        ), f"Size mismatch between flux ({flux.shape}), ivar ({ivar.shape}) and dispersion ({dispersion.size})"
+        assert flux.shape[0] == ivar.shape[0], f"Size mismatch between number of spectra in flux and ivar"
+    except AssertionError as e:
+        raise ValueError from e
 
     if regions is None:
         regions = [(dispersion[0], dispersion[-1])]
@@ -119,8 +127,9 @@ def sines_and_cosines(
     pixel_included_in_regions = np.zeros_like(flux).astype(int)
     for start, end in regions:
         # Build the masks for this region.
+        # Locate the indices of the start and end values in the dispersion array
         si, ei = np.searchsorted(dispersion, (start, end))
-        region_mask = (end >= dispersion) * (dispersion >= start)
+        region_mask = (end >= dispersion) * (dispersion >= start)  # Gives boolean mask
         region_masks.append(region_mask)
         pixel_included_in_regions[:, region_mask] += 1
 
@@ -220,7 +229,7 @@ def normalize(
     order=3,
     regions=None,
     fill_value=1.0,
-    **kwargs
+    **kwargs,
 ):
     """
     Pseudo-continuum-normalize the flux using a defined set of continuum pixels
@@ -276,7 +285,7 @@ def normalize(
         order=order,
         regions=regions,
         fill_value=fill_value,
-        **kwargs
+        **kwargs,
     )
 
     normalized_flux = flux / continuum

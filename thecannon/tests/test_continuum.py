@@ -44,7 +44,7 @@ def test__continuum_design_matrix_bad_order(order):
         np.ones(int(1e4))
     ],
 )
-@pytest.mark.parametrize("L", [-1.0, 1.0])
+@pytest.mark.parametrize("L", [-1.0, 1.0, 1400])
 @pytest.mark.parametrize("order", [2, 4, 6, 10])
 def test__continuum_design_matrix_return(dispersion, L, order):
     matrix = continuum._continuum_design_matrix(dispersion, L, order)
@@ -52,3 +52,23 @@ def test__continuum_design_matrix_return(dispersion, L, order):
         2 * order + 1,
         dispersion.size,
     ), "_continuum_design_matrix returned wrong shape"
+
+@pytest.mark.parametrize("flux", [
+    10,
+    100,
+    1000
+])
+@pytest.mark.parametrize("ivar", [
+    10,
+    100,
+    1000
+])
+@pytest.mark.parametrize("dispersion", [
+    10,
+    100,
+    1000
+])
+def test_sines_and_cosines_mismatched_inputs(flux, ivar, dispersion):
+    if flux == ivar == dispersion:
+        pytest.skip()
+    
