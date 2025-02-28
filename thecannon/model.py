@@ -116,6 +116,9 @@ class CannonModel(object):
             self._training_set_flux = np.atleast_2d(training_set_flux)
             self._training_set_ivar = np.atleast_2d(training_set_ivar)
 
+            # Check that the flux and ivar are valid.
+            self._verify_training_data()
+
             if (
                 isinstance(training_set_labels, np.ndarray)
                 and training_set_labels.shape[0] == self._training_set_flux.shape[0]
@@ -124,12 +127,20 @@ class CannonModel(object):
                 # A valid array was given as the training set labels, not a table.
                 self._training_set_labels = training_set_labels
             else:
-                self._training_set_labels = np.array(
-                    [training_set_labels[ln] for ln in vectorizer.label_names]
-                ).T
+                try:
+                    self._training_set_labels = np.array(
+                        [training_set_labels[ln] for ln in vectorizer.label_names]
+                    ).T
+                except (
+                    IndexError
+                ):  # Probably an array, but mismatched to the other inputs
+                    raise ValueError(
+                        "Unable to rectify training_set_labels against "
+                        "given training_set_flux and training_set_ivar"
+                    )
 
-            # Check that the flux and ivar are valid.
-            self._verify_training_data(**kwargs)
+            # Check that the training labels are valid
+            self._verify_training_labels(**kwargs)
 
         # Set regularization, censoring, dispersion.
         self.regularization = regularization
@@ -393,29 +404,30 @@ class CannonModel(object):
         except (IndexError, TypeError):
             return array
 
-    def _verify_training_data(self, rho_warning=0.90):
+    def _verify_training_data(self):
         """
-        Verify the training data for the appropriate shape and content.
+        Verify the training data (flux and ivar) for the appropriate shape and content.
+        """
 
-        :param rho_warning: [optional]
-            Maximum correlation value between labels before a warning is given.
-        """
+        # import pdb
+
+        # pdb.set_trace()
+
+        if (self.training_set_flux is None != self.training_set_ivar is None) or (
+            (self.training_set_flux[0][0] is None)
+            != (self.training_set_ivar[0][0] is None)
+        ):
+            raise ValueError(
+                "training set flux and inverse variance arrays must both exist, or both be None"
+            )
 
         if self.training_set_flux.shape != self.training_set_ivar.shape:
+            print(self.training_set_flux)
+            print(self.training_set_ivar)
             raise ValueError(
                 "the training set flux and inverse variance arrays"
                 " for the labelled set must have the same shape"
             )
-
-        if len(self.training_set_labels) != self.training_set_flux.shape[0]:
-            raise ValueError(
-                "the first axes of the training set flux array should "
-                "have the same shape as the nuber of rows in the labelled set"
-                "(N_stars, N_pixels)"
-            )
-
-        if not np.all(np.isfinite(self.training_set_labels)):
-            raise ValueError("training set labels are not all finite")
 
         if not np.all(np.isfinite(self.training_set_flux)):
             raise ValueError("training set fluxes are not all finite")
@@ -424,6 +436,26 @@ class CannonModel(object):
             np.isfinite(self.training_set_ivar)
         ):
             raise ValueError("training set ivars are not all positive finite")
+
+        return None
+
+    def _verify_training_labels(self, rho_warning=0.90):
+        """
+        Verify the training labels for the appropriate shape and context.
+
+        :param rho_warning: [optional]
+            Maximum correlation value between labels before a warning is given.
+        """
+
+        if len(self.training_set_labels) != self.training_set_flux.shape[0]:
+            raise ValueError(
+                "the first axes of the training set flux array should "
+                "have the same shape as the number of rows in the labelled set"
+                "(N_stars, N_pixels)"
+            )
+
+        if not np.all(np.isfinite(self.training_set_labels)):
+            raise ValueError("training set labels are not all finite")
 
         # Look for very high correlation coefficients between labels, which
         # could make the training time very difficult.
@@ -450,6 +482,7 @@ class CannonModel(object):
                     )
             else:
                 break
+
         return None
 
     def in_convex_hull(self, labels):
