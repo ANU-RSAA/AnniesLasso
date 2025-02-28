@@ -98,7 +98,6 @@ class CannonModel(object):
         censors=None,
         **kwargs
     ):
-
         # Save the vectorizer.
         if not isinstance(vectorizer, BaseVectorizer):
             raise TypeError(
@@ -107,7 +106,6 @@ class CannonModel(object):
         self._vectorizer = vectorizer
 
         if training_set_flux is None and training_set_ivar is None:
-
             # Must be reading in a model that does not have the training set
             # spectra saved.
             self._training_set_flux = None
@@ -164,7 +162,7 @@ class CannonModel(object):
 
     def __str__(self):
         return (
-            "<{module}.{name} of {K} labels {trained}with a training set "
+            "<{module}.{name} of {K} labels {trained} with a training set "
             "of {N} stars each with {M} pixels>".format(
                 module=self.__module__,
                 name=type(self).__name__,
@@ -517,7 +515,6 @@ class CannonModel(object):
         # Store up all the trained attributes and a hash of the training set.
         state = {}
         for attribute in attributes:
-
             value = getattr(self, attribute)
 
             try:
@@ -580,7 +577,6 @@ class CannonModel(object):
         metadata = state.get("metadata", {})
         version_saved = metadata.get("version", "0.1.0")
         if version_saved >= "0.2.0":  # Refactor'd.
-
             init_attributes = list(metadata["data_attributes"]) + list(
                 metadata["descriptive_attributes"]
             )
@@ -669,7 +665,6 @@ class CannonModel(object):
         for pixel, (flux, ivar) in enumerate(
             zip(self.training_set_flux.T, self.training_set_ivar.T)
         ):
-
             args = (
                 flux,
                 ivar,
@@ -832,7 +827,6 @@ class CannonModel(object):
                     self.training_set_flux.shape[1] - 1,
                 )
             ):
-
                 if np.all(np.isfinite(self.theta[neighbour_pixel_index])):
                     guesses.append(
                         (self.theta[neighbour_pixel_index], "neighbour_pixel")
