@@ -67,14 +67,14 @@ class TestCannonModelInit:
             ((10,), (15,), (15,), "flux and inverse"),
             ((15,), (10,), (15,), "flux and inverse"),
             ((15, 2), (15, 3), (15,), "flux and inverse"),
-            ((10,), (15,), None, "flux and inverse"),
-            ((15,), (10,), None, "flux and inverse"),
-            ((15, 2), (15, 3), None, "flux and inverse"),
+            ((10,), (15,), (10, ), "flux and inverse"),
+            ((15,), (10,), (10, ), "flux and inverse"),
+            ((15, 2), (15, 3), (15, 2), "flux and inverse"),
             ((10,), (10,), (15,), "Unable to rectify"),
             ((15, 3), None, (15,), "both be None"),
             (None, (15, 3), (15, 3), "both be None"),
-            ((15, 3), None, None, "both be None"),
-            (None, (15, 3), None, "both be None"),
+            ((15, 3), None, (15, 3), "both be None"),
+            (None, (15, 3), (15, 3), "both be None"),
         ],
     )
     def test_cannonmodel_init_mismatched_training_sets(
@@ -145,3 +145,8 @@ class TestCannonModelInit:
                 _ = model.CannonModel(
                     training_set_labels, training_set_flux, training_set_ivar, vec
                 )
+    
+    def test_cannonmodel_no_training_set_labels(self, vectorizer, label_names, terms):
+        vec = vectorizer(label_names=label_names, terms=terms)
+        with pytest.raises(ValueError):
+            _ = model.CannonModel(None, None, None, vec)

@@ -105,6 +105,9 @@ class CannonModel(object):
             )
         self._vectorizer = vectorizer
 
+        if training_set_labels is None:
+            raise ValueError("training_set_labels must not be None")
+
         if training_set_flux is None and training_set_ivar is None:
             # Must be reading in a model that does not have the training set
             # spectra saved.
@@ -408,10 +411,6 @@ class CannonModel(object):
         """
         Verify the training data (flux and ivar) for the appropriate shape and content.
         """
-
-        # import pdb
-
-        # pdb.set_trace()
 
         if (self.training_set_flux is None != self.training_set_ivar is None) or (
             (self.training_set_flux[0][0] is None)
