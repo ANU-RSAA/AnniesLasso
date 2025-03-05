@@ -122,6 +122,9 @@ class CannonModel(object):
             # Check that the flux and ivar are valid.
             self._verify_training_data()
 
+            # FIXME this block needs refining:
+            # - Separate the dimensionality check from the type check
+            # - Properly check against table type(s)
             if (
                 isinstance(training_set_labels, np.ndarray)
                 and training_set_labels.shape[0] == self._training_set_flux.shape[0]
@@ -284,14 +287,18 @@ class CannonModel(object):
         if isinstance(censors, censoring.Censors):
             # Could be a censoring dictionary from a different model,
             # with different label names and pixels.
+            # TODO add some checks to deal with this scenario
 
             # But more likely: we are loading a model from disk.
             self._censors = censors
 
         elif isinstance(censors, dict):
-            self._censors = censoring.Censors(
-                self.vectorizer.label_names, self.training_set_flux.shape[1], censors
-            )
+            try:
+                self._censors = censoring.Censors(
+                    self.vectorizer.label_names, self.training_set_flux.shape[1], censors
+                )
+            except AttributeError:  # training_set_flux is None:
+                self._censors = None
 
         else:
             raise TypeError(
@@ -448,9 +455,15 @@ class CannonModel(object):
 
         if len(self.training_set_labels) != self.training_set_flux.shape[0]:
             raise ValueError(
-                "the first axes of the training set flux array should "
-                "have the same shape as the number of rows in the labelled set"
+                "the first axes of the training set labels array should "
+                "have the same shape as the number of rows in the labelled training set"
                 "(N_stars, N_pixels)"
+            )
+        
+        if self.training_set_labels.shape[1] != len(self.vectorizer.label_names):
+            raise ValueError(
+                "The second axis of the training set labels array should have the same "
+                "size as the number of label names in the vectorizer"
             )
 
         if not np.all(np.isfinite(self.training_set_labels)):

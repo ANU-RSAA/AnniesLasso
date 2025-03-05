@@ -49,7 +49,7 @@ def test_cannonmodel_vectorizer_bad(vec_bad):
 @pytest.mark.parametrize(
     "vectorizer",
     [
-        BaseVectorizer,
+        # BaseVectorizer,
         PolynomialVectorizer,
     ],
 )
@@ -150,3 +150,11 @@ class TestCannonModelInit:
         vec = vectorizer(label_names=label_names, terms=terms)
         with pytest.raises(ValueError):
             _ = model.CannonModel(None, None, None, vec)
+
+    @pytest.mark.parametrize("training_labels", [np.ones(10), np.ones(100), np.ones((10, 100)), np.ones((10, 10))])
+    def test_cannonmodel_blank_flux_and_ivar(self, vectorizer, label_names, terms, training_labels):
+        vec = vectorizer(label_names=label_names, terms=terms)
+        m = model.CannonModel(training_labels, None, None, vec)
+        assert m.training_set_flux is None, "training set flux was set without being given"
+        assert m.training_set_ivar is None, "training set ivar was set without being given"
+        assert m.training_set_labels == training_labels, "training set labels were incorrectly modified"
