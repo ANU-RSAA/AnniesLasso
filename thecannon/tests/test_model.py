@@ -64,17 +64,17 @@ class TestCannonModelInit:
     @pytest.mark.parametrize(
         "training_set_flux_shape,training_set_ivar_shape,training_set_labels_shape,error_match",
         [
-            ((10,), (15,), (15,), "flux and inverse"),
-            ((15,), (10,), (15,), "flux and inverse"),
-            ((15, 2), (15, 3), (15,), "flux and inverse"),
-            ((10,), (15,), (10, ), "flux and inverse"),
-            ((15,), (10,), (10, ), "flux and inverse"),
-            ((15, 2), (15, 3), (15, 2), "flux and inverse"),
-            ((10,), (10,), (15,), "Unable to rectify"),
-            ((15, 3), None, (15,), "both be None"),
-            (None, (15, 3), (15, 3), "both be None"),
-            ((15, 3), None, (15, 3), "both be None"),
-            (None, (15, 3), (15, 3), "both be None"),
+            ((10,), (15,), 15, "flux and inverse"),
+            ((15,), (10,), 15, "flux and inverse"),
+            ((15, 2), (15, 3), 15, "flux and inverse"),
+            ((10,), (15,), 10, "flux and inverse"),
+            ((15,), (10,), 10, "flux and inverse"),
+            ((15, 2), (15, 3), 15, "flux and inverse"),
+            ((10,), (10,), 15, "Unable to rectify"),
+            ((15, 3), None, 15, "both be None"),
+            (None, (15, 3), 15, "both be None"),
+            ((15, 3), None, 15, "both be None"),
+            (None, (15, 3), 15, "both be None"),
         ],
     )
     def test_cannonmodel_init_mismatched_training_sets(
@@ -99,7 +99,7 @@ class TestCannonModelInit:
             else None
         )
         training_set_labels = (
-            np.ones(training_set_labels_shape)
+            np.ones((training_set_labels_shape, len(label_names)))
             if training_set_labels_shape is not None
             else None
         )
@@ -123,7 +123,7 @@ class TestCannonModelInit:
                 int((inf_posn / 100.0) * training_set_flux.shape[0])
             ] = np.inf
             training_set_ivar = np.ones(training_set_shape)
-            training_set_labels = np.ones(training_set_shape)
+            training_set_labels = np.ones((training_set_shape[0], len(label_names)))
 
             with pytest.raises(ValueError, match="fluxes.*finite"):
                 _ = model.CannonModel(
@@ -151,10 +151,11 @@ class TestCannonModelInit:
         with pytest.raises(ValueError):
             _ = model.CannonModel(None, None, None, vec)
 
-    @pytest.mark.parametrize("training_labels", [np.ones(10), np.ones(100), np.ones((10, 100)), np.ones((10, 10))])
-    def test_cannonmodel_blank_flux_and_ivar(self, vectorizer, label_names, terms, training_labels):
+    @pytest.mark.parametrize("training_labels_length", [10, 100, 1000])
+    def test_cannonmodel_blank_flux_and_ivar(self, vectorizer, label_names, terms, training_labels_length):
+        training_labels = np.ones((training_labels_length, len(label_names)))
         vec = vectorizer(label_names=label_names, terms=terms)
         m = model.CannonModel(training_labels, None, None, vec)
         assert m.training_set_flux is None, "training set flux was set without being given"
         assert m.training_set_ivar is None, "training set ivar was set without being given"
-        assert m.training_set_labels == training_labels, "training set labels were incorrectly modified"
+        assert np.all(m.training_set_labels == training_labels), "training set labels were incorrectly modified"
