@@ -70,7 +70,7 @@ class TestCannonModelInit:
             ((10,), (15,), 10, "flux and inverse"),
             ((15,), (10,), 10, "flux and inverse"),
             ((15, 2), (15, 3), 15, "flux and inverse"),
-            ((10,), (10,), 15, "Unable to rectify"),
+            ((10,), (10,), 15, "the first axes"),
             ((15, 3), None, 15, "both be None"),
             (None, (15, 3), 15, "both be None"),
             ((15, 3), None, 15, "both be None"),
@@ -145,17 +145,25 @@ class TestCannonModelInit:
                 _ = model.CannonModel(
                     training_set_labels, training_set_flux, training_set_ivar, vec
                 )
-    
+
     def test_cannonmodel_no_training_set_labels(self, vectorizer, label_names, terms):
         vec = vectorizer(label_names=label_names, terms=terms)
         with pytest.raises(ValueError):
             _ = model.CannonModel(None, None, None, vec)
 
     @pytest.mark.parametrize("training_labels_length", [10, 100, 1000])
-    def test_cannonmodel_blank_flux_and_ivar(self, vectorizer, label_names, terms, training_labels_length):
+    def test_cannonmodel_blank_flux_and_ivar(
+        self, vectorizer, label_names, terms, training_labels_length
+    ):
         training_labels = np.ones((training_labels_length, len(label_names)))
         vec = vectorizer(label_names=label_names, terms=terms)
         m = model.CannonModel(training_labels, None, None, vec)
-        assert m.training_set_flux is None, "training set flux was set without being given"
-        assert m.training_set_ivar is None, "training set ivar was set without being given"
-        assert np.all(m.training_set_labels == training_labels), "training set labels were incorrectly modified"
+        assert (
+            m.training_set_flux is None
+        ), "training set flux was set without being given"
+        assert (
+            m.training_set_ivar is None
+        ), "training set ivar was set without being given"
+        assert np.all(
+            m.training_set_labels == training_labels
+        ), "training set labels were incorrectly modified"

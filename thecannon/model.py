@@ -113,40 +113,33 @@ class CannonModel(object):
             # spectra saved.
             self._training_set_flux = None
             self._training_set_ivar = None
-            self._training_set_labels = training_set_labels
-            # TODO check if above line is valid if training_set_labels is None as well
         else:
             self._training_set_flux = np.atleast_2d(training_set_flux)
             self._training_set_ivar = np.atleast_2d(training_set_ivar)
-
             # Check that the flux and ivar are valid.
             self._verify_training_data()
 
-            # FIXME this block needs refining:
-            # - Separate the dimensionality check from the type check
-            # - Properly check against table type(s)
-            if (
-                isinstance(training_set_labels, np.ndarray)
-                and training_set_labels.shape[0] == self._training_set_flux.shape[0]
-                and training_set_labels.shape[1] == len(vectorizer.label_names)
-            ):
-                # A valid array was given as the training set labels, not a table.
-                self._training_set_labels = training_set_labels
-            else:
-                try:
-                    self._training_set_labels = np.array(
-                        [training_set_labels[ln] for ln in vectorizer.label_names]
-                    ).T
-                except (
-                    IndexError
-                ):  # Probably an array, but mismatched to the other inputs
-                    raise ValueError(
-                        "Unable to rectify training_set_labels against "
-                        "given training_set_flux and training_set_ivar"
-                    )
+        if not isinstance(training_set_labels, np.ndarray):
+            # Don't explicitly test against various types - there are a variety of
+            # table-like objects that could work here
+            # Simply catch & re-raise any errors that are encountered (i.e. can't look
+            # up like that, invalid key/index, etc.)
+            try:
+                training_set_labels = np.array(
+                    [training_set_labels[ln] for ln in vectorizer.label_names]
+                ).T
+            except (
+                IndexError,
+                KeyError,
+            ) as e:  # Probably an array, but mismatched to the other inputs
+                raise ValueError(
+                    "Unable to rectify training_set_labels against "
+                    "given training_set_flux and training_set_ivar"
+                ) from e
 
-            # Check that the training labels are valid
-            self._verify_training_labels(**kwargs)
+        # Check that the training labels are valid
+        self._verify_training_labels(training_set_labels, **kwargs)
+        self._training_set_labels = training_set_labels
 
         # Set regularization, censoring, dispersion.
         self.regularization = regularization
@@ -295,7 +288,9 @@ class CannonModel(object):
         elif isinstance(censors, dict):
             try:
                 self._censors = censoring.Censors(
-                    self.vectorizer.label_names, self.training_set_flux.shape[1], censors
+                    self.vectorizer.label_names,
+                    self.training_set_flux.shape[1],
+                    censors,
                 )
             except AttributeError:  # training_set_flux is None:
                 self._censors = None
@@ -445,7 +440,7 @@ class CannonModel(object):
 
         return None
 
-    def _verify_training_labels(self, rho_warning=0.90):
+    def _verify_training_labels(self, training_set_labels, rho_warning=0.90):
         """
         Verify the training labels for the appropriate shape and context.
 
@@ -453,47 +448,51 @@ class CannonModel(object):
             Maximum correlation value between labels before a warning is given.
         """
 
-        if len(self.training_set_labels) != self.training_set_flux.shape[0]:
+        if (
+            self.training_set_flux is not None
+            and len(training_set_labels) != self.training_set_flux.shape[0]
+        ):
             raise ValueError(
                 "the first axes of the training set labels array should "
                 "have the same shape as the number of rows in the labelled training set"
                 "(N_stars, N_pixels)"
             )
-        
-        if self.training_set_labels.shape[1] != len(self.vectorizer.label_names):
+
+        if training_set_labels.shape[1] != len(self.vectorizer.label_names):
             raise ValueError(
                 "The second axis of the training set labels array should have the same "
                 "size as the number of label names in the vectorizer"
             )
 
-        if not np.all(np.isfinite(self.training_set_labels)):
+        if not np.all(np.isfinite(training_set_labels)):
             raise ValueError("training set labels are not all finite")
 
         # Look for very high correlation coefficients between labels, which
         # could make the training time very difficult.
-        rho = np.corrcoef(self.training_set_labels.T)
+        rho = np.corrcoef(training_set_labels.T)
 
         # Set the diagonal indices to zero.
-        K = rho.shape[0]
-        rho[np.diag_indices(K)] = 0.0
-        indices = np.argsort(rho.flatten())[::-1]
+        if len(rho.shape) > 0:
+            K = rho.shape[0]
+            rho[np.diag_indices(K)] = 0.0
+            indices = np.argsort(rho.flatten())[::-1]
 
-        for index in indices:
-            x, y = (index % K, int(index / K))
-            rho_xy = rho[x, y]
-            if rho_xy >= rho_warning:
-                if x > y:  # One warning per correlated label pair.
-                    logger.warn(
-                        "Labels '{X}' and '{Y}' are highly correlated ("
-                        "rho = {rho_xy:.2}). This may cause very slow training "
-                        "times. Are both labels needed?".format(
-                            X=self.vectorizer.label_names[x],
-                            Y=self.vectorizer.label_names[y],
-                            rho_xy=rho_xy,
+            for index in indices:
+                x, y = (index % K, int(index / K))
+                rho_xy = rho[x, y]
+                if rho_xy >= rho_warning:
+                    if x > y:  # One warning per correlated label pair.
+                        logger.warn(
+                            "Labels '{X}' and '{Y}' are highly correlated ("
+                            "rho = {rho_xy:.2}). This may cause very slow training "
+                            "times. Are both labels needed?".format(
+                                X=self.vectorizer.label_names[x],
+                                Y=self.vectorizer.label_names[y],
+                                rho_xy=rho_xy,
+                            )
                         )
-                    )
-            else:
-                break
+                else:
+                    break
 
         return None
 
