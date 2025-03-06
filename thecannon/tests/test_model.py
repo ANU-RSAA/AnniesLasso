@@ -5,6 +5,7 @@ import pytest
 from thecannon import model
 from thecannon.vectorizer.base import BaseVectorizer
 from thecannon.vectorizer.polynomial import PolynomialVectorizer
+from thecannon.censoring import Censors
 from unittest import mock
 
 import numpy as np
@@ -167,3 +168,35 @@ class TestCannonModelInit:
         assert np.all(
             m.training_set_labels == training_labels
         ), "training set labels were incorrectly modified"
+
+    @pytest.mark.parametrize("training_shape", [10, 100, 1000])
+    def test_cannonmodel_censoring_dict_input(
+        self, vectorizer, label_names, terms, training_shape
+    ):
+        vec = vectorizer(label_names=label_names, terms=terms)
+        training_set_flux = np.ones((1, training_shape))
+        training_set_ivar = np.ones((1, training_shape))
+        training_set_labels = np.ones((1, len(label_names)))
+
+        censors = {l: np.zeros((training_shape,), dtype=bool) for l in label_names}
+
+        m = model.CannonModel(
+            training_set_labels,
+            training_set_flux,
+            training_set_ivar,
+            vec,
+            censors=censors,
+        )
+        assert (
+            set(m.censors.keys())
+            == set(Censors(label_names, training_shape, censors).keys())
+            == set(label_names)
+        ), "Invalid keys in model censors"
+        assert np.all(
+            np.all(
+                [
+                    m.censors[k] == Censors(label_names, training_shape, censors)[k]
+                    for k in label_names
+                ]
+            )
+        ), "Bad censoring array"
