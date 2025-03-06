@@ -200,3 +200,32 @@ class TestCannonModelInit:
                 ]
             )
         ), "Bad censoring array"
+
+    @pytest.mark.parametrize("training_shape", [10, 100, 1000])
+    def test_cannonmodel_censoring_censor_input(
+        self, vectorizer, label_names, terms, training_shape
+    ):
+        vec = vectorizer(label_names=label_names, terms=terms)
+        training_set_flux = np.ones((1, training_shape))
+        training_set_ivar = np.ones((1, training_shape))
+        training_set_labels = np.ones((1, len(label_names)))
+
+        censors = Censors(
+            label_names,
+            training_shape,
+            {l: np.zeros(training_shape, dtype=bool) for l in label_names},
+        )
+
+        m = model.CannonModel(
+            training_set_labels,
+            training_set_flux,
+            training_set_ivar,
+            vec,
+            censors=censors,
+        )
+        assert (
+            set(m.censors.keys()) == censors.keys() == set(label_names)
+        ), f"Invalid keys in model censors: {set(m.censors.keys())} vs {censors.keys()} vs {set(label_names)}"
+        assert np.all(
+            np.all([m.censors[k] == censors[k] for k in label_names])
+        ), "Bad censoring array"
