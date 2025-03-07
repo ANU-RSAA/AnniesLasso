@@ -318,3 +318,31 @@ class TestCannonModelInit:
         assert np.all(
             np.all([m.censors[k] == censors[k] for k in label_names])
         ), "Bad censoring array"
+
+    @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
+    @pytest.mark.parametrize("no_of_stars", [1, 10, 100, 1000])
+    @pytest.mark.parametrize("trained", [True, False])
+    @mock.patch("thecannon.model.CannonModel.is_trained", new_callable=mock.PropertyMock)
+    def test_cannonmodel_str(
+        self, mock_is_trained, vectorizer, label_names, terms, training_shape, no_of_stars, trained
+    ):
+        if training_shape is None:
+            fluxes = None
+            ivar = None
+        else:
+            fluxes = np.ones((no_of_stars, training_shape))
+            ivar = np.ones((no_of_stars, training_shape))
+        training_set_labels = np.ones((no_of_stars, len(label_names)))
+        vec = vectorizer(label_names=label_names, terms=terms)
+        mock_is_trained.return_value = trained
+
+        m = model.CannonModel(training_set_labels, fluxes, ivar, vec)
+        str_rep = str(m)
+
+        assert ("trained" in str_rep) == trained, "String rep wrong on training status"
+        assert f"{len(label_names)} labels" in str_rep, "Missing/wrong number of labels in string rep"
+        if training_shape is None:
+            assert "no pixels" in str_rep, "Str rep not showing lack of training pixels"
+        else:
+            assert f"{training_shape} pixels" in str_rep, "Str rep not showing right no of pixels"
+        assert f"{no_of_stars} stars" in str_rep, "Str rep not showing right no of stars"

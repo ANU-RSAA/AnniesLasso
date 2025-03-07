@@ -179,7 +179,7 @@ class CannonModel(object):
             "of {N} stars each with {M} pixels>".format(
                 module=self.__module__,
                 name=type(self).__name__,
-                trained="trained " if self.is_trained else "",
+                trained="trained" if self.is_trained else "",
                 K=self.training_set_labels.shape[1],
                 N=self.training_set_labels.shape[0],
                 M=self.training_set_flux.shape[1]
