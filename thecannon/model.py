@@ -119,11 +119,13 @@ class CannonModel(object):
             # Check that the flux and ivar are valid.
             self._verify_training_data()
 
-        if not isinstance(training_set_labels, np.ndarray):
+        if not type(training_set_labels) == np.ndarray:
             # Don't explicitly test against various types - there are a variety of
             # table-like objects that could work here
             # Simply catch & re-raise any errors that are encountered (i.e. can't look
             # up like that, invalid key/index, etc.)
+            # Need it to be *exactly* and np.ndarray, because we want np.recarray 
+            # sent through this code block instead
             try:
                 training_set_labels = np.array(
                     [training_set_labels[ln] for ln in vectorizer.label_names]

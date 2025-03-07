@@ -169,6 +169,42 @@ class TestCannonModelInit:
             m.training_set_labels == training_labels
         ), "training set labels were incorrectly modified"
 
+    @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
+    def test_cannonmodel_training_set_labels_table(
+        self, vectorizer, label_names, terms, training_shape
+    ):
+        """
+        This test uses np.recarray as a proxy for all table-like inputs this class __init__ could accept.
+        """
+        if training_shape is None:
+            fluxes = None
+            ivar = None
+        else:
+            fluxes = np.ones((training_shape, 1))
+            ivar = np.ones((training_shape, 1))
+        vec = vectorizer(label_names=label_names, terms=terms)
+
+        label_shape = training_shape if training_shape is not None else 10
+        training_labels = np.recarray(
+            (label_shape,), names=label_names, formats=["f8" for _ in label_names]
+        )
+        for i, k in enumerate(label_names, start=1):
+            training_labels[k] = np.ones(label_shape) * i  # Use integer to track values
+
+        m = model.CannonModel(training_labels, fluxes, ivar, vec)
+
+        assert (
+            type(m.training_set_labels) == np.ndarray
+        ), "training labels table not converted to correct type"
+        assert m.training_set_labels.shape == (
+            label_shape,
+            len(label_names),
+        ), "training labels table converted to wrong shape"
+        for i, k in enumerate(label_names, start=1):
+            assert np.all(
+                m.training_set_labels[:, i - 1] == np.ones(label_shape) * i
+            ), "Training set labels not assigned to right label column!"
+
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
     def test_cannonmodel_censoring_dict_input(
         self, vectorizer, label_names, terms, training_shape
