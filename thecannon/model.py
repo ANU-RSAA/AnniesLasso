@@ -124,7 +124,7 @@ class CannonModel(object):
             # table-like objects that could work here
             # Simply catch & re-raise any errors that are encountered (i.e. can't look
             # up like that, invalid key/index, etc.)
-            # Need it to be *exactly* and np.ndarray, because we want np.recarray 
+            # Need it to be *exactly* and np.ndarray, because we want np.recarray
             # sent through this code block instead
             try:
                 training_set_labels = np.array(
@@ -182,7 +182,9 @@ class CannonModel(object):
                 trained="trained " if self.is_trained else "",
                 K=self.training_set_labels.shape[1],
                 N=self.training_set_labels.shape[0],
-                M=self.training_set_flux.shape[1],
+                M=self.training_set_flux.shape[1]
+                if self.training_set_flux is not None
+                else "no",
             )
         )
 
