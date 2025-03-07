@@ -233,6 +233,31 @@ class TestCannonModelInit:
         with pytest.raises(ValueError, match="Unable to rectify"):
             m = model.CannonModel(training_labels, fluxes, ivar, vec)
 
+    @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
+    @pytest.mark.parametrize("labels_set_shape", [
+        (50, 2),  # Will never match flux, may match terms
+        (100, 4), # May match flux, will never match terms
+        ])
+    def test_cannonmodel_training_labels_bad_size(
+        self, vectorizer, label_names, terms, training_shape, labels_set_shape
+    ):
+        # This actually works for the (50, 2) and terms 2 case
+        if len(label_names) == 2 and labels_set_shape == (50, 2):
+            pytest.skip()
+
+        if training_shape is None:
+            fluxes = None
+            ivar = None
+        else:
+            fluxes = np.ones((training_shape, 1))
+            ivar = np.ones((training_shape, 1))
+        vec = vectorizer(label_names=label_names, terms=terms)
+
+        training_labels = np.array(np.ones(labels_set_shape))
+
+        with pytest.raises(ValueError):
+            _ = model.CannonModel(training_labels, fluxes, ivar, vec)
+
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
     def test_cannonmodel_censoring_dict_input(
         self, vectorizer, label_names, terms, training_shape
