@@ -133,6 +133,7 @@ class CannonModel(object):
             except (
                 IndexError,
                 KeyError,
+                ValueError,
             ) as e:  # Probably an array, but mismatched to the other inputs
                 raise ValueError(
                     "Unable to rectify training_set_labels against "
