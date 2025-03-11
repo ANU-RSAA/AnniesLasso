@@ -356,3 +356,32 @@ class TestCannonModelInit:
         str_rep = m.__repr__()
         assert "model" in str_rep, "Didn't get correct module name"
         assert "CannonModel" in str_rep, "Didn't get correct class name"
+    @pytest.mark.parametrize("test_value", [
+        "Test value",
+        1,
+        1.0,
+        np.ones(10),
+        np.zeros((10, 10)),
+    ])
+    class TestCannonModelPropertyRetrieval:
+        def test_cannonmodel_theta_property(self, vectorizer, label_names, terms, test_value):
+            vec = vectorizer(label_names=label_names, terms=terms)
+            m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
+
+            m._theta = test_value
+            assert np.all(m.theta == test_value), "Theta property broken"
+
+        def test_cannonmodel_s2_property(self, vectorizer, label_names, terms, test_value):
+            vec = vectorizer(label_names=label_names, terms=terms)
+            m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
+
+            m._s2 = test_value
+            assert np.all(m.s2 == test_value), "s2 property broken"
+
+        def test_cannonmodel_design_matrix_property(self, vectorizer, label_names, terms, test_value):
+            vec = vectorizer(label_names=label_names, terms=terms)
+            m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
+
+            m._design_matrix = test_value
+            assert np.all(m.design_matrix == test_value), "design_matrix property broken"
+    
