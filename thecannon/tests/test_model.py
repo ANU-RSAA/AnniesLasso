@@ -346,3 +346,13 @@ class TestCannonModelInit:
         else:
             assert f"{training_shape} pixels" in str_rep, "Str rep not showing right no of pixels"
         assert f"{no_of_stars} stars" in str_rep, "Str rep not showing right no of stars"
+
+    def test_cannonmodel_repr(
+            self, vectorizer, label_names, terms
+    ):
+        vec = vectorizer(label_names=label_names, terms=terms)
+        m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
+
+        str_rep = m.__repr__()
+        assert "model" in str_rep, "Didn't get correct module name"
+        assert "CannonModel" in str_rep, "Didn't get correct class name"
