@@ -364,6 +364,12 @@ class TestCannonModelInit:
         np.zeros((10, 10)),
     ])
     class TestCannonModelPropertyRetrieval:
+        """
+        These tests are designed to ensure the property getter function retrieves exactly
+        what is in the hidden attribute without modification - some of these test data types 
+        will be invalid inputs to the setter
+        """
+
         def test_cannonmodel_theta_property(self, vectorizer, label_names, terms, test_value):
             vec = vectorizer(label_names=label_names, terms=terms)
             m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
@@ -384,4 +390,18 @@ class TestCannonModelInit:
 
             m._design_matrix = test_value
             assert np.all(m.design_matrix == test_value), "design_matrix property broken"
+
+        def test_cannonmodel_dispersion_property(self, vectorizer, label_names, terms, test_value):
+            vec = vectorizer(label_names=label_names, terms=terms)
+            m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
+
+            m._dispersion = test_value
+            assert np.all(m.dispersion == test_value), "design_matrix property broken"
+
+        def test_cannonmodel_regularization_property(self, vectorizer, label_names, terms, test_value):
+            vec = vectorizer(label_names=label_names, terms=terms)
+            m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
+
+            m._regularization = test_value
+            assert np.all(m.regularization == test_value), "design_matrix property broken"
     
