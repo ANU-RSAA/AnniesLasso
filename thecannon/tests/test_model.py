@@ -320,7 +320,7 @@ class TestCannonModelInit:
         ), "Bad censoring array"
 
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
-    def test_cannonmodel_censoring_censor_inpu_bad_vec_terms(
+    def test_cannonmodel_censoring_censor_input_bad_vec_terms(
         self, vectorizer, label_names, terms, training_shape
     ):
         vec = vectorizer(label_names=label_names, terms=terms)
@@ -344,7 +344,7 @@ class TestCannonModelInit:
             )
 
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
-    def test_cannonmodel_censoring_censor_inpu_bad_num_pixels(
+    def test_cannonmodel_censoring_censor_input_bad_num_pixels(
         self, vectorizer, label_names, terms, training_shape
     ):
         vec = vectorizer(label_names=label_names, terms=terms)
@@ -359,6 +359,31 @@ class TestCannonModelInit:
         )
 
         with pytest.raises(ValueError, match="Censor num_pixels !="):
+            m = model.CannonModel(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vec,
+                censors=censors,
+            )
+
+    @pytest.mark.parametrize("training_shape", [10, 100, 1000])
+    @pytest.mark.parametrize("censors", [
+        list(),
+        1,
+        1.0,
+        "dict",
+        "censors"
+    ])
+    def test_cannonmodel_censoring_censor_inpu_bad_type(
+        self, vectorizer, label_names, terms, training_shape, censors
+    ):
+        vec = vectorizer(label_names=label_names, terms=terms)
+        training_set_flux = np.ones((1, training_shape))
+        training_set_ivar = np.ones((1, training_shape))
+        training_set_labels = np.ones((1, len(label_names)))
+
+        with pytest.raises(TypeError, match="censors must be"):
             m = model.CannonModel(
                 training_set_labels,
                 training_set_flux,
