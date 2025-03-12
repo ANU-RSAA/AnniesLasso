@@ -593,6 +593,79 @@ class TestCannonModelInit:
             == (reg_expected if reg_expected is not None else regularization)
         ), "Unexpected regularization set"
 
+    @pytest.mark.parametrize("training_shape", [10, 100, 1000])
+    def test_cannonmodel_regularization_bad_shape(
+        self, vectorizer, label_names, terms, training_shape
+    ):
+        vec = vectorizer(label_names=label_names, terms=terms)
+        training_set_flux = np.ones((1, training_shape))
+        training_set_ivar = np.ones((1, training_shape))
+        training_set_labels = np.ones((1, len(label_names)))
+
+        regularization = np.ones(training_shape + training_shape)
+
+        with pytest.raises(ValueError, match="must be of size `num_pixels`"):
+            m = model.CannonModel(
+            training_set_labels,
+            training_set_flux,
+            training_set_ivar,
+            vec,
+            regularization=regularization,
+            )
+
+    @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
+    @pytest.mark.parametrize(
+        "regularization",
+        [
+            1.0,
+            [1.0, ],
+            None,
+        ],
+    )
+    @pytest.mark.parametrize("bad_value", [
+        np.nan,
+        np.inf,
+        -1,
+        -1.0,
+        "a"
+    ])
+    def test_cannonmodel_regularization_input_bad_value(
+        self,
+        vectorizer,
+        label_names,
+        terms,
+        training_shape,
+        regularization,
+        bad_value
+    ):
+        vec = vectorizer(label_names=label_names, terms=terms)
+        if training_shape is None:
+            training_set_flux = None
+            training_set_ivar = None
+        else:
+            training_set_flux = np.ones((1, training_shape))
+            training_set_ivar = np.ones((1, training_shape))
+        training_set_labels = np.ones((1, len(label_names)))
+
+        if regularization is None:
+            regularization = np.ones(
+                training_shape if training_shape is not None else 10, dtype=type(bad_value)
+            )
+
+        if isinstance(regularization, np.ndarray):
+            regularization[0] = bad_value
+        else:
+            regularization = bad_value
+
+        with pytest.raises(ValueError, match="must be positive and finite"):
+            m = model.CannonModel(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vec,
+                regularization=regularization,
+            )
+
     @pytest.mark.parametrize(
         "test_value",
         [
