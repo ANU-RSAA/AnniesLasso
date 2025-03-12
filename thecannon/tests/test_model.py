@@ -430,16 +430,20 @@ class TestCannonModelInit:
         assert "model" in str_rep, "Didn't get correct module name"
         assert "CannonModel" in str_rep, "Didn't get correct class name"
 
-    @pytest.mark.parametrize("training_shape", [10, 100, 1000])
+    @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
     def test_cannonmodel_dispersion_input(
         self, vectorizer, label_names, terms, training_shape
     ):
         vec = vectorizer(label_names=label_names, terms=terms)
-        training_set_flux = np.ones((1, training_shape))
-        training_set_ivar = np.ones((1, training_shape))
+        if training_shape is None:
+            training_set_flux = None
+            training_set_ivar = None
+        else:
+            training_set_flux = np.ones((1, training_shape))
+            training_set_ivar = np.ones((1, training_shape))
         training_set_labels = np.ones((1, len(label_names)))
 
-        dispersion = np.ones(training_shape)
+        dispersion = np.ones(training_shape if training_shape is not None else 10)
 
         m = model.CannonModel(
             training_set_labels,
@@ -450,6 +454,79 @@ class TestCannonModelInit:
         )
 
         assert np.all(m.dispersion == dispersion), "Dispersion not correctly carried through"
+
+    @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
+    def test_cannonmodel_dispersion_input_bad_size(
+        self, vectorizer, label_names, terms, training_shape
+    ):
+        vec = vectorizer(label_names=label_names, terms=terms)
+        if training_shape is None:
+            pytest.skip()
+        else:
+            training_set_flux = np.ones((1, training_shape))
+            training_set_ivar = np.ones((1, training_shape))
+        training_set_labels = np.ones((1, len(label_names)))
+
+        dispersion = np.ones(training_shape + training_shape)
+
+        with pytest.raises(ValueError, match="does not match the number of pixels per star"):
+            m = model.CannonModel(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vec,
+                dispersion=dispersion,
+            )
+
+    @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
+    @pytest.mark.parametrize("bad_value", [np.inf, np.nan])
+    def test_cannonmodel_dispersion_input_bad_value(
+        self, vectorizer, label_names, terms, training_shape, bad_value
+    ):
+        vec = vectorizer(label_names=label_names, terms=terms)
+        if training_shape is None:
+            training_set_flux = None
+            training_set_ivar = None
+        else:
+            training_set_flux = np.ones((1, training_shape))
+            training_set_ivar = np.ones((1, training_shape))
+        training_set_labels = np.ones((1, len(label_names)))
+
+        dispersion = np.ones(training_shape if training_shape is not None else 10)
+        dispersion[-1] = bad_value
+        with pytest.raises(ValueError, match="must be finite"):
+            m = model.CannonModel(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vec,
+                dispersion=dispersion,
+            )
+
+    @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
+    @pytest.mark.parametrize("bad_type", [str, np.string_])
+    def test_cannonmodel_dispersion_input_bad_type(
+        self, vectorizer, label_names, terms, training_shape, bad_type
+    ):
+        vec = vectorizer(label_names=label_names, terms=terms)
+        if training_shape is None:
+            training_set_flux = None
+            training_set_ivar = None
+        else:
+            training_set_flux = np.ones((1, training_shape))
+            training_set_ivar = np.ones((1, training_shape))
+        training_set_labels = np.ones((1, len(label_names)))
+
+        dispersion = np.ones(training_shape if training_shape is not None else 10, dtype=bad_type)
+        with pytest.raises(ValueError, match="are not float-like"):
+            m = model.CannonModel(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vec,
+                dispersion=dispersion,
+            )
+
 
     @pytest.mark.parametrize("test_value", [
         "Test value",
