@@ -227,17 +227,20 @@ class TestCannonModelInit:
         label_shape = training_shape if training_shape is not None else 10
 
         training_labels = np.recarray(
-                (label_shape,), names=["y", "z"], formats=["f8", "f8"]
+            (label_shape,), names=["y", "z"], formats=["f8", "f8"]
         )
 
         with pytest.raises(ValueError, match="Unable to rectify"):
             m = model.CannonModel(training_labels, fluxes, ivar, vec)
 
     @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
-    @pytest.mark.parametrize("labels_set_shape", [
-        (50, 2),  # Will never match flux, may match terms
-        (100, 4), # May match flux, will never match terms
-        ])
+    @pytest.mark.parametrize(
+        "labels_set_shape",
+        [
+            (50, 2),  # Will never match flux, may match terms
+            (100, 4),  # May match flux, will never match terms
+        ],
+    )
     def test_cannonmodel_training_labels_bad_size(
         self, vectorizer, label_names, terms, training_shape, labels_set_shape
     ):
@@ -368,13 +371,7 @@ class TestCannonModelInit:
             )
 
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
-    @pytest.mark.parametrize("censors", [
-        list(),
-        1,
-        1.0,
-        "dict",
-        "censors"
-    ])
+    @pytest.mark.parametrize("censors", [list(), 1, 1.0, "dict", "censors"])
     def test_cannonmodel_censoring_censor_inpu_bad_type(
         self, vectorizer, label_names, terms, training_shape, censors
     ):
@@ -395,9 +392,18 @@ class TestCannonModelInit:
     @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
     @pytest.mark.parametrize("no_of_stars", [1, 10, 100, 1000])
     @pytest.mark.parametrize("trained", [True, False])
-    @mock.patch("thecannon.model.CannonModel.is_trained", new_callable=mock.PropertyMock)
+    @mock.patch(
+        "thecannon.model.CannonModel.is_trained", new_callable=mock.PropertyMock
+    )
     def test_cannonmodel_str(
-        self, mock_is_trained, vectorizer, label_names, terms, training_shape, no_of_stars, trained
+        self,
+        mock_is_trained,
+        vectorizer,
+        label_names,
+        terms,
+        training_shape,
+        no_of_stars,
+        trained,
     ):
         if training_shape is None:
             fluxes = None
@@ -413,16 +419,20 @@ class TestCannonModelInit:
         str_rep = str(m)
 
         assert ("trained" in str_rep) == trained, "String rep wrong on training status"
-        assert f"{len(label_names)} labels" in str_rep, "Missing/wrong number of labels in string rep"
+        assert (
+            f"{len(label_names)} labels" in str_rep
+        ), "Missing/wrong number of labels in string rep"
         if training_shape is None:
             assert "no pixels" in str_rep, "Str rep not showing lack of training pixels"
         else:
-            assert f"{training_shape} pixels" in str_rep, "Str rep not showing right no of pixels"
-        assert f"{no_of_stars} stars" in str_rep, "Str rep not showing right no of stars"
+            assert (
+                f"{training_shape} pixels" in str_rep
+            ), "Str rep not showing right no of pixels"
+        assert (
+            f"{no_of_stars} stars" in str_rep
+        ), "Str rep not showing right no of stars"
 
-    def test_cannonmodel_repr(
-            self, vectorizer, label_names, terms
-    ):
+    def test_cannonmodel_repr(self, vectorizer, label_names, terms):
         vec = vectorizer(label_names=label_names, terms=terms)
         m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
 
@@ -453,7 +463,9 @@ class TestCannonModelInit:
             dispersion=dispersion,
         )
 
-        assert np.all(m.dispersion == dispersion), "Dispersion not correctly carried through"
+        assert np.all(
+            m.dispersion == dispersion
+        ), "Dispersion not correctly carried through"
 
     @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
     def test_cannonmodel_dispersion_input_bad_size(
@@ -469,7 +481,9 @@ class TestCannonModelInit:
 
         dispersion = np.ones(training_shape + training_shape)
 
-        with pytest.raises(ValueError, match="does not match the number of pixels per star"):
+        with pytest.raises(
+            ValueError, match="does not match the number of pixels per star"
+        ):
             m = model.CannonModel(
                 training_set_labels,
                 training_set_flux,
@@ -517,7 +531,9 @@ class TestCannonModelInit:
             training_set_ivar = np.ones((1, training_shape))
         training_set_labels = np.ones((1, len(label_names)))
 
-        dispersion = np.ones(training_shape if training_shape is not None else 10, dtype=bad_type)
+        dispersion = np.ones(
+            training_shape if training_shape is not None else 10, dtype=bad_type
+        )
         with pytest.raises(ValueError, match="are not float-like"):
             m = model.CannonModel(
                 training_set_labels,
@@ -527,53 +543,118 @@ class TestCannonModelInit:
                 dispersion=dispersion,
             )
 
+    @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
+    @pytest.mark.parametrize(
+        "regularization, reg_expected",
+        [
+            (1.0, 1.0),
+            (
+                [
+                    1.0,
+                ],
+                1.0,
+            ),
+            (None, None),
+        ],
+    )
+    def test_cannonmodel_regularization_input(
+        self,
+        vectorizer,
+        label_names,
+        terms,
+        training_shape,
+        regularization,
+        reg_expected,
+    ):
+        vec = vectorizer(label_names=label_names, terms=terms)
+        if training_shape is None:
+            training_set_flux = None
+            training_set_ivar = None
+        else:
+            training_set_flux = np.ones((1, training_shape))
+            training_set_ivar = np.ones((1, training_shape))
+        training_set_labels = np.ones((1, len(label_names)))
 
-    @pytest.mark.parametrize("test_value", [
-        "Test value",
-        1,
-        1.0,
-        np.ones(10),
-        np.zeros((10, 10)),
-    ])
+        if regularization is None:
+            regularization = np.ones(
+                training_shape if training_shape is not None else 10
+            )
+
+        m = model.CannonModel(
+            training_set_labels,
+            training_set_flux,
+            training_set_ivar,
+            vec,
+            regularization=regularization,
+        )
+
+        assert np.all(
+            m.regularization
+            == (reg_expected if reg_expected is not None else regularization)
+        ), "Unexpected regularization set"
+
+    @pytest.mark.parametrize(
+        "test_value",
+        [
+            "Test value",
+            1,
+            1.0,
+            np.ones(10),
+            np.zeros((10, 10)),
+        ],
+    )
     class TestCannonModelPropertyRetrieval:
         """
         These tests are designed to ensure the property getter function retrieves exactly
-        what is in the hidden attribute without modification - some of these test data types 
+        what is in the hidden attribute without modification - some of these test data types
         will be invalid inputs to the setter
         """
 
-        def test_cannonmodel_theta_property(self, vectorizer, label_names, terms, test_value):
+        def test_cannonmodel_theta_property(
+            self, vectorizer, label_names, terms, test_value
+        ):
             vec = vectorizer(label_names=label_names, terms=terms)
             m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
 
             m._theta = test_value
             assert np.all(m.theta == test_value), "Theta property broken"
 
-        def test_cannonmodel_s2_property(self, vectorizer, label_names, terms, test_value):
+        def test_cannonmodel_s2_property(
+            self, vectorizer, label_names, terms, test_value
+        ):
             vec = vectorizer(label_names=label_names, terms=terms)
             m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
 
             m._s2 = test_value
             assert np.all(m.s2 == test_value), "s2 property broken"
 
-        def test_cannonmodel_design_matrix_property(self, vectorizer, label_names, terms, test_value):
+        def test_cannonmodel_design_matrix_property(
+            self, vectorizer, label_names, terms, test_value
+        ):
             vec = vectorizer(label_names=label_names, terms=terms)
             m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
 
             m._design_matrix = test_value
-            assert np.all(m.design_matrix == test_value), "design_matrix property broken"
+            assert np.all(
+                m.design_matrix == test_value
+            ), "design_matrix property broken"
 
-        def test_cannonmodel_dispersion_property(self, vectorizer, label_names, terms, test_value):
+        def test_cannonmodel_dispersion_property(
+            self, vectorizer, label_names, terms, test_value
+        ):
             vec = vectorizer(label_names=label_names, terms=terms)
             m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
 
             m._dispersion = test_value
             assert np.all(m.dispersion == test_value), "design_matrix property broken"
 
-        def test_cannonmodel_regularization_property(self, vectorizer, label_names, terms, test_value):
+        def test_cannonmodel_regularization_property(
+            self, vectorizer, label_names, terms, test_value
+        ):
             vec = vectorizer(label_names=label_names, terms=terms)
             m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
 
             m._regularization = test_value
-            assert np.all(m.regularization == test_value), "design_matrix property broken"
-    
+            assert np.all(
+                m.regularization == test_value
+            ), "design_matrix property broken"

@@ -96,7 +96,7 @@ class CannonModel(object):
         dispersion=None,
         regularization=None,
         censors=None,
-        **kwargs
+        **kwargs,
     ):
         # Save the vectorizer.
         if not isinstance(vectorizer, BaseVectorizer):
@@ -369,22 +369,22 @@ class CannonModel(object):
 
         if regularization is None:
             self._regularization = None
-            return None
+            return
 
         regularization = np.array(regularization).flatten()
         if regularization.size == 1:
             regularization = regularization[0]
-            if 0 > regularization or not np.isfinite(regularization):
-                raise ValueError("regularization must be positive and finite")
-
-        elif regularization.size != self.training_set_flux.shape[1]:
+        elif (
+            self.training_set_flux is not None
+            and regularization.size != self.training_set_flux.shape[1]
+        ):
             raise ValueError("regularization array must be of size `num_pixels`")
 
-            if any(0 > regularization) or not np.all(np.isfinite(regularization)):
-                raise ValueError("regularization must be positive and finite")
+        if np.any(0 > regularization) or not np.all(np.isfinite(regularization)):
+            raise ValueError("regularization must be positive and finite")
 
         self._regularization = regularization
-        return None
+        return
 
     # Convenient functions and properties.
 
