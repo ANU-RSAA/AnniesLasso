@@ -383,7 +383,10 @@ class CannonModel(object):
         try:
             if np.any(0 > regularization) or not np.all(np.isfinite(regularization)):
                 raise ValueError("regularization must be positive and finite")
-        except (ValueError, TypeError) as e:  # Typically a non-numeric input has been found
+        except (
+            ValueError,
+            TypeError,
+        ) as e:  # Typically a non-numeric input has been found
             raise ValueError("regularization must be positive and finite (and numeric)")
 
         self._regularization = regularization

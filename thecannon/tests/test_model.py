@@ -606,11 +606,11 @@ class TestCannonModelInit:
 
         with pytest.raises(ValueError, match="must be of size `num_pixels`"):
             m = model.CannonModel(
-            training_set_labels,
-            training_set_flux,
-            training_set_ivar,
-            vec,
-            regularization=regularization,
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vec,
+                regularization=regularization,
             )
 
     @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
@@ -618,25 +618,15 @@ class TestCannonModelInit:
         "regularization",
         [
             1.0,
-            [1.0, ],
+            [
+                1.0,
+            ],
             None,
         ],
     )
-    @pytest.mark.parametrize("bad_value", [
-        np.nan,
-        np.inf,
-        -1,
-        -1.0,
-        "a"
-    ])
+    @pytest.mark.parametrize("bad_value", [np.nan, np.inf, -1, -1.0, "a"])
     def test_cannonmodel_regularization_input_bad_value(
-        self,
-        vectorizer,
-        label_names,
-        terms,
-        training_shape,
-        regularization,
-        bad_value
+        self, vectorizer, label_names, terms, training_shape, regularization, bad_value
     ):
         vec = vectorizer(label_names=label_names, terms=terms)
         if training_shape is None:
@@ -649,7 +639,8 @@ class TestCannonModelInit:
 
         if regularization is None:
             regularization = np.ones(
-                training_shape if training_shape is not None else 10, dtype=type(bad_value)
+                training_shape if training_shape is not None else 10,
+                dtype=type(bad_value),
             )
 
         if isinstance(regularization, np.ndarray):
