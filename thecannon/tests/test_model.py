@@ -76,6 +76,14 @@ def test__pixel_access_out_of_bounds(input, offset, default):
     ), "Unexpected out of bounds behaviour"
 
 
+@pytest.mark.parametrize("default", [0.0, 3.0])
+@pytest.mark.parametrize("index", [0, 1, 10])
+def test__pixel_access_input_none(default, index):
+    assert (
+        model.CannonModel._pixel_access(None, index, default=default) == default
+    ), "Unexpected behaviour for None input array"
+
+
 @pytest.mark.parametrize(
     "vectorizer",
     [
