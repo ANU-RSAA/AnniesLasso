@@ -48,6 +48,35 @@ def test_cannonmodel_vectorizer_bad(vec_bad):
 
 
 @pytest.mark.parametrize(
+    "input",
+    [
+        1.0,
+        [0.0, 1.0, 2.0],
+    ],
+)
+def test__pixel_access(input):
+    assert (
+        model.CannonModel._pixel_access(input, 1, default=None) == 1.0
+    ), "_pixel_access not behaving as expected"
+
+
+@pytest.mark.parametrize(
+    "input",
+    [
+        np.ones(10),
+        np.ones(100),
+    ],
+)
+@pytest.mark.parametrize("offset", [1, 3, 10, 100])
+@pytest.mark.parametrize("default", [0.0, 3.0])
+def test__pixel_access_out_of_bounds(input, offset, default):
+    assert (
+        model.CannonModel._pixel_access(input, len(input) + offset, default=default)
+        == default
+    ), "Unexpected out of bounds behaviour"
+
+
+@pytest.mark.parametrize(
     "vectorizer",
     [
         # BaseVectorizer,
@@ -656,6 +685,83 @@ class TestCannonModelInit:
                 vec,
                 regularization=regularization,
             )
+
+    @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
+    @pytest.mark.parametrize("censors", [None, dict()])
+    @pytest.mark.parametrize(
+        "dispersion",
+        [
+            None,
+            [
+                1.0,
+            ],
+        ],
+    )
+    @pytest.mark.parametrize(
+        "regularization",
+        [
+            None,
+            1.0,
+            [
+                1.0,
+            ],
+        ],
+    )
+    def test_cannonmodel_training_status(
+        self,
+        vectorizer,
+        label_names,
+        terms,
+        training_shape,
+        censors,
+        dispersion,
+        regularization,
+    ):
+        vec = vectorizer(label_names=label_names, terms=terms)
+        if training_shape is None:
+            training_set_flux = None
+            training_set_ivar = None
+        else:
+            training_set_flux = np.ones((1, training_shape))
+            training_set_ivar = np.ones((1, training_shape))
+        training_set_labels = np.ones((1, len(label_names)))
+
+        if censors is not None:
+            censors = {
+                l: np.ones(training_shape if training_shape is not None else 10)
+                for l in label_names
+            }
+
+        if type(regularization) == list:
+            regularization = regularization * (
+                training_shape if training_shape is not None else 10
+            )
+
+        if type(dispersion) == list:
+            dispersion = dispersion * (
+                training_shape if training_shape is not None else 10
+            )
+
+        m = model.CannonModel(
+            training_set_labels,
+            training_set_flux,
+            training_set_ivar,
+            vec,
+            regularization=regularization,
+            censors=censors,
+            dispersion=dispersion,
+        )
+
+        assert m.is_trained == False, "Model incorrectly marked trained after init!"
+
+        # Mock the trained attributes
+        for attr in m._trained_attributes:
+            setattr(m, f"_{attr}", 1.0)
+
+        assert m.is_trained, "Model not reporting trained as required!"
+
+        m.reset()
+        assert not m.is_trained, "Model reporting trained after reset!"
 
     @pytest.mark.parametrize(
         "test_value",

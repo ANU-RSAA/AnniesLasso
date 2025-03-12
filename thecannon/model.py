@@ -407,27 +407,29 @@ class CannonModel(object):
             setattr(self, "_{}".format(attribute), None)
         return None
 
-    def _pixel_access(self, array, index, default=None):
+    @classmethod
+    def _pixel_access(cls, array, index, default=None):
         """
         Safely access a (potentially per-pixel) attribute of the model.
 
         :param array:
-            Either `None`, a float value, or an array the size of the dispersion
-            array.
-
+            Either `None`, a float value, or an array.
         :param index:
             The zero-indexed pixel to attempt to access.
 
         :param default: [optional]
-            The default value to return if `array` is None.
+            The default value to return if `array` is None OR if an out-of-bounds index
+            is requested from the array.
         """
 
         if array is None:
             return default
         try:
             return array[index]
-        except (IndexError, TypeError):
+        except TypeError:
             return array
+        except IndexError:
+            return default
 
     def _verify_training_data(self):
         """
