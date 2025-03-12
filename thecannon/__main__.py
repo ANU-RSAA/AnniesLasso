@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# TODO - REMOVE THIS FILE
+# This use case is likely a dead letter
+
 """ A command line utility for The Cannon. """
 
 import argparse

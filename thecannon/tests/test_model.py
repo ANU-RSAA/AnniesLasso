@@ -429,6 +429,28 @@ class TestCannonModelInit:
         str_rep = m.__repr__()
         assert "model" in str_rep, "Didn't get correct module name"
         assert "CannonModel" in str_rep, "Didn't get correct class name"
+
+    @pytest.mark.parametrize("training_shape", [10, 100, 1000])
+    def test_cannonmodel_dispersion_input(
+        self, vectorizer, label_names, terms, training_shape
+    ):
+        vec = vectorizer(label_names=label_names, terms=terms)
+        training_set_flux = np.ones((1, training_shape))
+        training_set_ivar = np.ones((1, training_shape))
+        training_set_labels = np.ones((1, len(label_names)))
+
+        dispersion = np.ones(training_shape)
+
+        m = model.CannonModel(
+            training_set_labels,
+            training_set_flux,
+            training_set_ivar,
+            vec,
+            dispersion=dispersion,
+        )
+
+        assert np.all(m.dispersion == dispersion), "Dispersion not correctly carried through"
+
     @pytest.mark.parametrize("test_value", [
         "Test value",
         1,
