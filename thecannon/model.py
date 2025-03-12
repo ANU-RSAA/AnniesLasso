@@ -285,7 +285,16 @@ class CannonModel(object):
         if isinstance(censors, censoring.Censors):
             # Could be a censoring dictionary from a different model,
             # with different label names and pixels.
-            # TODO add some checks to deal with this scenario
+            try:
+                assert (
+                    censors.label_names == self.vectorizer.label_names
+                ), "Censor label names != vectorizer label names"
+                if self.training_set_flux is not None:
+                    assert (
+                        self.training_set_flux.shape[1] == censors.num_pixels
+                    ), "Censor num_pixels != training_set_flux 2nd axis size"
+            except AssertionError as e:
+                raise ValueError(f"Bad input censor - {str(e)}") from e
 
             # But more likely: we are loading a model from disk.
             self._censors = censors
@@ -295,7 +304,7 @@ class CannonModel(object):
                 self._censors = censoring.Censors(
                     self.vectorizer.label_names,
                     self.training_set_flux.shape[1],
-                    censors,
+                    censors,  # Censors init should catch bad input
                 )
             except AttributeError:  # training_set_flux is None:
                 self._censors = None

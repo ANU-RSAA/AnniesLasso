@@ -319,6 +319,54 @@ class TestCannonModelInit:
             np.all([m.censors[k] == censors[k] for k in label_names])
         ), "Bad censoring array"
 
+    @pytest.mark.parametrize("training_shape", [10, 100, 1000])
+    def test_cannonmodel_censoring_censor_inpu_bad_vec_terms(
+        self, vectorizer, label_names, terms, training_shape
+    ):
+        vec = vectorizer(label_names=label_names, terms=terms)
+        training_set_flux = np.ones((1, training_shape))
+        training_set_ivar = np.ones((1, training_shape))
+        training_set_labels = np.ones((1, len(label_names)))
+
+        censors = Censors(
+            label_names + ["z"],
+            training_shape,
+            {l: np.zeros(training_shape, dtype=bool) for l in label_names},
+        )
+
+        with pytest.raises(ValueError, match="Censor label names !="):
+            m = model.CannonModel(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vec,
+                censors=censors,
+            )
+
+    @pytest.mark.parametrize("training_shape", [10, 100, 1000])
+    def test_cannonmodel_censoring_censor_inpu_bad_num_pixels(
+        self, vectorizer, label_names, terms, training_shape
+    ):
+        vec = vectorizer(label_names=label_names, terms=terms)
+        training_set_flux = np.ones((1, training_shape))
+        training_set_ivar = np.ones((1, training_shape))
+        training_set_labels = np.ones((1, len(label_names)))
+
+        censors = Censors(
+            label_names,
+            training_shape + 1,
+            {l: np.zeros(training_shape + 1, dtype=bool) for l in label_names},
+        )
+
+        with pytest.raises(ValueError, match="Censor num_pixels !="):
+            m = model.CannonModel(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vec,
+                censors=censors,
+            )
+
     @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
     @pytest.mark.parametrize("no_of_stars", [1, 10, 100, 1000])
     @pytest.mark.parametrize("trained", [True, False])
