@@ -837,6 +837,10 @@ class TestCannonModelInit:
             lambda l: np.ptp(np.percentile(l, [10.0, 75.0], axis=0), axis=0),
             lambda l: np.mean(l),
             np.mean,  # This method of input will actually work, if given the right output shape - this isn't though
+            "a",
+            3,
+            [1, 2, 3],
+            "np.ptp"
         ],
     )
     def test_cannonmodel__scales_init_bad(

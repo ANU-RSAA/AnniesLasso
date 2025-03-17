@@ -162,11 +162,11 @@ class CannonModel(object):
             lambda l: np.percentile(l, 50, axis=0),
         )
 
-        # FIXME add checks to ensure function returns expected shapes compared
-        self._scales = __scale_labels_function(self.training_set_labels)
-        # import pdb; pdb.set_trace()
         try:
+            self._scales = __scale_labels_function(self.training_set_labels)
             assert self._scales.shape == (1, self.training_set_labels.shape[1])
+        except TypeError as e:
+            raise ValueError("__scale_labels_function must be callable")
         except AssertionError as e:
             raise ValueError(
                 f"computed _scales from __scale_labels_function has the wrong shape {self._scales.shape} - should be {(1, self.training_set_labels.shape[1])}"
