@@ -150,19 +150,26 @@ class CannonModel(object):
         self.dispersion = dispersion
 
         # Set useful private attributes.
+        # to training_set_labels
         __scale_labels_function = kwargs.get(
             "__scale_labels_function",
-            # FIXME update to module variable
-            lambda l: np.ptp(np.percentile(l, [2.5, 97.5], axis=0), axis=0),
+            lambda l: np.ptp(np.percentile(l, [2.5, 97.5], axis=0), axis=0, keepdims=True),
         )
         __fiducial_labels_function = kwargs.get(
-            # FIXME update to module variable
             "__fiducial_labels_function",
             lambda l: np.percentile(l, 50, axis=0),
         )
 
+        # FIXME add checks to ensure function returns expected shapes compared
         self._scales = __scale_labels_function(self.training_set_labels)
+        # import pdb; pdb.set_trace()
+        try:
+            assert self._scales.shape == (1, self.training_set_labels.shape[1])
+        except AssertionError as e:
+            raise ValueError("computed _scales has the wrong shape") from e
+
         self._fiducials = __fiducial_labels_function(self.training_set_labels)
+
         self._design_matrix = vectorizer(
             (self.training_set_labels - self._fiducials) / self._scales
         ).T
@@ -462,7 +469,7 @@ class CannonModel(object):
 
         return None
 
-    def _verify_training_labels(self, training_set_labels, rho_warning=0.90):
+    def _verify_training_labels(self, training_set_labels, rho_warning=0.90, **kwargs):
         """
         Verify the training labels for the appropriate shape and context.
 

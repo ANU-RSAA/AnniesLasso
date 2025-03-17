@@ -96,6 +96,7 @@ def test__pixel_access_input_none(default, index):
     [
         (["a"], [[("a", 2)]]),
         (["a", "b"], [[("a", 2)], [("a", 1), ("b", 1)], [("b", 3)]]),
+        (["Teff", "H", "z"], [[("Teff", 1)], [("Teff", 2), ("H", 1)], [("H", 2), ("z", 3)]]),
     ],
 )
 class TestCannonModelInit:
@@ -803,6 +804,25 @@ class TestCannonModelInit:
 
         m.reset()
         assert not m.is_trained, "Model reporting trained after reset!"
+
+    @pytest.mark.parametrize("scale_labels_function", [
+        lambda l: np.ptp(np.percentile(l, [2.5, 97.5], axis=0), axis=0, keepdims=True),
+        lambda l: np.ptp(np.percentile(l, [10.0, 75.0], axis=0), axis=0, keepdims=True),
+    ])
+    def test_cannonmodel__scales_init(
+        self,
+        vectorizer,
+        label_names,
+        terms,
+        scale_labels_function
+    ):
+        test_labels = np.ones((10, len(label_names)))
+        for i in range(10):
+            test_labels[i, :] = i
+        vec = vectorizer(label_names=label_names, terms=terms)
+        m = model.CannonModel(test_labels, None, None, vec, __scale_labels_function=scale_labels_function)
+
+        assert np.all(m._scales == scale_labels_function(test_labels))
 
     @pytest.mark.parametrize(
         "test_value",
