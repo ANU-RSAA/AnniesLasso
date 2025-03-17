@@ -169,7 +169,7 @@ class CannonModel(object):
             assert self._scales.shape == (1, self.training_set_labels.shape[1])
         except AssertionError as e:
             raise ValueError(
-                f"computed _scales has the wrong shape {self._scales.shape} - should be {(1, self.training_set_labels.shape[1])}"
+                f"computed _scales from __scale_labels_function has the wrong shape {self._scales.shape} - should be {(1, self.training_set_labels.shape[1])}"
             ) from e
 
         self._fiducials = __fiducial_labels_function(self.training_set_labels)

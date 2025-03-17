@@ -96,7 +96,10 @@ def test__pixel_access_input_none(default, index):
     [
         (["a"], [[("a", 2)]]),
         (["a", "b"], [[("a", 2)], [("a", 1), ("b", 1)], [("b", 3)]]),
-        (["Teff", "H", "z"], [[("Teff", 1)], [("Teff", 2), ("H", 1)], [("H", 2), ("z", 3)]]),
+        (
+            ["Teff", "H", "z"],
+            [[("Teff", 1)], [("Teff", 2), ("H", 1)], [("H", 2), ("z", 3)]],
+        ),
     ],
 )
 class TestCannonModelInit:
@@ -271,9 +274,7 @@ class TestCannonModelInit:
                 (label_shape,), names=label_names, formats=["f8" for _ in label_names]
             )
             for i, k in enumerate(label_names, start=1):
-                training_labels[k] = (
-                    np.ones(label_shape) * i
-                )
+                training_labels[k] = np.ones(label_shape) * i
                 training_labels[k][0] = bad_value  # Use integer to track values
         elif input_type == "ndarray":
             training_labels = np.zeros((label_shape, len(label_names)))
@@ -805,24 +806,54 @@ class TestCannonModelInit:
         m.reset()
         assert not m.is_trained, "Model reporting trained after reset!"
 
-    @pytest.mark.parametrize("scale_labels_function", [
-        lambda l: np.ptp(np.percentile(l, [2.5, 97.5], axis=0), axis=0, keepdims=True),
-        lambda l: np.ptp(np.percentile(l, [10.0, 75.0], axis=0), axis=0, keepdims=True),
-    ])
+    @pytest.mark.parametrize(
+        "scale_labels_function",
+        [
+            lambda l: np.ptp(
+                np.percentile(l, [2.5, 97.5], axis=0), axis=0, keepdims=True
+            ),
+            lambda l: np.ptp(
+                np.percentile(l, [10.0, 75.0], axis=0), axis=0, keepdims=True
+            ),
+        ],
+    )
     def test_cannonmodel__scales_init(
-        self,
-        vectorizer,
-        label_names,
-        terms,
-        scale_labels_function
+        self, vectorizer, label_names, terms, scale_labels_function
     ):
         test_labels = np.ones((10, len(label_names)))
         for i in range(10):
             test_labels[i, :] = i
         vec = vectorizer(label_names=label_names, terms=terms)
-        m = model.CannonModel(test_labels, None, None, vec, __scale_labels_function=scale_labels_function)
+        m = model.CannonModel(
+            test_labels, None, None, vec, __scale_labels_function=scale_labels_function
+        )
 
         assert np.all(m._scales == scale_labels_function(test_labels))
+
+    @pytest.mark.parametrize(
+        "scale_labels_function",
+        [
+            lambda l: np.ptp(np.percentile(l, [2.5, 97.5], axis=0), axis=0),
+            lambda l: np.ptp(np.percentile(l, [10.0, 75.0], axis=0), axis=0),
+            lambda l: np.mean(l),
+            np.mean,  # This method of input will actually work, if given the right output shape - this isn't though
+        ],
+    )
+    def test_cannonmodel__scales_init_bad(
+        self, vectorizer, label_names, terms, scale_labels_function
+    ):
+        test_labels = np.ones((10, len(label_names)))
+        for i in range(10):
+            test_labels[i, :] = i
+        vec = vectorizer(label_names=label_names, terms=terms)
+        with pytest.raises(ValueError):
+            m = model.CannonModel(
+                test_labels,
+                None,
+                None,
+                vec,
+                __scale_labels_function=scale_labels_function,
+            )
 
     @pytest.mark.parametrize(
         "test_value",
