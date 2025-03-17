@@ -153,7 +153,9 @@ class CannonModel(object):
         # to training_set_labels
         __scale_labels_function = kwargs.get(
             "__scale_labels_function",
-            lambda l: np.ptp(np.percentile(l, [2.5, 97.5], axis=0), axis=0, keepdims=True),
+            lambda l: np.ptp(
+                np.percentile(l, [2.5, 97.5], axis=0), axis=0, keepdims=True
+            ),
         )
         __fiducial_labels_function = kwargs.get(
             "__fiducial_labels_function",
@@ -166,7 +168,9 @@ class CannonModel(object):
         try:
             assert self._scales.shape == (1, self.training_set_labels.shape[1])
         except AssertionError as e:
-            raise ValueError("computed _scales has the wrong shape") from e
+            raise ValueError(
+                f"computed _scales has the wrong shape {self._scales.shape} - should be {(1, self.training_set_labels.shape[1])}"
+            ) from e
 
         self._fiducials = __fiducial_labels_function(self.training_set_labels)
 
