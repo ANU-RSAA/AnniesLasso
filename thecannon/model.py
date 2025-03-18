@@ -174,7 +174,7 @@ class CannonModel(object):
 
         try:
             self._fiducials = __fiducial_labels_function(self.training_set_labels)
-            assert self._fiducials.shape == (self.training_set_labels.shape[1], )
+            assert self._fiducials.shape == (self.training_set_labels.shape[1],)
         except TypeError as e:
             raise ValueError("__fiducial_labels_function must be callable")
         except AssertionError as e:
