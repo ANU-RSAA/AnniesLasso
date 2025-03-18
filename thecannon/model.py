@@ -172,7 +172,15 @@ class CannonModel(object):
                 f"computed _scales from __scale_labels_function has the wrong shape {self._scales.shape} - should be {(1, self.training_set_labels.shape[1])}"
             ) from e
 
-        self._fiducials = __fiducial_labels_function(self.training_set_labels)
+        try:
+            self._fiducials = __fiducial_labels_function(self.training_set_labels)
+            assert self._fiducials.shape == (self.training_set_labels.shape[1], )
+        except TypeError as e:
+            raise ValueError("__fiducial_labels_function must be callable")
+        except AssertionError as e:
+            raise ValueError(
+                f"computed _fiducials from __fiducial_labels_function has the wrong shape {self._fiducials.shape} - should be {(self.training_set_labels.shape[1],)}"
+            ) from e
 
         self._design_matrix = vectorizer(
             (self.training_set_labels - self._fiducials) / self._scales

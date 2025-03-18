@@ -833,14 +833,14 @@ class TestCannonModelInit:
     @pytest.mark.parametrize(
         "scale_labels_function",
         [
-            lambda l: np.ptp(np.percentile(l, [2.5, 97.5], axis=0), axis=0),
-            lambda l: np.ptp(np.percentile(l, [10.0, 75.0], axis=0), axis=0),
+            lambda l: np.ptp(np.percentile(l, [2.5, 97.5], axis=0), axis=0, keepdims=False),
+            lambda l: np.ptp(np.percentile(l, [10.0, 75.0], axis=0), axis=0, keepdims=False),
             lambda l: np.mean(l),
             np.mean,  # This method of input will actually work, if given the right output shape - this isn't though
             "a",
             3,
             [1, 2, 3],
-            "np.ptp"
+            "np.ptp",
         ],
     )
     def test_cannonmodel__scales_init_bad(
@@ -857,6 +857,58 @@ class TestCannonModelInit:
                 None,
                 vec,
                 __scale_labels_function=scale_labels_function,
+            )
+
+    @pytest.mark.parametrize(
+        "fiducial_labels_function",
+        [
+            lambda l: np.percentile(l, 65, axis=0),
+            lambda l: np.percentile(l, 10, axis=0),
+            lambda l: np.mean(l, axis=0),
+            lambda l: np.median(l, axis=0),
+        ],
+    )
+    def test_cannonmodel__fiducials_init(
+        self, vectorizer, label_names, terms, fiducial_labels_function
+    ):
+        test_labels = np.ones((10, len(label_names)))
+        for i in range(10):
+            test_labels[i, :] = i
+        vec = vectorizer(label_names=label_names, terms=terms)
+        m = model.CannonModel(
+            test_labels, None, None, vec, __fiducial_labels_function=fiducial_labels_function
+        )
+
+        assert np.all(m._fiducials == fiducial_labels_function(test_labels))
+
+
+    @pytest.mark.parametrize(
+        "fiducial_labels_function",
+        [
+            lambda l: np.ptp(np.percentile(l, [2.5, 97.5], axis=0), axis=0, keepdims=True),
+            lambda l: np.ptp(np.percentile(l, [10.0, 75.0], axis=0), axis=0, keepdims=True),
+            lambda l: np.mean(l),
+            np.mean,  # This method of input will actually work, if given the right output shape - this isn't though
+            "a",
+            3,
+            [1, 2, 3],
+            "np.ptp",
+        ],
+    )
+    def test_cannonmodel__fiducials_init_bad(
+        self, vectorizer, label_names, terms, fiducial_labels_function
+    ):
+        test_labels = np.ones((10, len(label_names)))
+        for i in range(10):
+            test_labels[i, :] = i
+        vec = vectorizer(label_names=label_names, terms=terms)
+        with pytest.raises(ValueError):
+            m = model.CannonModel(
+                test_labels,
+                None,
+                None,
+                vec,
+                __fiducial_labels_function=fiducial_labels_function,
             )
 
     @pytest.mark.parametrize(
