@@ -1030,7 +1030,7 @@ class TestCannonModelInit:
 
         if len(label_names) == 1:
             # import pdb; pdb.set_trace()
-            with pytest.raises(RuntimeError, match="single label"):
+            with pytest.raises(RuntimeError, match="with a single label"):
                 _ = m.in_convex_hull(test_labels)
 
         else:
@@ -1048,6 +1048,29 @@ class TestCannonModelInit:
             assert np.count_nonzero(~ich) == len(
                 out_of_hull_indices
             ), f"Should have {len(out_of_hull_indices)} out of hull points, have {np.count_nonzero(ich)}"
+
+    @pytest.mark.parametrize("bad_label_size", [6, 10])
+    def test_cannonmodel_in_convex_hull(
+        self, vectorizer, label_names, terms, bad_label_size
+    ):
+        if len(label_names) == 1:
+            pytest.skip()
+
+        training_labels = np.random.random(
+            (10, len(label_names))
+        )  # Guaranteed to be in range (0, 1)
+
+        m = model.CannonModel(
+            training_labels,
+            None,
+            None,
+            vectorizer(label_names=label_names, terms=terms),
+        )
+
+        test_labels = np.ones((100, bad_label_size)) * 0.5  ## All inside hull
+
+        with pytest.raises(ValueError, match="expected"):
+            _ = m.in_convex_hull(test_labels)
 
     @pytest.mark.parametrize(
         "test_value",
