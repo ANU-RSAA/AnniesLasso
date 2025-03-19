@@ -550,6 +550,9 @@ class CannonModel(object):
             the labelled set.
         """
 
+        if self.training_set_labels.shape[1] == 1:
+            raise RuntimeError("Cannot run in_convex_hull with a single label")
+
         labels = np.atleast_2d(labels)
         if labels.shape[1] != self.training_set_labels.shape[1]:
             raise ValueError(
@@ -559,6 +562,7 @@ class CannonModel(object):
             )
 
         hull = Delaunay(self.training_set_labels)
+        # import pdb; pdb.set_trace()
         return hull.find_simplex(labels) >= 0
 
     def write(
