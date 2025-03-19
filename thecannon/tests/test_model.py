@@ -83,6 +83,7 @@ def test__pixel_access_input_none(default, index):
         model.CannonModel._pixel_access(None, index, default=default) == default
     ), "Unexpected behaviour for None input array"
 
+
 @pytest.mark.parametrize(
     "vectorizer",
     [
@@ -1004,23 +1005,27 @@ class TestCannonModelInit:
             == vec((m.training_set_labels - m._fiducials) / m._scales).T
         ), "definition of _design_matrix has changed!"
 
-    @pytest.mark.parametrize("out_of_hull_indices", [
-        [(2, 0)],
-        [(4, 0), (3, 0), (2, 0)],
-    ])
-    def test_cannonmodel_in_convex_hull(self,
-        vectorizer,
-        label_names,
-        terms, out_of_hull_indices):
-        training_labels = np.random.random((10, len(label_names)))  # Guaranteed to be in range (0, 1)
+    @pytest.mark.parametrize(
+        "out_of_hull_indices",
+        [
+            [(2, 0)],
+            [(4, 0), (3, 0), (2, 0)],
+        ],
+    )
+    def test_cannonmodel_in_convex_hull(
+        self, vectorizer, label_names, terms, out_of_hull_indices
+    ):
+        training_labels = np.random.random(
+            (10, len(label_names))
+        )  # Guaranteed to be in range (0, 1)
 
         m = model.CannonModel(
-                training_labels,
-                None,
-                None,
-                vectorizer(label_names=label_names, terms=terms),
-            )
-        
+            training_labels,
+            None,
+            None,
+            vectorizer(label_names=label_names, terms=terms),
+        )
+
         test_labels = np.ones((100, len(label_names))) * 0.5  ## All inside hull
 
         if len(label_names) == 1:
@@ -1029,15 +1034,20 @@ class TestCannonModelInit:
                 _ = m.in_convex_hull(test_labels)
 
         else:
-            
-            assert np.all(m.in_convex_hull(test_labels)), "All test_labels should be within hull at first"
+            assert np.all(
+                m.in_convex_hull(test_labels)
+            ), "All test_labels should be within hull at first"
 
             for ij in out_of_hull_indices:
                 test_labels[ij] = 2.0  # Outside hull
 
             ich = m.in_convex_hull(test_labels)
-            assert ~np.all(ich), "There should now be some labels outside the convex hull"
-            assert np.count_nonzero(~ich) == len(out_of_hull_indices), f"Should have {len(out_of_hull_indices)} out of hull points, have {np.count_nonzero(ich)}" 
+            assert ~np.all(
+                ich
+            ), "There should now be some labels outside the convex hull"
+            assert np.count_nonzero(~ich) == len(
+                out_of_hull_indices
+            ), f"Should have {len(out_of_hull_indices)} out of hull points, have {np.count_nonzero(ich)}"
 
     @pytest.mark.parametrize(
         "test_value",
