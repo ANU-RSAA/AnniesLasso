@@ -333,6 +333,26 @@ class TestCannonModelInit:
         with pytest.raises(ValueError):
             _ = model.CannonModel(training_labels, fluxes, ivar, vec)
 
+    @pytest.mark.parametrize("correlation_direction", [1.1, -1.1])
+    @pytest.mark.parametrize("training_shape", [10, 100, 1000])
+    def test_cannonmodel_training_labels_correlated_warning(
+        self, vectorizer, label_names, terms, correlation_direction, training_shape, caplog
+    ):
+        training_labels = np.random.random((training_shape, len(label_names)))
+        # Make the first term monotonically increase
+        training_labels[:, 0] = np.asarray([float(i) for i in range(training_labels.shape[0])])
+        # Make the last term monotonically increase/decrease according to correlation_direction
+        training_labels[:, -1] = training_labels[:, 0] * correlation_direction
+        # Leave all other terms random (so hopefully, totally uncorrelated)
+
+        m = model.CannonModel(training_labels, None, None, vectorizer(label_names=label_names, terms=terms))
+        
+        if len(label_names) == 1:  # Should be no messages about correlation
+            assert "are highly correlated" not in caplog.text, "Received a correlation warning with only one label!"
+        else:  # Should have received a correlation warning (+/-) with first and last labels
+            assert f"Labels '{label_names[-1]}' and '{label_names[0]}' are highly correlated" in caplog.text, "Did not get expected correlation warning!"
+
+
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
     def test_cannonmodel_censoring_dict_input(
         self, vectorizer, label_names, terms, training_shape

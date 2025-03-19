@@ -518,12 +518,13 @@ class CannonModel(object):
             rho[np.diag_indices(K)] = 0.0
             indices = np.argsort(rho.flatten())[::-1]
 
+            # FIXME use array logic here for speed-up
             for index in indices:
                 x, y = (index % K, int(index / K))
-                rho_xy = rho[x, y]
+                rho_xy = abs(rho[x, y])
                 if rho_xy >= rho_warning:
                     if x > y:  # One warning per correlated label pair.
-                        logger.warn(
+                        logger.warning(
                             "Labels '{X}' and '{Y}' are highly correlated ("
                             "rho = {rho_xy:.2}). This may cause very slow training "
                             "times. Are both labels needed?".format(
@@ -532,8 +533,6 @@ class CannonModel(object):
                                 rho_xy=rho_xy,
                             )
                         )
-                else:
-                    break
 
         return None
 
