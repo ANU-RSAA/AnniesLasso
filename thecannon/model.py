@@ -562,7 +562,6 @@ class CannonModel(object):
             )
 
         hull = Delaunay(self.training_set_labels)
-        # import pdb; pdb.set_trace()
         return hull.find_simplex(labels) >= 0
 
     def write(
