@@ -1050,7 +1050,7 @@ class TestCannonModelInit:
             ), f"Should have {len(out_of_hull_indices)} out of hull points, have {np.count_nonzero(ich)}"
 
     @pytest.mark.parametrize("bad_label_size", [6, 10])
-    def test_cannonmodel_in_convex_hull(
+    def test_cannonmodel_in_convex_hull_bad_label_size(
         self, vectorizer, label_names, terms, bad_label_size
     ):
         if len(label_names) == 1:
