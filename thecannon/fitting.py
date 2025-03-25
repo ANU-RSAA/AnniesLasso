@@ -5,7 +5,7 @@
 Fitting functions for use in The Cannon.
 """
 
-from __future__ import division, print_function, absolute_import, unicode_literals
+# from __future__ import division, print_function, absolute_import, unicode_literals
 
 __all__ = [
     "fit_spectrum",
@@ -272,7 +272,22 @@ def chi_sq(theta, design_matrix, flux, ivar, axis=None, gradient=True):
         The chi-squared difference between the spectral model and flux, and
         optionally, the Jacobian.
     """
-    residuals = np.dot(theta, design_matrix.T) - flux
+    # Input checking
+    if theta is None:
+        raise ValueError("theta cannot be None")
+    if design_matrix is None:
+        raise ValueError("design_matrix cannot be None")
+    if flux is None:
+        raise ValueError("flux cannot be None")
+    if ivar is None:
+        raise ValueError("ivar cannot be None")
+    if flux.shape != ivar.shape:
+        raise ValueError("flux and ivar have inconsistent shapes")
+
+    try:
+        residuals = np.dot(theta, design_matrix.T) - flux
+    except ValueError as e:
+        raise ValueError("inconsistent shapes between theta, design_matrix.T and flux") from e
 
     ivar_residuals = ivar * residuals
     f = np.sum(ivar_residuals * residuals, axis=axis)
