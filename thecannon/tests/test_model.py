@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-from thecannon import model
+from thecannon import model, restricted
 from thecannon.vectorizer.base import BaseVectorizer
 from thecannon.vectorizer.polynomial import PolynomialVectorizer
 from thecannon.censoring import Censors
@@ -84,6 +84,10 @@ def test__pixel_access_input_none(default, index):
     ), "Unexpected behaviour for None input array"
 
 
+@pytest.mark.parametrize("test_model,module,name", [
+    (model.CannonModel, "model", "CannonModel"),
+    (restricted.RestrictedCannonModel, "restricted", "RestrictedCannonModel"),
+])
 @pytest.mark.parametrize(
     "vectorizer",
     [
@@ -121,6 +125,9 @@ class TestCannonModelInit:
     )
     def test_cannonmodel_init_mismatched_training_sets(
         self,
+        test_model,
+        module,
+        name,
         vectorizer,
         label_names,
         terms,
@@ -147,7 +154,7 @@ class TestCannonModelInit:
         )
 
         with pytest.raises(ValueError, match=error_match):
-            _ = model.CannonModel(
+            _ = test_model(
                 training_set_labels, training_set_flux, training_set_ivar, vec
             )
 
@@ -157,7 +164,7 @@ class TestCannonModelInit:
     @pytest.mark.parametrize("inf_posn", [0, 25, 50, 75, 99])
     class TestCannonModelInfValues(object):
         def test_cannonmodel_inf_flux(
-            self, vectorizer, label_names, terms, training_set_shape, inf_posn
+            self, test_model, module, name, vectorizer, label_names, terms, training_set_shape, inf_posn
         ):
             vec = vectorizer(label_names=label_names, terms=terms)
             training_set_flux = np.ones(training_set_shape)
@@ -168,12 +175,12 @@ class TestCannonModelInit:
             training_set_labels = np.ones((training_set_shape[0], len(label_names)))
 
             with pytest.raises(ValueError, match="fluxes.*finite"):
-                _ = model.CannonModel(
+                _ = test_model(
                     training_set_labels, training_set_flux, training_set_ivar, vec
                 )
 
         def test_cannonmodel_inf_ivar(
-            self, vectorizer, label_names, terms, training_set_shape, inf_posn
+            self, test_model, module, name, vectorizer, label_names, terms, training_set_shape, inf_posn
         ):
             vec = vectorizer(label_names=label_names, terms=terms)
             training_set_flux = np.ones(training_set_shape)
@@ -184,22 +191,22 @@ class TestCannonModelInit:
             training_set_labels = np.ones(training_set_shape)
 
             with pytest.raises(ValueError, match="ivars.*finite"):
-                _ = model.CannonModel(
+                _ = test_model(
                     training_set_labels, training_set_flux, training_set_ivar, vec
                 )
 
-    def test_cannonmodel_no_training_set_labels(self, vectorizer, label_names, terms):
+    def test_cannonmodel_no_training_set_labels(self, test_model, module, name, vectorizer, label_names, terms):
         vec = vectorizer(label_names=label_names, terms=terms)
         with pytest.raises(ValueError):
-            _ = model.CannonModel(None, None, None, vec)
+            _ = test_model(None, None, None, vec)
 
     @pytest.mark.parametrize("training_labels_length", [10, 100, 1000])
     def test_cannonmodel_blank_flux_and_ivar(
-        self, vectorizer, label_names, terms, training_labels_length
+        self, test_model, module, name, vectorizer, label_names, terms, training_labels_length
     ):
         training_labels = np.ones((training_labels_length, len(label_names)))
         vec = vectorizer(label_names=label_names, terms=terms)
-        m = model.CannonModel(training_labels, None, None, vec)
+        m = test_model(training_labels, None, None, vec)
         assert (
             m.training_set_flux is None
         ), "training set flux was set without being given"
@@ -213,7 +220,7 @@ class TestCannonModelInit:
     @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
     @pytest.mark.parametrize("input_type", ["recarray", "ndarray"])
     def test_cannonmodel_training_set_labels(
-        self, vectorizer, label_names, terms, training_shape, input_type
+        self, test_model, module, name, vectorizer, label_names, terms, training_shape, input_type
     ):
         """
         This test uses np.recarray as a proxy for all table-like inputs this class __init__ could accept.
@@ -240,7 +247,7 @@ class TestCannonModelInit:
             for i, _ in enumerate(label_names, start=1):
                 training_labels[:, i - 1] = np.ones(label_shape) * i
 
-        m = model.CannonModel(training_labels, fluxes, ivar, vec)
+        m = test_model(training_labels, fluxes, ivar, vec)
 
         assert (
             type(m.training_set_labels) == np.ndarray
@@ -258,7 +265,7 @@ class TestCannonModelInit:
     @pytest.mark.parametrize("bad_value", [np.nan, np.inf])
     @pytest.mark.parametrize("input_type", ["recarray", "ndarray"])
     def test_cannonmodel_training_set_labels_bad_value(
-        self, vectorizer, label_names, terms, training_shape, bad_value, input_type
+        self, test_model, module, name, vectorizer, label_names, terms, training_shape, bad_value, input_type
     ):
         if training_shape is None:
             fluxes = None
@@ -283,11 +290,11 @@ class TestCannonModelInit:
                 training_labels[:, 0] = bad_value
 
         with pytest.raises(ValueError, match="not all finite"):
-            m = model.CannonModel(training_labels, fluxes, ivar, vec)
+            m = test_model(training_labels, fluxes, ivar, vec)
 
     @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
     def test_cannonmodel_training_labels_missing_keys(
-        self, vectorizer, label_names, terms, training_shape
+        self, test_model, module, name, vectorizer, label_names, terms, training_shape
     ):
         if training_shape is None:
             fluxes = None
@@ -303,7 +310,7 @@ class TestCannonModelInit:
         )
 
         with pytest.raises(ValueError, match="Unable to rectify"):
-            m = model.CannonModel(training_labels, fluxes, ivar, vec)
+            m = test_model(training_labels, fluxes, ivar, vec)
 
     @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
     @pytest.mark.parametrize(
@@ -314,7 +321,7 @@ class TestCannonModelInit:
         ],
     )
     def test_cannonmodel_training_labels_bad_size(
-        self, vectorizer, label_names, terms, training_shape, labels_set_shape
+        self, test_model, module, name, vectorizer, label_names, terms, training_shape, labels_set_shape
     ):
         # This actually works for the (50, 2) and terms 2 case
         if len(label_names) == 2 and labels_set_shape == (50, 2):
@@ -331,12 +338,15 @@ class TestCannonModelInit:
         training_labels = np.array(np.ones(labels_set_shape))
 
         with pytest.raises(ValueError):
-            _ = model.CannonModel(training_labels, fluxes, ivar, vec)
+            _ = test_model(training_labels, fluxes, ivar, vec)
 
     @pytest.mark.parametrize("correlation_direction", [1.1, -1.1])
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
     def test_cannonmodel_training_labels_correlated_warning(
         self,
+        test_model,
+        module,
+        name,
         vectorizer,
         label_names,
         terms,
@@ -353,7 +363,7 @@ class TestCannonModelInit:
         training_labels[:, -1] = training_labels[:, 0] * correlation_direction
         # Leave all other terms random (so hopefully, totally uncorrelated)
 
-        m = model.CannonModel(
+        m = test_model(
             training_labels,
             None,
             None,
@@ -372,7 +382,7 @@ class TestCannonModelInit:
 
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
     def test_cannonmodel_censoring_dict_input(
-        self, vectorizer, label_names, terms, training_shape
+        self, test_model, module, name, vectorizer, label_names, terms, training_shape
     ):
         vec = vectorizer(label_names=label_names, terms=terms)
         training_set_flux = np.ones((1, training_shape))
@@ -381,7 +391,7 @@ class TestCannonModelInit:
 
         censors = {l: np.zeros((training_shape,), dtype=bool) for l in label_names}
 
-        m = model.CannonModel(
+        m = test_model(
             training_set_labels,
             training_set_flux,
             training_set_ivar,
@@ -404,7 +414,7 @@ class TestCannonModelInit:
 
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
     def test_cannonmodel_censoring_censor_input(
-        self, vectorizer, label_names, terms, training_shape
+        self, test_model, module, name, vectorizer, label_names, terms, training_shape
     ):
         vec = vectorizer(label_names=label_names, terms=terms)
         training_set_flux = np.ones((1, training_shape))
@@ -417,7 +427,7 @@ class TestCannonModelInit:
             {l: np.zeros(training_shape, dtype=bool) for l in label_names},
         )
 
-        m = model.CannonModel(
+        m = test_model(
             training_set_labels,
             training_set_flux,
             training_set_ivar,
@@ -433,7 +443,7 @@ class TestCannonModelInit:
 
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
     def test_cannonmodel_censoring_censor_input_bad_vec_terms(
-        self, vectorizer, label_names, terms, training_shape
+        self, test_model, module, name, vectorizer, label_names, terms, training_shape
     ):
         vec = vectorizer(label_names=label_names, terms=terms)
         training_set_flux = np.ones((1, training_shape))
@@ -447,7 +457,7 @@ class TestCannonModelInit:
         )
 
         with pytest.raises(ValueError, match="Censor label names !="):
-            m = model.CannonModel(
+            m = test_model(
                 training_set_labels,
                 training_set_flux,
                 training_set_ivar,
@@ -457,7 +467,7 @@ class TestCannonModelInit:
 
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
     def test_cannonmodel_censoring_censor_input_bad_num_pixels(
-        self, vectorizer, label_names, terms, training_shape
+        self, test_model, module, name, vectorizer, label_names, terms, training_shape
     ):
         vec = vectorizer(label_names=label_names, terms=terms)
         training_set_flux = np.ones((1, training_shape))
@@ -471,7 +481,7 @@ class TestCannonModelInit:
         )
 
         with pytest.raises(ValueError, match="Censor num_pixels !="):
-            m = model.CannonModel(
+            m = test_model(
                 training_set_labels,
                 training_set_flux,
                 training_set_ivar,
@@ -482,7 +492,7 @@ class TestCannonModelInit:
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
     @pytest.mark.parametrize("censors", [list(), 1, 1.0, "dict", "censors"])
     def test_cannonmodel_censoring_censor_inpu_bad_type(
-        self, vectorizer, label_names, terms, training_shape, censors
+        self, test_model, module, name, vectorizer, label_names, terms, training_shape, censors
     ):
         vec = vectorizer(label_names=label_names, terms=terms)
         training_set_flux = np.ones((1, training_shape))
@@ -490,7 +500,7 @@ class TestCannonModelInit:
         training_set_labels = np.ones((1, len(label_names)))
 
         with pytest.raises(TypeError, match="censors must be"):
-            m = model.CannonModel(
+            m = test_model(
                 training_set_labels,
                 training_set_flux,
                 training_set_ivar,
@@ -507,6 +517,9 @@ class TestCannonModelInit:
     def test_cannonmodel_str(
         self,
         mock_is_trained,
+        test_model,
+        module,
+        name,
         vectorizer,
         label_names,
         terms,
@@ -524,7 +537,7 @@ class TestCannonModelInit:
         vec = vectorizer(label_names=label_names, terms=terms)
         mock_is_trained.return_value = trained
 
-        m = model.CannonModel(training_set_labels, fluxes, ivar, vec)
+        m = test_model(training_set_labels, fluxes, ivar, vec)
         str_rep = str(m)
 
         assert ("trained" in str_rep) == trained, "String rep wrong on training status"
@@ -541,17 +554,17 @@ class TestCannonModelInit:
             f"{no_of_stars} stars" in str_rep
         ), "Str rep not showing right no of stars"
 
-    def test_cannonmodel_repr(self, vectorizer, label_names, terms):
+    def test_cannonmodel_repr(self, test_model, module, name, vectorizer, label_names, terms):
         vec = vectorizer(label_names=label_names, terms=terms)
-        m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
+        m = test_model(np.ones((10, len(label_names))), None, None, vec)
 
         str_rep = m.__repr__()
-        assert "model" in str_rep, "Didn't get correct module name"
-        assert "CannonModel" in str_rep, "Didn't get correct class name"
+        assert module in str_rep, "Didn't get correct module name"
+        assert name in str_rep, "Didn't get correct class name"
 
     @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
     def test_cannonmodel_dispersion_input(
-        self, vectorizer, label_names, terms, training_shape
+        self, test_model, module, name, vectorizer, label_names, terms, training_shape
     ):
         vec = vectorizer(label_names=label_names, terms=terms)
         if training_shape is None:
@@ -564,7 +577,7 @@ class TestCannonModelInit:
 
         dispersion = np.ones(training_shape if training_shape is not None else 10)
 
-        m = model.CannonModel(
+        m = test_model(
             training_set_labels,
             training_set_flux,
             training_set_ivar,
@@ -578,7 +591,7 @@ class TestCannonModelInit:
 
     @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
     def test_cannonmodel_dispersion_input_bad_size(
-        self, vectorizer, label_names, terms, training_shape
+        self, test_model, module, name, vectorizer, label_names, terms, training_shape
     ):
         vec = vectorizer(label_names=label_names, terms=terms)
         if training_shape is None:
@@ -593,7 +606,7 @@ class TestCannonModelInit:
         with pytest.raises(
             ValueError, match="does not match the number of pixels per star"
         ):
-            m = model.CannonModel(
+            m = test_model(
                 training_set_labels,
                 training_set_flux,
                 training_set_ivar,
@@ -604,7 +617,7 @@ class TestCannonModelInit:
     @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
     @pytest.mark.parametrize("bad_value", [np.inf, np.nan])
     def test_cannonmodel_dispersion_input_bad_value(
-        self, vectorizer, label_names, terms, training_shape, bad_value
+        self, test_model, module, name, vectorizer, label_names, terms, training_shape, bad_value
     ):
         vec = vectorizer(label_names=label_names, terms=terms)
         if training_shape is None:
@@ -618,7 +631,7 @@ class TestCannonModelInit:
         dispersion = np.ones(training_shape if training_shape is not None else 10)
         dispersion[-1] = bad_value
         with pytest.raises(ValueError, match="must be finite"):
-            m = model.CannonModel(
+            m = test_model(
                 training_set_labels,
                 training_set_flux,
                 training_set_ivar,
@@ -629,7 +642,7 @@ class TestCannonModelInit:
     @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
     @pytest.mark.parametrize("bad_type", [str, np.string_])
     def test_cannonmodel_dispersion_input_bad_type(
-        self, vectorizer, label_names, terms, training_shape, bad_type
+        self, test_model, module, name, vectorizer, label_names, terms, training_shape, bad_type
     ):
         vec = vectorizer(label_names=label_names, terms=terms)
         if training_shape is None:
@@ -644,7 +657,7 @@ class TestCannonModelInit:
             training_shape if training_shape is not None else 10, dtype=bad_type
         )
         with pytest.raises(ValueError, match="are not float-like"):
-            m = model.CannonModel(
+            m = test_model(
                 training_set_labels,
                 training_set_flux,
                 training_set_ivar,
@@ -668,6 +681,9 @@ class TestCannonModelInit:
     )
     def test_cannonmodel_regularization_input(
         self,
+        test_model,
+        module,
+        name,
         vectorizer,
         label_names,
         terms,
@@ -689,7 +705,7 @@ class TestCannonModelInit:
                 training_shape if training_shape is not None else 10
             )
 
-        m = model.CannonModel(
+        m = test_model(
             training_set_labels,
             training_set_flux,
             training_set_ivar,
@@ -704,7 +720,7 @@ class TestCannonModelInit:
 
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
     def test_cannonmodel_regularization_bad_shape(
-        self, vectorizer, label_names, terms, training_shape
+        self, test_model, module, name, vectorizer, label_names, terms, training_shape
     ):
         vec = vectorizer(label_names=label_names, terms=terms)
         training_set_flux = np.ones((1, training_shape))
@@ -714,7 +730,7 @@ class TestCannonModelInit:
         regularization = np.ones(training_shape + training_shape)
 
         with pytest.raises(ValueError, match="must be of size `num_pixels`"):
-            m = model.CannonModel(
+            m = test_model(
                 training_set_labels,
                 training_set_flux,
                 training_set_ivar,
@@ -735,7 +751,7 @@ class TestCannonModelInit:
     )
     @pytest.mark.parametrize("bad_value", [np.nan, np.inf, -1, -1.0, "a"])
     def test_cannonmodel_regularization_input_bad_value(
-        self, vectorizer, label_names, terms, training_shape, regularization, bad_value
+        self, test_model, module, name, vectorizer, label_names, terms, training_shape, regularization, bad_value
     ):
         vec = vectorizer(label_names=label_names, terms=terms)
         if training_shape is None:
@@ -758,7 +774,7 @@ class TestCannonModelInit:
             regularization = bad_value
 
         with pytest.raises(ValueError, match="must be positive and finite"):
-            m = model.CannonModel(
+            m = test_model(
                 training_set_labels,
                 training_set_flux,
                 training_set_ivar,
@@ -789,6 +805,9 @@ class TestCannonModelInit:
     )
     def test_cannonmodel_training_status(
         self,
+        test_model,
+        module,
+        name,
         vectorizer,
         label_names,
         terms,
@@ -822,7 +841,7 @@ class TestCannonModelInit:
                 training_shape if training_shape is not None else 10
             )
 
-        m = model.CannonModel(
+        m = test_model(
             training_set_labels,
             training_set_flux,
             training_set_ivar,
@@ -855,13 +874,13 @@ class TestCannonModelInit:
         ],
     )
     def test_cannonmodel__scales_init(
-        self, vectorizer, label_names, terms, scale_labels_function
+        self, test_model, module, name, vectorizer, label_names, terms, scale_labels_function
     ):
         test_labels = np.ones((10, len(label_names)))
         for i in range(10):
             test_labels[i, :] = i
         vec = vectorizer(label_names=label_names, terms=terms)
-        m = model.CannonModel(
+        m = test_model(
             test_labels, None, None, vec, __scale_labels_function=scale_labels_function
         )
 
@@ -885,14 +904,14 @@ class TestCannonModelInit:
         ],
     )
     def test_cannonmodel__scales_init_bad(
-        self, vectorizer, label_names, terms, scale_labels_function
+        self, test_model, module, name, vectorizer, label_names, terms, scale_labels_function
     ):
         test_labels = np.ones((10, len(label_names)))
         for i in range(10):
             test_labels[i, :] = i
         vec = vectorizer(label_names=label_names, terms=terms)
         with pytest.raises(ValueError):
-            m = model.CannonModel(
+            m = test_model(
                 test_labels,
                 None,
                 None,
@@ -910,13 +929,13 @@ class TestCannonModelInit:
         ],
     )
     def test_cannonmodel__fiducials_init(
-        self, vectorizer, label_names, terms, fiducial_labels_function
+        self, test_model, module, name, vectorizer, label_names, terms, fiducial_labels_function
     ):
         test_labels = np.ones((10, len(label_names)))
         for i in range(10):
             test_labels[i, :] = i
         vec = vectorizer(label_names=label_names, terms=terms)
-        m = model.CannonModel(
+        m = test_model(
             test_labels,
             None,
             None,
@@ -944,14 +963,14 @@ class TestCannonModelInit:
         ],
     )
     def test_cannonmodel__fiducials_init_bad(
-        self, vectorizer, label_names, terms, fiducial_labels_function
+        self, test_model, module, name, vectorizer, label_names, terms, fiducial_labels_function
     ):
         test_labels = np.ones((10, len(label_names)))
         for i in range(10):
             test_labels[i, :] = i
         vec = vectorizer(label_names=label_names, terms=terms)
         with pytest.raises(ValueError):
-            m = model.CannonModel(
+            m = test_model(
                 test_labels,
                 None,
                 None,
@@ -981,6 +1000,9 @@ class TestCannonModelInit:
     )
     def test_cannonmodel__design_matrix_init(
         self,
+        test_model,
+        module,
+        name,
         vectorizer,
         label_names,
         terms,
@@ -991,7 +1013,7 @@ class TestCannonModelInit:
         for i in range(10):
             test_labels[i, :] = i
         vec = vectorizer(label_names=label_names, terms=terms)
-        m = model.CannonModel(
+        m = test_model(
             test_labels,
             None,
             None,
@@ -1013,13 +1035,13 @@ class TestCannonModelInit:
         ],
     )
     def test_cannonmodel_in_convex_hull(
-        self, vectorizer, label_names, terms, out_of_hull_indices
+        self, test_model, module, name, vectorizer, label_names, terms, out_of_hull_indices
     ):
         training_labels = np.random.random(
             (10, len(label_names))
         )  # Guaranteed to be in range (0, 1)
 
-        m = model.CannonModel(
+        m = test_model(
             training_labels,
             None,
             None,
@@ -1051,7 +1073,7 @@ class TestCannonModelInit:
 
     @pytest.mark.parametrize("bad_label_size", [6, 10])
     def test_cannonmodel_in_convex_hull_bad_label_size(
-        self, vectorizer, label_names, terms, bad_label_size
+        self, test_model, module, name, vectorizer, label_names, terms, bad_label_size
     ):
         if len(label_names) == 1:
             pytest.skip()
@@ -1060,7 +1082,7 @@ class TestCannonModelInit:
             (10, len(label_names))
         )  # Guaranteed to be in range (0, 1)
 
-        m = model.CannonModel(
+        m = test_model(
             training_labels,
             None,
             None,
@@ -1090,28 +1112,28 @@ class TestCannonModelInit:
         """
 
         def test_cannonmodel_theta_property(
-            self, vectorizer, label_names, terms, test_value
+            self, test_model, module, name, vectorizer, label_names, terms, test_value
         ):
             vec = vectorizer(label_names=label_names, terms=terms)
-            m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
+            m = test_model(np.ones((10, len(label_names))), None, None, vec)
 
             m._theta = test_value
             assert np.all(m.theta == test_value), "Theta property broken"
 
         def test_cannonmodel_s2_property(
-            self, vectorizer, label_names, terms, test_value
+            self, test_model, module, name, vectorizer, label_names, terms, test_value
         ):
             vec = vectorizer(label_names=label_names, terms=terms)
-            m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
+            m = test_model(np.ones((10, len(label_names))), None, None, vec)
 
             m._s2 = test_value
             assert np.all(m.s2 == test_value), "s2 property broken"
 
         def test_cannonmodel_design_matrix_property(
-            self, vectorizer, label_names, terms, test_value
+            self, test_model, module, name, vectorizer, label_names, terms, test_value
         ):
             vec = vectorizer(label_names=label_names, terms=terms)
-            m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
+            m = test_model(np.ones((10, len(label_names))), None, None, vec)
 
             m._design_matrix = test_value
             assert np.all(
@@ -1119,19 +1141,19 @@ class TestCannonModelInit:
             ), "design_matrix property broken"
 
         def test_cannonmodel_dispersion_property(
-            self, vectorizer, label_names, terms, test_value
+            self, test_model, module, name, vectorizer, label_names, terms, test_value
         ):
             vec = vectorizer(label_names=label_names, terms=terms)
-            m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
+            m = test_model(np.ones((10, len(label_names))), None, None, vec)
 
             m._dispersion = test_value
             assert np.all(m.dispersion == test_value), "design_matrix property broken"
 
         def test_cannonmodel_regularization_property(
-            self, vectorizer, label_names, terms, test_value
+            self, test_model, module, name, vectorizer, label_names, terms, test_value
         ):
             vec = vectorizer(label_names=label_names, terms=terms)
-            m = model.CannonModel(np.ones((10, len(label_names))), None, None, vec)
+            m = test_model(np.ones((10, len(label_names))), None, None, vec)
 
             m._regularization = test_value
             assert np.all(
