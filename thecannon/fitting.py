@@ -287,7 +287,9 @@ def chi_sq(theta, design_matrix, flux, ivar, axis=None, gradient=True):
     try:
         residuals = np.dot(theta, design_matrix.T) - flux
     except ValueError as e:
-        raise ValueError("inconsistent shapes between theta, design_matrix.T and flux") from e
+        raise ValueError(
+            "inconsistent shapes between theta, design_matrix.T and flux"
+        ) from e
 
     ivar_residuals = ivar * residuals
     f = np.sum(ivar_residuals * residuals, axis=axis)
