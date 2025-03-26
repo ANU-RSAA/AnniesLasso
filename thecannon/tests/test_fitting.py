@@ -8,14 +8,17 @@ from thecannon import fitting
 
 
 @pytest.mark.parametrize("argnone", ["theta", "design_matrix", "flux", "ivar"])
-def test_chisq_input_none(argnone):
+@pytest.mark.parametrize("f", ["chi_sq", "_pixel_objective_function_fixed_scatter"])
+def test_chisq_input_none(argnone, f):
     dummy_array = np.ones((1,))
     args = [
         None if k == argnone else dummy_array
         for k in ["theta", "design_matrix", "flux", "ivar"]
     ]
+    if f == "_pixel_objective_function_fixed_scatter":
+        args.append(1.0)
     with pytest.raises(ValueError, match=argnone):
-        _ = fitting.chi_sq(*args)
+        _ = getattr(fitting, f)(*args)
 
 
 @pytest.mark.parametrize(
@@ -26,9 +29,15 @@ def test_chisq_input_none(argnone):
     "ivar",
     [np.ones((8,)), np.zeros((16,))],
 )
-def test_chisq_input_mismatch_flux_and_ivar(flux, ivar):
+@pytest.mark.parametrize("f", ["chi_sq", "_pixel_objective_function_fixed_scatter"])
+def test_chisq_input_mismatch_flux_and_ivar(flux, ivar, f):
     with pytest.raises(ValueError, match="flux and ivar"):
-        _ = fitting.chi_sq(np.ones(1), np.ones((1, 1)), flux, ivar)
+        if f == "chi_sq":
+            _ = fitting.chi_sq(np.ones(1), np.ones((1, 1)), flux, ivar)
+        else:
+            _ = fitting._pixel_objective_function_fixed_scatter(
+                np.ones(1), np.ones((1, 1)), flux, ivar, 1.0
+            )
 
 
 @pytest.mark.parametrize(
@@ -39,22 +48,26 @@ def test_chisq_input_mismatch_flux_and_ivar(flux, ivar):
     ],
 )
 @pytest.mark.parametrize("arg", ["flux", "ivar"])
-def test_chisq_2d_flux_or_ivar(bad_value, arg):
+@pytest.mark.parametrize("f", ["chi_sq", "_pixel_objective_function_fixed_scatter"])
+def test_chisq_2d_flux_or_ivar(bad_value, arg, f):
+    args = [
+        np.ones((5,)),
+        np.ones((10, 5)),
+        bad_value
+        if arg == "flux"
+        else np.ones(
+            10,
+        ),
+        bad_value
+        if arg == "ivar"
+        else np.ones(
+            10,
+        ),
+    ]
+    if f == "_pixel_objective_function_fixed_scatter":
+        args.append(1.0)
     with pytest.raises(ValueError, match="one-dimensional"):
-        _ = fitting.chi_sq(
-            np.ones((5,)),
-            np.ones((10, 5)),
-            bad_value
-            if arg == "flux"
-            else np.ones(
-                10,
-            ),
-            bad_value
-            if arg == "ivar"
-            else np.ones(
-                10,
-            ),
-        )
+        _ = getattr(fitting, f)(*args)
 
 
 # Every number is different to ensure coordinate mis-match somewhere
@@ -80,11 +93,13 @@ def test_chisq_2d_flux_or_ivar(bad_value, arg):
         np.ones((3,)),
     ],
 )
-def test_chisq_input_bad_shapes(theta, design_matrix, flux):
+@pytest.mark.parametrize("f", ["chi_sq", "_pixel_objective_function_fixed_scatter"])
+def test_chisq_input_bad_shapes(theta, design_matrix, flux, f):
+    args = [theta, design_matrix, flux, flux]  # Let shape of ivar == shape flux
+    if f == "_pixel_objective_function_fixed_scatter":
+        args.append(1.0)
     with pytest.raises(ValueError, match="inconsistent shapes"):
-        _ = fitting.chi_sq(
-            theta, design_matrix, flux, flux
-        )  # Let shape of ivar == shape flux
+        _ = getattr(fitting, f)(*args)
 
 
 @pytest.mark.parametrize(
@@ -100,9 +115,13 @@ def test_chisq_input_bad_shapes(theta, design_matrix, flux):
         ),
     ],
 )
-def test_chisq_input_bad_design_matrix_shape(design_matrix):
+@pytest.mark.parametrize("f", ["chi_sq", "_pixel_objective_function_fixed_scatter"])
+def test_chisq_input_bad_design_matrix_shape(design_matrix, f):
+    args = [np.ones(10), design_matrix, np.ones(10), np.ones(10)]
+    if f == "_pixel_objective_function_fixed_scatter":
+        args.append(1.0)
     with pytest.raises(ValueError, match="design_matrix must be"):
-        _ = fitting.chi_sq(np.ones(10), design_matrix, np.ones(10), np.ones(10))
+        _ = getattr(fitting, f)(*args)
 
 
 @pytest.mark.parametrize("P", [10, 100, 1000])
@@ -199,15 +218,12 @@ def test_L1Norm_variation(theta):
         L1[1] == np.hstack([0.0, np.sign(theta[1:])])
     ), "Calculation of L1 norm direction/gradient has changed"
 
-@pytest.mark.parametrize("bad_reg", [
-    -1.0,
-    0.0,
-    np.asarray([1.0]),
-    np.asarray([-1, 1]),
-    "1",
-    "a",
-    "stuff"
-])
+
+@pytest.mark.parametrize(
+    "bad_reg", [-1.0, 0.0, np.asarray([1.0]), np.asarray([-1, 1]), "1", "a", "stuff"]
+)
 def test__pixel_objective_function_fixed_scatter(bad_reg):
     with pytest.raises(ValueError, match="regularization must"):
-        _ = fitting._pixel_objective_function_fixed_scatter(None, None, None, None, bad_reg)
+        _ = fitting._pixel_objective_function_fixed_scatter(
+            None, None, None, None, bad_reg
+        )
