@@ -20,34 +20,40 @@ def test_chisq_input_none(argnone):
 
 @pytest.mark.parametrize(
     "flux",
-    [
-        np.ones((4,)),
-        np.zeros((24, ))
-    ],
+    [np.ones((4,)), np.zeros((24,))],
 )
 @pytest.mark.parametrize(
     "ivar",
-    [
-        np.ones((8,)),
-        np.zeros((16, ))
-    ],
+    [np.ones((8,)), np.zeros((16,))],
 )
 def test_chisq_input_mismatch_flux_and_ivar(flux, ivar):
     with pytest.raises(ValueError, match="flux and ivar"):
         _ = fitting.chi_sq(np.ones(1), np.ones((1, 1)), flux, ivar)
 
-@pytest.mark.parametrize("bad_value", [
-    np.ones((4, 2)),
-    np.zeros((9, 6)),
-])
+
+@pytest.mark.parametrize(
+    "bad_value",
+    [
+        np.ones((4, 2)),
+        np.zeros((9, 6)),
+    ],
+)
 @pytest.mark.parametrize("arg", ["flux", "ivar"])
 def test_chisq_2d_flux_or_ivar(bad_value, arg):
     with pytest.raises(ValueError, match="one-dimensional"):
         _ = fitting.chi_sq(
-            np.ones((5, )),
+            np.ones((5,)),
             np.ones((10, 5)),
-            bad_value if arg == "flux" else np.ones(10, ),
-            bad_value if arg == "ivar" else np.ones(10, ),
+            bad_value
+            if arg == "flux"
+            else np.ones(
+                10,
+            ),
+            bad_value
+            if arg == "ivar"
+            else np.ones(
+                10,
+            ),
         )
 
 
@@ -55,8 +61,8 @@ def test_chisq_2d_flux_or_ivar(bad_value, arg):
 @pytest.mark.parametrize(
     "theta",
     [
-        np.ones((2, )),
-        np.ones((6, )),
+        np.ones((2,)),
+        np.ones((6,)),
     ],
 )
 @pytest.mark.parametrize(
@@ -81,18 +87,56 @@ def test_chisq_input_bad_shapes(theta, design_matrix, flux):
         )  # Let shape of ivar == shape flux
 
 
-@pytest.mark.parametrize("design_matrix", [
-    np.ones((10, )),
-    np.zeros((10, 10, 10, ))
-])
+@pytest.mark.parametrize(
+    "design_matrix",
+    [
+        np.ones((10,)),
+        np.zeros(
+            (
+                10,
+                10,
+                10,
+            )
+        ),
+    ],
+)
 def test_chisq_input_bad_design_matrix_shape(design_matrix):
     with pytest.raises(ValueError, match="design_matrix must be"):
         _ = fitting.chi_sq(np.ones(10), design_matrix, np.ones(10), np.ones(10))
 
+
 @pytest.mark.parametrize("P", [10, 100, 1000])
 @pytest.mark.parametrize("S", [5, 50, 500])
 @pytest.mark.parametrize("T", [3, 30, 90])
-def test_chisq_return_formats(P, S, T):
+@pytest.mark.parametrize(
+    "chisq_expected",
+    [
+        {
+            # "S,T": <expected value>
+            "5,3": 0.5,
+            "50,3": 5.0,
+            "500,3": 50.0,
+            "5,30": 1512.5,
+            "50,30": 15125.0,
+            "500,30": 151250.0,
+            "5,90": 15312.5,
+            "50,90": 153125.0,
+            "500,90": 1531250.0,
+        }
+    ],
+)
+@pytest.mark.parametrize("Jacob_expected", [{
+    "5,3": 2.0,
+    "50,3": 20.0,
+    "500,3": 200.,
+    "5,30": 110.0,
+    "50,30": 1100.0,
+    "500,30": 11000.0,
+    "5,90": 350.0,
+    "50,90": 3500.0,
+    "500,90": 35000.0,
+}])
+def test_chisq_return_formats(P, S, T, chisq_expected, Jacob_expected):
     theta = np.ones(T)
     design_matrix = np.ones((S, T)) * 2
     flux = np.ones(S) * 5
@@ -103,4 +147,18 @@ def test_chisq_return_formats(P, S, T):
     with pytest.raises(AttributeError):
         _ = ch.shape  # Will fail if c is an array
     assert len(ch) == 2, "Did not return a 2-tuple as expected"
-    assert ch[1].shape == (T, ), "Expected a gradient/Jacobian with shape (T, )"
+    assert ch[1].shape == (T,), "Expected a gradient/Jacobian with shape (T, )"
+    assert np.all(ch[1] == pytest.approx(Jacob_expected[f"{S},{T}"])), f"Did not get expected gradient/Jacobian"
+
+    # Now, dont ask for the gradient
+    ch2 = fitting.chi_sq(theta, design_matrix, flux, ivar, gradient=False)
+    with pytest.raises(AttributeError):
+        _ = ch.shape  # Will fail if c is an array
+    assert not isinstance(ch2, tuple), "Setting gradient=False still returned a tuple"
+
+    assert ch[0] == pytest.approx(
+        ch2
+    ), "Returned different values from different gradient kwarg value"
+    assert ch2 == pytest.approx(
+        chisq_expected[f"{S},{T}"]
+    ), f"Wrong chi_sq value returned ({ch2} != {chisq_expected[f'{S},{T}']})"
