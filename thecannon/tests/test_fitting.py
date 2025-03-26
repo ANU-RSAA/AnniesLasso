@@ -170,3 +170,14 @@ def test_chisq_return_formats(P, S, T, chisq_expected, Jacob_expected):
 def test_L1Norm_variation_bad_input(bad_theta):
     with pytest.raises(ValueError, match="theta must"):
         _ = fitting.L1Norm_variation(bad_theta)
+
+@pytest.mark.parametrize("theta", [
+    np.ones(100) * -1,
+    np.zeros(50),
+    np.asarray(range(1000)),
+])
+def test_L1Norm_variation(theta):
+    L1 = fitting.L1Norm_variation(theta)
+    assert isinstance(L1, tuple) and len(L1) == 2, "Did not return a 2-tuple"
+    assert L1[0] == np.sum(np.abs(theta[1:])), "Calculation of L1 norm has changed"
+    assert np.all(L1[1] == np.hstack([0.0, np.sign(theta[1:])])), "Calculation of L1 norm direction has changed"
