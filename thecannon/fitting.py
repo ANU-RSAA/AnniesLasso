@@ -339,10 +339,13 @@ def _pixel_objective_function_fixed_scatter(
     :param theta:
         The spectral coefficients.
 
-    :param normalized_flux:
+    :param design_matrix:
+        The design matrix for the model.
+
+    :param flux:
         The normalized flux values for a single pixel across many stars.
 
-    :param adjusted_ivar:
+    :param ivar:
         The adjusted inverse variance of the normalized flux values for a single
         pixel across many stars. This adjusted inverse variance array should
         already have the scatter included.
@@ -350,13 +353,14 @@ def _pixel_objective_function_fixed_scatter(
     :param regularization:
         The regularization term to scale the L1 norm of theta with.
 
-    :param design_matrix:
-        The design matrix for the model.
-
     :param gradient: [optional]
         Also return the analytic derivative of the objective function.
     """
     # No need to input check theta, design_matrix, flux, ivar - chi_sq will do that
+    try:  # Check if finite, positive, and a single value
+        assert np.isfinite(regularization) and np.asarray(regularization).shape == () and regularization > 0
+    except (AssertionError, TypeError, ValueError):
+        raise ValueError("regularization must be a positive, finite number")
 
     if gradient:
         csq, d_csq = chi_sq(theta, design_matrix, flux, ivar, gradient=True)

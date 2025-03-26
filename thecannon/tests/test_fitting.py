@@ -197,4 +197,17 @@ def test_L1Norm_variation(theta):
     assert L1[0] == np.sum(np.abs(theta[1:])), "Calculation of L1 norm has changed"
     assert np.all(
         L1[1] == np.hstack([0.0, np.sign(theta[1:])])
-    ), "Calculation of L1 norm direction has changed"
+    ), "Calculation of L1 norm direction/gradient has changed"
+
+@pytest.mark.parametrize("bad_reg", [
+    -1.0,
+    0.0,
+    np.asarray([1.0]),
+    np.asarray([-1, 1]),
+    "1",
+    "a",
+    "stuff"
+])
+def test__pixel_objective_function_fixed_scatter(bad_reg):
+    with pytest.raises(ValueError, match="regularization must"):
+        _ = fitting._pixel_objective_function_fixed_scatter(None, None, None, None, bad_reg)
