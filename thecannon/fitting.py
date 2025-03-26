@@ -320,7 +320,11 @@ def L1Norm_variation(theta):
         A two-length tuple containing: the L1 norm of theta (except the first
         entry), and the derivative of the L1 norm of theta.
     """
-
+    if len(theta.shape) > 1:
+        raise ValueError("theta must be single-dimensional")
+    if theta.shape == (1, ):
+        raise ValueError("theta must have more than one element")
+    
     return (np.sum(np.abs(theta[1:])), np.hstack([0.0, np.sign(theta[1:])]))
 
 
@@ -350,6 +354,7 @@ def _pixel_objective_function_fixed_scatter(
     :param gradient: [optional]
         Also return the analytic derivative of the objective function.
     """
+    # No need to input check theta, design_matrix, flux, ivar - chi_sq will do that
 
     if gradient:
         csq, d_csq = chi_sq(theta, design_matrix, flux, ivar, gradient=True)

@@ -162,3 +162,11 @@ def test_chisq_return_formats(P, S, T, chisq_expected, Jacob_expected):
     assert ch2 == pytest.approx(
         chisq_expected[f"{S},{T}"]
     ), f"Wrong chi_sq value returned ({ch2} != {chisq_expected[f'{S},{T}']})"
+
+@pytest.mark.parametrize("bad_theta", [
+    np.ones((3, 3)),
+    np.ones(1),
+])
+def test_L1Norm_variation_bad_input(bad_theta):
+    with pytest.raises(ValueError, match="theta must"):
+        _ = fitting.L1Norm_variation(bad_theta)
