@@ -251,20 +251,20 @@ def chi_sq(theta, design_matrix, flux, ivar, axis=None, gradient=True):
     Calculate the chi-squared difference between the spectral model and flux, for a single
     pixel over multiple stars.
 
-    Assume a model has `S` stars, each of `P` pixels, and a model with `T` terms (including the 
+    Assume a model has `S` stars, each of `P` pixels, and a model with `T` terms (including the
     regularization term).
 
     :param theta:
-        The theta coefficients (shape `(P, T)`).
+        The theta coefficients for this pixel (shape `(T, )`).
 
     :param design_matrix:
         The model design matrix (shape `(S, T)`.)
 
     :param flux:
-        The normalized flux values (shape `(S, )`).
+        The normalized flux values for this pixel (shape `(S, )`).
 
     :param ivar:
-        The inverse variances of the normalized flux values (shape `(S, )`).
+        The inverse variances of the normalized flux values for this pixel (shape `(S, )`).
 
     :param axis: [optional]
         The axis to sum the chi-squared values across.
@@ -285,10 +285,10 @@ def chi_sq(theta, design_matrix, flux, ivar, axis=None, gradient=True):
         raise ValueError("flux cannot be None")
     if ivar is None:
         raise ValueError("ivar cannot be None")
-    if len(flux.shape) > 1:
-        raise ValueError("flux is only one-dimensional here")
-    if len(ivar.shape) > 1:
-        raise ValueError("ivar is only one-dimensional here")
+    if len(flux.shape) > 1 or len(ivar.shape) > 1 or len(theta.shape) > 1:
+        raise ValueError("flux, ivar and theta can only be one-dimensional here (for a given pixel)")
+    if len(design_matrix.shape) != 2:
+        raise ValueError("design_matrix must be a 2D array, of shape (S, T)")
     if flux.shape != ivar.shape:
         raise ValueError("flux and ivar have inconsistent shapes")
 
@@ -296,7 +296,7 @@ def chi_sq(theta, design_matrix, flux, ivar, axis=None, gradient=True):
         residuals = np.dot(theta, design_matrix.T) - flux
     except ValueError as e:
         raise ValueError(
-            "inconsistent shapes between theta, design_matrix.T and flux"
+            f"inconsistent shapes between theta {theta.shape}, design_matrix.T {design_matrix.T.shape} and flux {flux.shape}"
         ) from e
 
     ivar_residuals = ivar * residuals
@@ -304,6 +304,7 @@ def chi_sq(theta, design_matrix, flux, ivar, axis=None, gradient=True):
     if not gradient:
         return f
 
+    # import pdb; pdb.set_trace()
     g = 2.0 * np.dot(design_matrix.T, ivar_residuals)
     return (f, g)
 
@@ -551,7 +552,7 @@ def fit_pixel_fixed_scatter(
                 _pixel_objective_function_fixed_scatter,
                 fprime=None,
                 approx_grad=None,
-                **op_kwds
+                **op_kwds,
             )
 
             metadata.update(dict(fopt=fopt))
