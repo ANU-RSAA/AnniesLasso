@@ -248,19 +248,23 @@ def fit_theta_by_linalg(flux, ivar, s2, design_matrix):
 
 def chi_sq(theta, design_matrix, flux, ivar, axis=None, gradient=True):
     """
-    Calculate the chi-squared difference between the spectral model and flux.
+    Calculate the chi-squared difference between the spectral model and flux, for a single
+    pixel over multiple stars.
+
+    Assume a model has `S` stars, each of `P` pixels, and a model with `T` terms (including the 
+    regularization term).
 
     :param theta:
-        The theta coefficients.
+        The theta coefficients (shape `(P, T)`).
 
     :param design_matrix:
-        The model design matrix.
+        The model design matrix (shape `(S, T)`.)
 
     :param flux:
-        The normalized flux values.
+        The normalized flux values (shape `(S, )`).
 
     :param ivar:
-        The inverse variances of the normalized flux values.
+        The inverse variances of the normalized flux values (shape `(S, )`).
 
     :param axis: [optional]
         The axis to sum the chi-squared values across.
@@ -281,6 +285,10 @@ def chi_sq(theta, design_matrix, flux, ivar, axis=None, gradient=True):
         raise ValueError("flux cannot be None")
     if ivar is None:
         raise ValueError("ivar cannot be None")
+    if len(flux.shape) > 1:
+        raise ValueError("flux is only one-dimensional here")
+    if len(ivar.shape) > 1:
+        raise ValueError("ivar is only one-dimensional here")
     if flux.shape != ivar.shape:
         raise ValueError("flux and ivar have inconsistent shapes")
 

@@ -22,16 +22,14 @@ def test_chisq_input_none(argnone):
     "flux",
     [
         np.ones((4,)),
-        np.ones((6, 7)),
-        np.ones((4, 6, 2)),
+        np.zeros((24, ))
     ],
 )
 @pytest.mark.parametrize(
     "ivar",
     [
         np.ones((8,)),
-        np.ones((2, 2)),
-        np.ones((5, 3, 1)),
+        np.zeros((16, ))
     ],
 )
 def test_chisq_input_mismatch_flux_and_ivar(flux, ivar):
@@ -59,7 +57,6 @@ def test_chisq_input_mismatch_flux_and_ivar(flux, ivar):
     "flux",
     [
         np.ones((3,)),
-        np.ones((6, 4, 2)),
     ],
 )
 def test_chisq_input_bad_shapes(theta, design_matrix, flux):
