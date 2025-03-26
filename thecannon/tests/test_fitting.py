@@ -125,17 +125,22 @@ def test_chisq_input_bad_design_matrix_shape(design_matrix):
         }
     ],
 )
-@pytest.mark.parametrize("Jacob_expected", [{
-    "5,3": 2.0,
-    "50,3": 20.0,
-    "500,3": 200.,
-    "5,30": 110.0,
-    "50,30": 1100.0,
-    "500,30": 11000.0,
-    "5,90": 350.0,
-    "50,90": 3500.0,
-    "500,90": 35000.0,
-}])
+@pytest.mark.parametrize(
+    "Jacob_expected",
+    [
+        {
+            "5,3": 2.0,
+            "50,3": 20.0,
+            "500,3": 200.0,
+            "5,30": 110.0,
+            "50,30": 1100.0,
+            "500,30": 11000.0,
+            "5,90": 350.0,
+            "50,90": 3500.0,
+            "500,90": 35000.0,
+        }
+    ],
+)
 def test_chisq_return_formats(P, S, T, chisq_expected, Jacob_expected):
     theta = np.ones(T)
     design_matrix = np.ones((S, T)) * 2
@@ -148,7 +153,9 @@ def test_chisq_return_formats(P, S, T, chisq_expected, Jacob_expected):
         _ = ch.shape  # Will fail if c is an array
     assert len(ch) == 2, "Did not return a 2-tuple as expected"
     assert ch[1].shape == (T,), "Expected a gradient/Jacobian with shape (T, )"
-    assert np.all(ch[1] == pytest.approx(Jacob_expected[f"{S},{T}"])), f"Did not get expected gradient/Jacobian"
+    assert np.all(
+        ch[1] == pytest.approx(Jacob_expected[f"{S},{T}"])
+    ), f"Did not get expected gradient/Jacobian"
 
     # Now, dont ask for the gradient
     ch2 = fitting.chi_sq(theta, design_matrix, flux, ivar, gradient=False)
@@ -163,21 +170,31 @@ def test_chisq_return_formats(P, S, T, chisq_expected, Jacob_expected):
         chisq_expected[f"{S},{T}"]
     ), f"Wrong chi_sq value returned ({ch2} != {chisq_expected[f'{S},{T}']})"
 
-@pytest.mark.parametrize("bad_theta", [
-    np.ones((3, 3)),
-    np.ones(1),
-])
+
+@pytest.mark.parametrize(
+    "bad_theta",
+    [
+        np.ones((3, 3)),
+        np.ones(1),
+    ],
+)
 def test_L1Norm_variation_bad_input(bad_theta):
     with pytest.raises(ValueError, match="theta must"):
         _ = fitting.L1Norm_variation(bad_theta)
 
-@pytest.mark.parametrize("theta", [
-    np.ones(100) * -1,
-    np.zeros(50),
-    np.asarray(range(1000)),
-])
+
+@pytest.mark.parametrize(
+    "theta",
+    [
+        np.ones(100) * -1,
+        np.zeros(50),
+        np.asarray(range(1000)),
+    ],
+)
 def test_L1Norm_variation(theta):
     L1 = fitting.L1Norm_variation(theta)
     assert isinstance(L1, tuple) and len(L1) == 2, "Did not return a 2-tuple"
     assert L1[0] == np.sum(np.abs(theta[1:])), "Calculation of L1 norm has changed"
-    assert np.all(L1[1] == np.hstack([0.0, np.sign(theta[1:])])), "Calculation of L1 norm direction has changed"
+    assert np.all(
+        L1[1] == np.hstack([0.0, np.sign(theta[1:])])
+    ), "Calculation of L1 norm direction has changed"

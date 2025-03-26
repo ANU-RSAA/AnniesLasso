@@ -286,7 +286,9 @@ def chi_sq(theta, design_matrix, flux, ivar, axis=None, gradient=True):
     if ivar is None:
         raise ValueError("ivar cannot be None")
     if len(flux.shape) > 1 or len(ivar.shape) > 1 or len(theta.shape) > 1:
-        raise ValueError("flux, ivar and theta can only be one-dimensional here (for a given pixel)")
+        raise ValueError(
+            "flux, ivar and theta can only be one-dimensional here (for a given pixel)"
+        )
     if len(design_matrix.shape) != 2:
         raise ValueError("design_matrix must be a 2D array, of shape (S, T)")
     if flux.shape != ivar.shape:
@@ -322,9 +324,9 @@ def L1Norm_variation(theta):
     """
     if len(theta.shape) > 1:
         raise ValueError("theta must be single-dimensional")
-    if theta.shape == (1, ):
+    if theta.shape == (1,):
         raise ValueError("theta must have more than one element")
-    
+
     return (np.sum(np.abs(theta[1:])), np.hstack([0.0, np.sign(theta[1:])]))
 
 
