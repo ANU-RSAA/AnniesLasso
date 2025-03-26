@@ -4,7 +4,10 @@
 __version__ = "0.2.93"
 
 import logging
-from numpy import RankWarning
+try:
+    from numpy import RankWarning
+except ImportError:
+    from warnings import RankWarning
 from warnings import simplefilter
 
 from .model import CannonModel
