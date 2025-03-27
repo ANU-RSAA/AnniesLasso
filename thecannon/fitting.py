@@ -379,6 +379,13 @@ def _pixel_objective_function_fixed_scatter(
 
 
 def _scatter_objective_function(scatter, residuals_squared, ivar):
+    # Input checking
+    try:    
+        assert len(ivar.shape) == 1
+        assert len(residuals_squared.shape) == 2
+        assert ivar.shape[0] == residuals_squared.shape[1]
+    except AssertionError:
+        raise ValueError("ivar shape (S,) does not match residuals_squared shape (P, S)")
     adjusted_ivar = ivar / (1.0 + ivar * scatter**2)
     chi_sq = residuals_squared * adjusted_ivar
     return (np.median(chi_sq) - 1.0) ** 2

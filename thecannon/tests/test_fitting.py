@@ -270,3 +270,17 @@ def test__pixel_objective_function_fixed_scatter(bad_reg):
         _ = fitting._pixel_objective_function_fixed_scatter(
             None, None, None, None, bad_reg
         )
+
+@pytest.mark.parametrize("residuals_squared", [
+    np.ones((3, )),
+    np.ones((3, 3, 3)),
+    np.ones((4, 4)),
+])
+@pytest.mark.parametrize("ivar", [
+    np.ones((3, 3)),
+    np.ones((4, 4, 4)),
+    np.ones((20, )),
+])
+def test__scatter_objective_function_bad_shapes(residuals_squared, ivar):
+    with pytest.raises(ValueError):
+        _ = fitting._scatter_objective_function(1.0, residuals_squared, ivar)
