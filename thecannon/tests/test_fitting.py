@@ -300,3 +300,22 @@ def test__scatter_objective_function_bad_shapes(residuals_squared, ivar):
 def test_scatter_objective_function(scatter, residuals_squared, ivar):
     scat = fitting._scatter_objective_function(scatter, residuals_squared, ivar)
     assert scat.shape == (), "_scatter_objective_function should return a number"
+
+@pytest.mark.parametrize("bad_method", ["a", "not_a_method", 1, 1.0, None])
+def test__remove_forbidden_op_kwds_bad_method(bad_method):
+    with pytest.raises(ValueError, match=f"{bad_method}"):
+        _ = fitting._remove_forbidden_op_kwds(bad_method, {})
+
+@pytest.mark.parametrize("method", ["l_bfgs_b", "powell"])
+@pytest.mark.parametrize("forbidden_kw", [
+    ["a", "the"],
+    ["these", "are", "not", "keywords"],
+])
+def test__remove_forbidden_op_kwds(method, forbidden_kw):
+    kwg = {k: None for k in fitting.FITTING_ALLOWED_KEYS[method]}
+    for k in forbidden_kw:
+        kwg[k] = None
+    
+    fitting._remove_forbidden_op_kwds(method, kwg)
+
+    assert set(kwg.keys()) == set(fitting.FITTING_ALLOWED_KEYS[method]), "Failed to remove all bad keys"

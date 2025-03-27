@@ -22,6 +22,37 @@ from time import time
 
 logger = logging.getLogger(__name__)
 
+FITTING_ALLOWED_KEYS = dict(
+        l_bfgs_b=(
+            "x0",
+            "args",
+            "bounds",
+            "m",
+            "factr",
+            "pgtol",
+            "epsilon",
+            "iprint",
+            "maxfun",
+            "maxiter",
+            "disp",
+            "callback",
+            "maxls",
+        ),
+        powell=(
+            "x0",
+            "args",
+            "xtol",
+            "ftol",
+            "maxiter",
+            "maxfun",
+            "full_output",
+            "disp",
+            "retall",
+            "callback",
+            "initial_simplex",
+        ),
+    )
+
 
 def fit_spectrum(
     flux,
@@ -403,38 +434,10 @@ def _remove_forbidden_op_kwds(op_method, op_kwds):
     :returns:
         `None`. The dictionary of `op_kwds` will be updated.
     """
-    all_allowed_keys = dict(
-        l_bfgs_b=(
-            "x0",
-            "args",
-            "bounds",
-            "m",
-            "factr",
-            "pgtol",
-            "epsilon",
-            "iprint",
-            "maxfun",
-            "maxiter",
-            "disp",
-            "callback",
-            "maxls",
-        ),
-        powell=(
-            "x0",
-            "args",
-            "xtol",
-            "ftol",
-            "maxiter",
-            "maxfun",
-            "full_output",
-            "disp",
-            "retall",
-            "callback",
-            "initial_simplex",
-        ),
-    )
-
-    forbidden_keys = set(op_kwds).difference(all_allowed_keys[op_method])
+    try:
+        forbidden_keys = set(op_kwds).difference(FITTING_ALLOWED_KEYS[op_method])
+    except KeyError:
+        raise ValueError(f"Unknown op_method {op_method}")
     if forbidden_keys:
         logger.warn(
             "Ignoring forbidden optimization keywords for {}: {}".format(
