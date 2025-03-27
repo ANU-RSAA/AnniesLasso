@@ -160,34 +160,77 @@ def test_chisq_input_bad_design_matrix_shape(design_matrix, f):
         }
     ],
 )
-def test_chisq_return_formats(P, S, T, chisq_expected, Jacob_expected):
-    theta = np.ones(T)
-    design_matrix = np.ones((S, T)) * 2
-    flux = np.ones(S) * 5
-    ivar = np.ones(S) * 0.1
+class TestHelperFunctionReturns:
+    def test_chisq_return_formats(self, P, S, T, chisq_expected, Jacob_expected):
+        theta = np.ones(T)
+        design_matrix = np.ones((S, T)) * 2
+        flux = np.ones(S) * 5
+        ivar = np.ones(S) * 0.1
 
-    # Base case - should return a chi_sq, gradient tuple
-    ch = fitting.chi_sq(theta, design_matrix, flux, ivar)
-    with pytest.raises(AttributeError):
-        _ = ch.shape  # Will fail if c is an array
-    assert len(ch) == 2, "Did not return a 2-tuple as expected"
-    assert ch[1].shape == (T,), "Expected a gradient/Jacobian with shape (T, )"
-    assert np.all(
-        ch[1] == pytest.approx(Jacob_expected[f"{S},{T}"])
-    ), f"Did not get expected gradient/Jacobian"
+        # Base case - should return a chi_sq, gradient tuple
+        ch = fitting.chi_sq(theta, design_matrix, flux, ivar)
+        with pytest.raises(AttributeError):
+            _ = ch.shape  # Will fail if c is an array
+        assert len(ch) == 2, "Did not return a 2-tuple as expected"
+        assert ch[1].shape == (T,), "Expected a gradient/Jacobian with shape (T, )"
+        assert np.all(
+            ch[1] == pytest.approx(Jacob_expected[f"{S},{T}"])
+        ), f"Did not get expected gradient/Jacobian"
 
-    # Now, dont ask for the gradient
-    ch2 = fitting.chi_sq(theta, design_matrix, flux, ivar, gradient=False)
-    with pytest.raises(AttributeError):
-        _ = ch.shape  # Will fail if c is an array
-    assert not isinstance(ch2, tuple), "Setting gradient=False still returned a tuple"
+        # Now, dont ask for the gradient
+        ch2 = fitting.chi_sq(theta, design_matrix, flux, ivar, gradient=False)
+        assert (
+            ch2.shape == ()
+        ), "Bad return without gradient"  # Will fail if c is an array
+        assert not isinstance(
+            ch2, tuple
+        ), "Setting gradient=False still returned a tuple"
 
-    assert ch[0] == pytest.approx(
-        ch2
-    ), "Returned different values from different gradient kwarg value"
-    assert ch2 == pytest.approx(
-        chisq_expected[f"{S},{T}"]
-    ), f"Wrong chi_sq value returned ({ch2} != {chisq_expected[f'{S},{T}']})"
+        assert ch[0] == pytest.approx(
+            ch2
+        ), "Returned different values from different gradient kwarg value"
+        assert ch2 == pytest.approx(
+            chisq_expected[f"{S},{T}"]
+        ), f"Wrong chi_sq value returned ({ch2} != {chisq_expected[f'{S},{T}']})"
+
+    @pytest.mark.parametrize("reg", [1.0, 2.5, 10.0, 0.01, 0.5])
+    def test__pixel_objective_function_fixed_scatter(
+        self, reg, P, S, T, chisq_expected, Jacob_expected
+    ):
+        theta = np.ones(T)
+        design_matrix = np.ones((S, T)) * 2
+        flux = np.ones(S) * 5
+        ivar = np.ones(S) * 0.1
+
+        # Base case - should return a two-tuple
+        fg = fitting._pixel_objective_function_fixed_scatter(
+            theta, design_matrix, flux, ivar, reg
+        )
+        with pytest.raises(AttributeError):
+            _ = fg.shape  # Will fail if fg is an array
+        assert len(fg) == 2 and isinstance(
+            fg, tuple
+        ), "Did not return a 2-tuple as expected"
+        (f1, g) = fg
+        assert g.shape == (T,), "Expected a gradient/Jacobian with shape (T, )"
+        assert np.all(
+            Jacob_expected[f"{S},{T}"] + reg * fitting.L1Norm_variation(theta)[1]
+            == pytest.approx(g)
+        ), "Something has changed in gradient/Jacobian calculation"
+
+        # Now, without the gradient
+        f = fitting._pixel_objective_function_fixed_scatter(
+            theta, design_matrix, flux, ivar, reg, gradient=False
+        )
+        assert f.shape == (), "Bad return shape"
+        assert not isinstance(f, tuple), "Setting gradient=False still returned a tuple"
+        assert f1 == pytest.approx(
+            f
+        ), "Returned different values based on gradient kwarg"
+        assert (
+            pytest.approx(f)
+            == chisq_expected[f"{S},{T}"] + reg * fitting.L1Norm_variation(theta)[0]
+        ), "Something has changed in objective func calculation"
 
 
 @pytest.mark.parametrize(
