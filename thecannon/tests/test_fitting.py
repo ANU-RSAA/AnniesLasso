@@ -263,7 +263,8 @@ def test_L1Norm_variation(theta):
 
 
 @pytest.mark.parametrize(
-    "bad_reg", [-1.0, -0.0001, np.asarray([1.0]), np.asarray([-1, 1]), "1", "a", "stuff"]
+    "bad_reg",
+    [-1.0, -0.0001, np.asarray([1.0]), np.asarray([-1, 1]), "1", "a", "stuff"],
 )
 def test__pixel_objective_function_fixed_scatter(bad_reg):
     with pytest.raises(ValueError, match="must be a positive, finite number"):
@@ -271,51 +272,63 @@ def test__pixel_objective_function_fixed_scatter(bad_reg):
             None, None, None, None, bad_reg
         )
 
-@pytest.mark.parametrize("residuals_squared", [
-    np.ones((3, )),
-    np.ones((3, 3, 3)),
-    np.ones((4, 4)),
-])
-@pytest.mark.parametrize("ivar", [
-    np.ones((4, )),
-    np.ones((3, 3)),
-    np.ones((4, 4, 4)),
-    np.ones((20, )),
-])
+
+@pytest.mark.parametrize(
+    "residuals_squared",
+    [
+        np.ones((3,)),
+        np.ones((3, 3, 3)),
+        np.ones((4, 4)),
+    ],
+)
+@pytest.mark.parametrize(
+    "ivar",
+    [
+        np.ones((4,)),
+        np.ones((3, 3)),
+        np.ones((4, 4, 4)),
+        np.ones((20,)),
+    ],
+)
 def test__scatter_objective_function_bad_shapes(residuals_squared, ivar):
     with pytest.raises(ValueError):
         _ = fitting._scatter_objective_function(1.0, residuals_squared, ivar)
 
-@pytest.mark.parametrize("scatter", [
-    0.0,
-    1.0, 
-    2.5,
-    0.01,
-    100
-])
-@pytest.mark.parametrize("residuals_squared,ivar", [
-    (np.ones(10), 2.0 * np.ones(10)),
-    (np.zeros(100), 0.03 * np.ones(100)),
-])
+
+@pytest.mark.parametrize("scatter", [0.0, 1.0, 2.5, 0.01, 100])
+@pytest.mark.parametrize(
+    "residuals_squared,ivar",
+    [
+        (np.ones(10), 2.0 * np.ones(10)),
+        (np.zeros(100), 0.03 * np.ones(100)),
+    ],
+)
 def test_scatter_objective_function(scatter, residuals_squared, ivar):
     scat = fitting._scatter_objective_function(scatter, residuals_squared, ivar)
     assert scat.shape == (), "_scatter_objective_function should return a number"
+
 
 @pytest.mark.parametrize("bad_method", ["a", "not_a_method", 1, 1.0, None])
 def test__remove_forbidden_op_kwds_bad_method(bad_method):
     with pytest.raises(ValueError, match=f"{bad_method}"):
         _ = fitting._remove_forbidden_op_kwds(bad_method, {})
 
+
 @pytest.mark.parametrize("method", ["l_bfgs_b", "powell"])
-@pytest.mark.parametrize("forbidden_kw", [
-    ["a", "the"],
-    ["these", "are", "not", "keywords"],
-])
+@pytest.mark.parametrize(
+    "forbidden_kw",
+    [
+        ["a", "the"],
+        ["these", "are", "not", "keywords"],
+    ],
+)
 def test__remove_forbidden_op_kwds(method, forbidden_kw):
     kwg = {k: None for k in fitting.FITTING_ALLOWED_KEYS[method]}
     for k in forbidden_kw:
         kwg[k] = None
-    
+
     fitting._remove_forbidden_op_kwds(method, kwg)
 
-    assert set(kwg.keys()) == set(fitting.FITTING_ALLOWED_KEYS[method]), "Failed to remove all bad keys"
+    assert set(kwg.keys()) == set(
+        fitting.FITTING_ALLOWED_KEYS[method]
+    ), "Failed to remove all bad keys"
