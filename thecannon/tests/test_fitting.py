@@ -332,3 +332,20 @@ def test__remove_forbidden_op_kwds(method, forbidden_kw):
     assert set(kwg.keys()) == set(
         fitting.FITTING_ALLOWED_KEYS[method]
     ), "Failed to remove all bad keys"
+
+
+@pytest.mark.parametrize("flux", [
+    np.ones((6, )),
+    np.ones((6, 6)),
+])
+@pytest.mark.parametrize("ivar", [
+    np.ones(5),
+    np.ones((5, 5)),
+])
+@pytest.mark.parametrize("design_matrix", [
+    np.ones((7, 8)),
+    np.ones((2, 11)),
+])
+def test_fit_pixel_fixed_scatter_bad_array_sizes(flux, ivar, design_matrix):
+    with pytest.raises(ValueError, match="shape"):
+        _ = fitting.fit_pixel_fixed_scatter(flux, ivar, None, design_matrix, None, None)

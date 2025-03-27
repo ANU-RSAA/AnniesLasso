@@ -901,7 +901,6 @@ class CannonModel(object):
             s2=kwargs.get("s2", 0.0),
             design_matrix=self.design_matrix,
         )
-
         if np.all(np.isfinite(theta)):
             guesses.append((theta, "linear_algebra"))
 

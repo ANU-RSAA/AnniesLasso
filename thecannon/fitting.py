@@ -494,17 +494,27 @@ def fit_pixel_fixed_scatter(
         The optimized theta coefficients, the noise residual `s2`, and
         metadata related to the optimization process.
     """
-
+    # Input checking
+    if len(flux.shape) != 1 or ivar.shape != flux.shape:
+        raise ValueError("flux and ivar must be 1D and of the same shape")
+    if design_matrix.shape[0] != flux.shape[0]:
+        raise ValueError("design_matrix first axis shape must match flux/ivar shape")
+    # Only need to check these inputs up to this point
     if np.sum(ivar) < 1.0 * ivar.size:  # MAGIC
         metadata = dict(message="No pixel information.", op_time=0.0)
         fiducial = np.hstack([1.0, np.zeros(design_matrix.shape[1] - 1)])
         return (fiducial, np.inf, metadata)  # MAGIC
+    
+    # If we get past here, need to input check the rest
+    # Note that we may be able to do some input checking by catching errors further below,
+    # if not too far down
 
     # Determine if any theta coefficients will be censored.
     censored_theta = ~np.any(np.isfinite(design_matrix), axis=0)
     # Make the design matrix safe to use.
     design_matrix[:, censored_theta] = 0
 
+    # These calls will check the initial_thetas, design_matrix, and regularization values
     feval = []
     for initial_theta, initial_theta_source in initial_thetas:
         feval.append(
@@ -530,9 +540,12 @@ def fit_pixel_fixed_scatter(
         # Subtract from flux.
         # Set design matrix entry to zero.
         # Update to theta later on.
-        new_flux = flux - theta_0
-        new_design_matrix = np.copy(design_matrix)
-        new_design_matrix[:, 0] = 0.0
+        try:
+            new_flux = flux - theta_0
+            new_design_matrix = np.copy(design_matrix)
+            new_design_matrix[:, 0] = 0.0
+        except ValueError as e:
+            raise ValueError("theta_0 shape incompatible with flux/design_matrix shape")
 
         base_op_kwds["args"] = (new_design_matrix, new_flux, ivar, regularization)
 
