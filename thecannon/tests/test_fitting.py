@@ -285,3 +285,18 @@ def test__pixel_objective_function_fixed_scatter(bad_reg):
 def test__scatter_objective_function_bad_shapes(residuals_squared, ivar):
     with pytest.raises(ValueError):
         _ = fitting._scatter_objective_function(1.0, residuals_squared, ivar)
+
+@pytest.mark.parametrize("scatter", [
+    0.0,
+    1.0, 
+    2.5,
+    0.01,
+    100
+])
+@pytest.mark.parametrize("residuals_squared,ivar", [
+    (np.ones(10), 2.0 * np.ones(10)),
+    (np.zeros(100), 0.03 * np.ones(100)),
+])
+def test_scatter_objective_function(scatter, residuals_squared, ivar):
+    scat = fitting._scatter_objective_function(scatter, residuals_squared, ivar)
+    assert scat.shape == (), "_scatter_objective_function should return a number"
