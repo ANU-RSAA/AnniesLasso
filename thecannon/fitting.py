@@ -535,7 +535,7 @@ def fit_pixel_fixed_scatter(
 
     theta_0 = kwargs.get("__theta_0", None)
     if theta_0 is not None:
-        logger.warn("FIXING theta_0. HIGHLY EXPERIMENTAL.")
+        logger.warning("FIXING theta_0. HIGHLY EXPERIMENTAL.")
 
         # Subtract from flux.
         # Set design matrix entry to zero.
