@@ -358,9 +358,9 @@ def _pixel_objective_function_fixed_scatter(
     """
     # No need to input check theta, design_matrix, flux, ivar - chi_sq will do that
     try:  # Check if finite, positive, and a single value
-        assert np.isfinite(regularization) and np.asarray(regularization).shape == () and regularization > 0
+        assert np.isfinite(regularization) and np.asarray(regularization).shape == () and regularization >= 0.0
     except (AssertionError, TypeError, ValueError):
-        raise ValueError("regularization must be a positive, finite number")
+        raise ValueError(f"regularization ({regularization}) must be a positive, finite number")
 
     if gradient:
         csq, d_csq = chi_sq(theta, design_matrix, flux, ivar, gradient=True)
@@ -382,10 +382,9 @@ def _scatter_objective_function(scatter, residuals_squared, ivar):
     # Input checking
     try:    
         assert len(ivar.shape) == 1
-        assert len(residuals_squared.shape) == 2
-        assert ivar.shape[0] == residuals_squared.shape[1]
+        assert ivar.shape == residuals_squared.shape
     except AssertionError:
-        raise ValueError("ivar shape (S,) does not match residuals_squared shape (P, S)")
+        raise ValueError(f"ivar shape {ivar.shape} does not match residuals_squared shape {residuals_squared.shape}")
     adjusted_ivar = ivar / (1.0 + ivar * scatter**2)
     chi_sq = residuals_squared * adjusted_ivar
     return (np.median(chi_sq) - 1.0) ** 2

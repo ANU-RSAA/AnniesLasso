@@ -242,7 +242,7 @@ def one_to_one(
     """
 
     if model.training_set_labels.shape != test_labels.shape:
-        raise ValueError("test labels must have the same shape as training set labels")
+        raise ValueError(f"test labels {test_labels.shape} must have the same shape as training set labels {model.training_set_labels.shape}")
 
     N, K = test_labels.shape
     if cov is not None and cov.shape != (N, K, K):

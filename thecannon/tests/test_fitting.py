@@ -263,10 +263,10 @@ def test_L1Norm_variation(theta):
 
 
 @pytest.mark.parametrize(
-    "bad_reg", [-1.0, 0.0, np.asarray([1.0]), np.asarray([-1, 1]), "1", "a", "stuff"]
+    "bad_reg", [-1.0, -0.0001, np.asarray([1.0]), np.asarray([-1, 1]), "1", "a", "stuff"]
 )
 def test__pixel_objective_function_fixed_scatter(bad_reg):
-    with pytest.raises(ValueError, match="regularization must"):
+    with pytest.raises(ValueError, match="must be a positive, finite number"):
         _ = fitting._pixel_objective_function_fixed_scatter(
             None, None, None, None, bad_reg
         )
@@ -277,6 +277,7 @@ def test__pixel_objective_function_fixed_scatter(bad_reg):
     np.ones((4, 4)),
 ])
 @pytest.mark.parametrize("ivar", [
+    np.ones((4, )),
     np.ones((3, 3)),
     np.ones((4, 4, 4)),
     np.ones((20, )),
