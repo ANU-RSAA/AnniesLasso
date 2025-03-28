@@ -458,6 +458,28 @@ def _remove_forbidden_op_kwds(op_method, op_kwds):
     return None
 
 
+def _select_theta(flux, ivar, initial_thetas, design_matrix, regularization):
+    """
+    Select the best theta to use in `fit_pixel_fixed_scatter`.
+
+    :param initial_thetas:
+        A list of initial theta values to start from, and their source. For
+        example: `[(theta_0, "guess"), (theta_1, "old_theta")]
+    """
+
+    feval = []
+    for initial_theta, initial_theta_source in initial_thetas:
+        feval.append(
+            _pixel_objective_function_fixed_scatter(
+                initial_theta, design_matrix, flux, ivar, regularization, False
+            )
+        )
+
+    initial_theta, initial_theta_source = initial_thetas[np.nanargmin(feval)]
+
+    return (initial_theta, initial_theta_source)
+
+
 def fit_pixel_fixed_scatter(
     flux, ivar, initial_thetas, design_matrix, regularization, censoring_mask, **kwargs
 ):
@@ -515,15 +537,7 @@ def fit_pixel_fixed_scatter(
     design_matrix[:, censored_theta] = 0
 
     # These calls will check the initial_thetas, design_matrix, and regularization values
-    feval = []
-    for initial_theta, initial_theta_source in initial_thetas:
-        feval.append(
-            _pixel_objective_function_fixed_scatter(
-                initial_theta, design_matrix, flux, ivar, regularization, False
-            )
-        )
-
-    initial_theta, initial_theta_source = initial_thetas[np.nanargmin(feval)]
+    initial_theta, initial_theta_source = _select_theta(flux, ivar, initial_thetas, design_matrix, regularization)
 
     base_op_kwds = dict(
         x0=initial_theta,
