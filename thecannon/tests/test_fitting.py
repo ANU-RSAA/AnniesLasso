@@ -334,18 +334,58 @@ def test__remove_forbidden_op_kwds(method, forbidden_kw):
     ), "Failed to remove all bad keys"
 
 
-@pytest.mark.parametrize("flux", [
-    np.ones((6, )),
-    np.ones((6, 6)),
-])
-@pytest.mark.parametrize("ivar", [
-    np.ones(5),
-    np.ones((5, 5)),
-])
-@pytest.mark.parametrize("design_matrix", [
-    np.ones((7, 8)),
-    np.ones((2, 11)),
-])
+@pytest.mark.parametrize(
+    "flux",
+    [
+        np.ones((6,)),
+        np.ones((6, 6)),
+    ],
+)
+@pytest.mark.parametrize(
+    "ivar",
+    [
+        np.ones(5),
+        np.ones((5, 5)),
+    ],
+)
+@pytest.mark.parametrize(
+    "design_matrix",
+    [
+        np.ones((7, 8)),
+        np.ones((2, 11)),
+    ],
+)
 def test_fit_pixel_fixed_scatter_bad_array_sizes(flux, ivar, design_matrix):
     with pytest.raises(ValueError, match="shape"):
         _ = fitting.fit_pixel_fixed_scatter(flux, ivar, None, design_matrix, None, None)
+
+
+@pytest.mark.parametrize(
+    "flux,ivar,design_matrix",
+    [
+        (
+            np.ones(
+                10,
+            ),
+            np.ones(
+                10,
+            ),
+            np.ones((10, 5)),
+        )
+    ],
+)
+@pytest.mark.parametrize("regularization", [0.1, 1.0, 10.0])
+@pytest.mark.parametrize(
+    "initial_theta",
+    [
+        [(np.zeros(7), "Bad guess")],
+        [(np.zeros(5), "First one is good"), (np.zeros(9), "Second one is bad")],
+    ],
+)
+def test_fit_pixel_fixed_scatter_secondary_bad_theta(
+    initial_theta, design_matrix, flux, ivar, regularization
+):
+    with pytest.raises(ValueError):
+        _ = fitting.fit_pixel_fixed_scatter(
+            flux, ivar, initial_theta, design_matrix, regularization, None
+        )
