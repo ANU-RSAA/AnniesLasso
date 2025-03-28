@@ -53,6 +53,11 @@ FITTING_ALLOWED_KEYS = dict(
     ),
 )
 
+PIXEL_FITTING_METHODS = (
+    "l_bfgs_b",
+    "powell",
+)
+
 
 def fit_spectrum(
     flux,
@@ -530,6 +535,16 @@ def fit_pixel_fixed_scatter(
     # If we get past here, need to input check the rest
     # Note that we may be able to do some input checking by catching errors further below,
     # if not too far down
+    # Allow either l_bfgs_b or powell
+    default_op_method = "l_bfgs_b"
+    op_method = kwargs.get("op_method", default_op_method) or default_op_method
+    op_method = str(op_method).lower()
+    if op_method not in PIXEL_FITTING_METHODS:
+        raise ValueError(
+                "unknown optimization method '{}' -- "
+                "{} are available".format(op_method, ",".join(PIXEL_FITTING_METHODS))
+            )
+    op_strict = kwargs.get("op_strict", True)
 
     # Determine if any theta coefficients will be censored.
     censored_theta = ~np.any(np.isfinite(design_matrix), axis=0)
@@ -575,13 +590,7 @@ def fit_pixel_fixed_scatter(
             regularization,
         )
 
-    # Allow either l_bfgs_b or powell
     t_init = time()
-    default_op_method = "l_bfgs_b"
-    op_method = kwargs.get("op_method", default_op_method) or default_op_method
-    op_method = op_method.lower()
-
-    op_strict = kwargs.get("op_strict", True)
 
     while True:
         if op_method == "l_bfgs_b":

@@ -379,7 +379,7 @@ def _fake_pixel_obj(first_input, *args):
     ],
 )
 @pytest.mark.parametrize("regularization", [0.1, 1.0, 10.0])
-class TestFitPixelFixedScatterTheta:
+class TestFitPixelFixedScatterSundries:
 
     @pytest.mark.parametrize(
     "initial_theta",
@@ -400,7 +400,7 @@ class TestFitPixelFixedScatterTheta:
         [(np.nan, "Don't pick me"), (0.01, "Pick me"), (10.0, "Don't pick me")],
         [(100.0, "Don't pick me"), (0.01, "Pick me"),],
     ])
-    def test__select_theta(elf, initial_thetas, design_matrix, flux, ivar, regularization):
+    def test__select_theta(self, initial_thetas, design_matrix, flux, ivar, regularization):
         # Find what value we should get
         for theta, msg in initial_thetas:
             if msg == "Pick me":
@@ -411,3 +411,14 @@ class TestFitPixelFixedScatterTheta:
             t, s = fitting._select_theta(flux, ivar, initial_thetas, design_matrix, regularization)
             assert t == target_theta
             assert s == "Pick me"
+
+    @pytest.mark.parametrize("bad_method", [
+        "a",
+        "stuff",
+        1.0,
+        3,
+        True,
+    ])
+    def test_fit_pixel_fixed_scatter_bad_method(self, bad_method, design_matrix, flux, ivar, regularization):
+        with pytest.raises(ValueError, match="unknown optimization"):
+            _ = fitting.fit_pixel_fixed_scatter(flux, ivar, None, design_matrix, 1.0, None, op_method=bad_method)
