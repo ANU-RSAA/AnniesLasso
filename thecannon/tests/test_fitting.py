@@ -3,6 +3,7 @@ Unit tests for `thecannon.fitting`.
 """
 
 import pytest
+from unittest import mock
 import numpy as np
 from thecannon import fitting
 
@@ -360,6 +361,9 @@ def test_fit_pixel_fixed_scatter_bad_array_sizes(flux, ivar, design_matrix):
         _ = fitting.fit_pixel_fixed_scatter(flux, ivar, None, design_matrix, None, None)
 
 
+def _fake_pixel_obj(first_input, *args):
+    return first_input
+
 @pytest.mark.parametrize(
     "flux,ivar,design_matrix",
     [
@@ -375,17 +379,35 @@ def test_fit_pixel_fixed_scatter_bad_array_sizes(flux, ivar, design_matrix):
     ],
 )
 @pytest.mark.parametrize("regularization", [0.1, 1.0, 10.0])
-@pytest.mark.parametrize(
+class TestFitPixelFixedScatterTheta:
+
+    @pytest.mark.parametrize(
     "initial_theta",
     [
         [(np.zeros(7), "Bad guess")],
         [(np.zeros(5), "First one is good"), (np.zeros(9), "Second one is bad")],
-    ],
-)
-def test_fit_pixel_fixed_scatter_secondary_bad_theta(
-    initial_theta, design_matrix, flux, ivar, regularization
-):
-    with pytest.raises(ValueError):
-        _ = fitting.fit_pixel_fixed_scatter(
-            flux, ivar, initial_theta, design_matrix, regularization, None
-        )
+    ])
+    def test_fit_pixel_fixed_scatter_secondary_bad_theta(
+        self, initial_theta, design_matrix, flux, ivar, regularization
+    ):
+        with pytest.raises(ValueError):
+            _ = fitting.fit_pixel_fixed_scatter(
+                flux, ivar, initial_theta, design_matrix, regularization, None
+            )
+
+    @pytest.mark.parametrize("initial_thetas", [
+        [(0.1, "Pick me"), (np.nan, "Don't pick me"), (10.0, "Don't pick me")],
+        [(np.nan, "Don't pick me"), (0.01, "Pick me"), (10.0, "Don't pick me")],
+        [(100.0, "Don't pick me"), (0.01, "Pick me"),],
+    ])
+    def test__select_theta(elf, initial_thetas, design_matrix, flux, ivar, regularization):
+        # Find what value we should get
+        for theta, msg in initial_thetas:
+            if msg == "Pick me":
+                target_theta = theta
+                break
+
+        with mock.patch("thecannon.fitting._pixel_objective_function_fixed_scatter", wraps=_fake_pixel_obj) as mock_obj:
+            t, s = fitting._select_theta(flux, ivar, initial_thetas, design_matrix, regularization)
+            assert t == target_theta
+            assert s == "Pick me"
