@@ -866,10 +866,10 @@ class TestCannonModelInit:
         "scale_labels_function",
         [
             lambda l: np.ptp(
-                np.percentile(l, [2.5, 97.5], axis=0), axis=0, keepdims=True
+                np.percentile(l, [2.5, 97.5], axis=0), axis=0, keepdims=False
             ),
             lambda l: np.ptp(
-                np.percentile(l, [10.0, 75.0], axis=0), axis=0, keepdims=True
+                np.percentile(l, [10.0, 75.0], axis=0), axis=0, keepdims=False
             ),
         ],
     )
@@ -890,10 +890,10 @@ class TestCannonModelInit:
         "scale_labels_function",
         [
             lambda l: np.ptp(
-                np.percentile(l, [2.5, 97.5], axis=0), axis=0, keepdims=False
+                np.percentile(l, [2.5, 97.5], axis=0), axis=0, keepdims=True
             ),
             lambda l: np.ptp(
-                np.percentile(l, [10.0, 75.0], axis=0), axis=0, keepdims=False
+                np.percentile(l, [10.0, 75.0], axis=0), axis=0, keepdims=True
             ),
             lambda l: np.mean(l),
             np.mean,  # This method of input will actually work, if given the right output shape - this isn't though
@@ -982,10 +982,10 @@ class TestCannonModelInit:
         "scale_labels_function",
         [
             lambda l: np.ptp(
-                np.percentile(l, [2.5, 97.5], axis=0), axis=0, keepdims=True
+                np.percentile(l, [2.5, 97.5], axis=0), axis=0, keepdims=False
             ),
             lambda l: np.ptp(
-                np.percentile(l, [10.0, 75.0], axis=0), axis=0, keepdims=True
+                np.percentile(l, [10.0, 75.0], axis=0), axis=0, keepdims=False
             ),
         ],
     )
