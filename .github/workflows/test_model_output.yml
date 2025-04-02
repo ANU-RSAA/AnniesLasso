@@ -26,4 +26,4 @@ jobs:
 
     - name: Run run_cannon_andy_svens_python.py
       run: |
-        python tests/actions/run_cannon_andy_svens_python.py
+        python ./tests/actions/run_cannon_andy_svens_python.py
