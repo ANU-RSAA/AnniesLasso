@@ -15,8 +15,9 @@ import thecannon as tc
 # Read in the training labels and model spectra
 # These are 1000 samples of labels 'EWT','LMA','N','CHL','CAR','ANT'
 # used to modelled spectra at wavelengths 400..1..2500nm with the PROSPECT code
-LUC_labels  = pd.read_csv('tests/data/PROSPECT_input.csv')
-LUC_spectra = pd.read_csv('tests/data/PROSPECT_LUT.csv')
+# Paths are relative to the repository root
+LUC_labels  = pd.read_csv('thecannon/tests/data/PROSPECT_input.csv')
+LUC_spectra = pd.read_csv('thecannon/tests/data/PROSPECT_LUT.csv')
 
 
 # In[ ]:
