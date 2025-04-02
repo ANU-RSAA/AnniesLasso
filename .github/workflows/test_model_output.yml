@@ -22,7 +22,7 @@ jobs:
         pip install numpy==1.22.1
         pip install scipy==1.7.3
         pip install six==1.16.0
-        pip install git+https://github.com/{{ github.repository }}@{{ github.ref_name }}
+        pip install --no-deps git+https://github.com/${{ github.repository }}@${{ github.ref_name }}
 
     - name: Run run_cannon_andy_svens_python.py
       run: |
