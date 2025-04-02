@@ -43,6 +43,31 @@ class TestVectorizersCommon:
         ), "Terms not initialized correctly"
 
     @pytest.mark.parametrize(
+        "label_names,terms,terms_out",
+        [
+            [
+                ("a", "b", "c"),
+                [[("a", 4)], [("b", 1)], [("c", 2)]],
+                [[(0, 4)], [(1, 1)], [(2, 2)]],
+            ],
+            [["a", "b", "c"], [[(0, 4)], [(1, 1)], [(2, 2)]], None],
+            (["Teff", "g"], [[(0, 1)], [(0, 2), (1, 1)], [(1, 2), (0, 2)]], None),
+        ],
+    )
+    def test_vectorizer_eq_differing_names(self, vectorizer, label_names, terms, terms_out):
+
+        class FirstVectorizer(vectorizer):
+            pass
+
+        class SecondVectorizer(vectorizer):
+            pass
+
+        vec1 = FirstVectorizer(terms=terms, label_names=label_names)
+        vec2 = SecondVectorizer(terms=terms, label_names=label_names)
+        assert vec1 != vec2, "Vectorizer __eq__ cannot tell difference between otherwise identical classes"
+
+
+    @pytest.mark.parametrize(
         "label_names,terms",
         [
             [("a", "b"), [[("b", 1)]]],  # Unused term
