@@ -27,3 +27,12 @@ jobs:
     - name: Run run_cannon_andy_svens_python.py
       run: |
         python ./thecannon/tests/actions/run_cannon_andy_svens_python.py
+
+    - name: Check the model is the same as the reference
+      uses: LouisBrunner/diff-action@v2.0.0
+      with:
+        old: thecannon/tests/data/prospect_model_restricted_svens_python.model
+        new: thecannon/tests/data/prospect_model_restricted_test.model
+        mode: strict
+        tolerance: same
+        output: model_comparison.txt
