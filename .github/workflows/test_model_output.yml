@@ -1,7 +1,7 @@
 name: test_model_output
 
 on:
-  workflow-dispatch: 
+  workflow_dispatch: 
 
 jobs:
   test_model_output_defaults:
