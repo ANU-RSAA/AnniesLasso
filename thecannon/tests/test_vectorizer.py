@@ -32,16 +32,40 @@ class TestVectorizersCommon:
             (["Teff", "g"], [[(0, 1)], [(0, 2), (1, 1)], [(1, 2), (0, 2)]], None),
         ],
     )
-    def test_vectorizer_basic_init(self, vectorizer, label_names, terms, terms_out):
-        vec = vectorizer(label_names=label_names, terms=terms)
-        assert vec.label_names == tuple(
-            label_names
-        ), "Label names not initialized correctly"
-        assert vec.terms == (
-            terms_out
-            if (terms_out is not None and isinstance(vec, PolynomialVectorizer))
-            else terms
-        ), "Terms not initialized correctly"
+    class TestVectorizerWithValidBaiscInputs:
+        def test_vectorizer_basic_init(self, vectorizer, label_names, terms, terms_out):
+            vec = vectorizer(label_names=label_names, terms=terms)
+            assert vec.label_names == list(
+                label_names
+            ), "Label names not initialized correctly"
+            assert vec.terms == (
+                terms_out
+                if (terms_out is not None and isinstance(vec, PolynomialVectorizer))
+                else list(terms)
+            ), "Terms not initialized correctly"
+
+        def test_vectorizer_init_no_terms_alteration(
+            self, vectorizer, label_names, terms, terms_out
+        ):
+            terms_this_test = copy.deepcopy(terms)
+            vec = vectorizer(terms=terms_this_test, label_names=label_names)
+            terms_this_test[0][0] = (terms_this_test[0][0][0], 99)
+            assert vec.terms == (
+                terms_out
+                if (terms_out is not None and isinstance(vec, PolynomialVectorizer))
+                else list(terms)
+            ), "Initial test terms not correctly copied"
+            assert (
+                vec.terms[0][0][1] != terms_this_test[0][0][1]
+            ), "Issue with changes leaking into initialized vectorizer"
+
+        def test_vectorizer_init_no_label_names_alteration(
+            self, vectorizer, label_names, terms, terms_out
+        ):
+            label_names_this_test = copy.deepcopy(label_names)
+            vec = vectorizer(terms=terms, label_names=label_names_this_test)
+            label_names_this_test = [str(i) for i in range(len(label_names))]
+            assert vec.label_names == list(label_names), "Leak through of changed label_names"
 
     @pytest.mark.parametrize(
         "label_names,terms",
@@ -193,7 +217,7 @@ def test_base_vectorizer_get_label_vector_derivative():
 )
 def test_polynomial_vectorizer_basic_init(label_names, terms, terms_out, order):
     vec = PolynomialVectorizer(label_names=label_names, order=order, terms=terms)
-    assert vec.label_names == tuple(
+    assert vec.label_names == list(
         label_names
     ), "Label names not initialized correctly"
     assert vec.terms == (

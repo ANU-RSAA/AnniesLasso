@@ -11,6 +11,7 @@ __all__ = ["BaseVectorizer"]
 
 import numpy as np
 from typing import Union
+import copy
 
 
 class BaseVectorizer(object):
@@ -54,8 +55,6 @@ class BaseVectorizer(object):
         if terms is None:
             terms = []
         self.update_labels_terms(tuple(label_names), terms)
-        # self._terms = terms
-        # self._label_names = tuple(label_names)
         self.metadata = kwargs.get("metadata", {})
         return None
     
@@ -105,7 +104,6 @@ class BaseVectorizer(object):
     def update_labels_terms(
         self, label_names: list[str], terms: list[list[tuple[Union[int, str], int]]]
     ) -> None:
-
         # Sanity-check the inputs
 
         # Ensure that all of the label references (name or index) are valid
@@ -144,15 +142,14 @@ class BaseVectorizer(object):
 
         # Don't check the powers in the terms, except to make sure that there's no power
         # 0 in there - that would be meaningless
-        # import pdb; pdb.set_trace()
         try:
             assert ~np.any(np.isclose(list(powers), 0))
         except AssertionError:
             raise ValueError("0th-power terms are not permitted.")
 
         # Make the settings
-        self._label_names = label_names
-        self._terms = terms
+        self._label_names = list(label_names)
+        self._terms = copy.deepcopy(terms)
 
     @property
     def terms(self):
