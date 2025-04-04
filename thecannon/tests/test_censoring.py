@@ -25,7 +25,7 @@ def test_censors_init(label_names, num_pixels):
     cn = Censors(label_names, num_pixels, items=dummy_items)
 
     # Check that everything has been set correctly
-    assert cn._label_names == label_names
+    assert cn._label_names == list(label_names)
     assert cn._num_pixels == num_pixels
     assert cn.keys() == dummy_items.keys()
     for k in cn.keys():
@@ -33,14 +33,14 @@ def test_censors_init(label_names, num_pixels):
 
     # Check the __getstate__ return
     gs = cn.__getstate__()
-    assert gs["label_names"] == label_names
+    assert gs["label_names"] == list(label_names)
     assert gs["num_pixels"] == num_pixels
     assert gs["items"].keys() == dummy_items.keys()
     for k in gs["items"].keys():
         assert np.all(gs["items"][k] == dummy_items[k])
 
     # Check the property returns
-    assert cn.label_names == label_names
+    assert cn.label_names == list(label_names)
     assert cn.num_pixels == num_pixels
 
 

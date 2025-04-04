@@ -9,9 +9,9 @@ from __future__ import division, print_function, absolute_import, unicode_litera
 
 __all__ = ["BaseVectorizer"]
 
-import copy
 import numpy as np
 from typing import Union
+import copy
 
 
 class BaseVectorizer(object):
@@ -132,14 +132,13 @@ class BaseVectorizer(object):
 
         # Don't check the powers in the terms, except to make sure that there's no power
         # 0 in there - that would be meaningless
-        # import pdb; pdb.set_trace()
         try:
             assert ~np.any(np.isclose(list(powers), 0))
         except AssertionError:
             raise ValueError("0th-power terms are not permitted.")
 
         # Make the settings
-        self._label_names = copy.deepcopy(label_names)
+        self._label_names = list(label_names)
         self._terms = copy.deepcopy(terms)
 
     @property
