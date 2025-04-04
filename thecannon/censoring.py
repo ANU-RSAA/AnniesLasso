@@ -69,6 +69,13 @@ class Censors(dict):
 
         dict.__setitem__(self, label_name, mask)
         return None
+    
+    def __eq__(self, other):
+        if self.num_pixels != other.num_pixels:
+            return False
+        if self.label_names != other.label_names:
+            return False
+        return super().__eq__(other)
 
     def update(self, *args, **kwargs):
         if args:
