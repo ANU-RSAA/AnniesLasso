@@ -5,6 +5,7 @@ Unit tests for `thecannon.vectorizer`.
 import pytest
 from unittest import mock
 import numpy as np
+import copy
 
 from ..vectorizer.base import BaseVectorizer
 from ..vectorizer.polynomial import (
@@ -43,29 +44,61 @@ class TestVectorizersCommon:
         ), "Terms not initialized correctly"
 
     @pytest.mark.parametrize(
-        "label_names,terms,terms_out",
+        "label_names,terms",
         [
             [
                 ("a", "b", "c"),
                 [[("a", 4)], [("b", 1)], [("c", 2)]],
-                [[(0, 4)], [(1, 1)], [(2, 2)]],
             ],
-            [["a", "b", "c"], [[(0, 4)], [(1, 1)], [(2, 2)]], None],
-            (["Teff", "g"], [[(0, 1)], [(0, 2), (1, 1)], [(1, 2), (0, 2)]], None),
+            [["a", "b", "c"], [[(0, 4)], [(1, 1)], [(2, 2)]]],
+            (["Teff", "g"], [[(0, 1)], [(0, 2), (1, 1)], [(1, 2), (0, 2)]]),
         ],
     )
-    def test_vectorizer_eq_differing_names(self, vectorizer, label_names, terms, terms_out):
+    class TestVectorizerEq:
+        def test_vectorizer_eq(self, vectorizer, label_names, terms):
+            vec1 = vectorizer(terms=terms, label_names=label_names)
+            vec2 = vectorizer(terms=terms, label_names=label_names)
+            assert (
+                vec1 == vec2 and vec2 == vec1
+            ), f"__eq__ not working on {str(vectorizer)}"
 
-        class FirstVectorizer(vectorizer):
-            pass
+        def test_vectorizer_eq_differing_names(
+            self,
+            vectorizer,
+            label_names,
+            terms,
+        ):
+            class FirstVectorizer(vectorizer):
+                pass
 
-        class SecondVectorizer(vectorizer):
-            pass
+            class SecondVectorizer(vectorizer):
+                pass
 
-        vec1 = FirstVectorizer(terms=terms, label_names=label_names)
-        vec2 = SecondVectorizer(terms=terms, label_names=label_names)
-        assert vec1 != vec2, "Vectorizer __eq__ cannot tell difference between otherwise identical classes"
+            vec1 = FirstVectorizer(terms=terms, label_names=label_names)
+            vec2 = SecondVectorizer(terms=terms, label_names=label_names)
+            assert (
+                vec1 != vec2 and vec2 != vec1
+            ), "Vectorizer __eq__ cannot tell difference between otherwise identical but different classes"
 
+        def test_vectorizer_eq_differing_label_names(
+            self, vectorizer, label_names, terms
+        ):
+            vec1 = vectorizer(label_names=label_names, terms=terms)
+            vec2 = vectorizer(
+                label_names=label_names[-1:] + label_names[:-1], terms=terms
+            )
+            assert (
+                vec1 != vec2 and vec2 != vec1
+            ), "Vectorizer __eq__ cannot tell difference between otherwise identical but different label names"
+
+        def test_vectorizer_eq_differing_terms(self, vectorizer, label_names, terms):
+            vec1 = vectorizer(label_names=label_names, terms=terms)
+            terms2 = copy.deepcopy(terms)
+            terms2[0][0] = (terms2[0][0][0], 99)
+            vec2 = vectorizer(label_names=label_names, terms=terms2)
+            assert (
+                vec1 != vec2 and vec2 != vec1
+            ), "Vectorizer __eq__ cannot tell difference between otherwise identical but different terms"
 
     @pytest.mark.parametrize(
         "label_names,terms",
@@ -649,26 +682,83 @@ def test_human_readable_label_vector_bad_input(terms):
         _ = human_readable_label_vector(terms)
 
 
-@pytest.mark.parametrize("terms,label_names,mul,pow,sep,bracket,const,ret", [
-    ([[("a", 2)]], None, "*", "^", "+", False, True, "1 + a^2"),
-    ([[("a", 2), ("b", 3)]], None, "*", "^", "+", False, True, "1 + a^2*b^3"),
-    ([[("a", 2), ("b", 3)], [("c", 9)]], None, "*", "^", "+", False, True, "1 + a^2*b^3 + c^9"),
-    ([[("a", 2)]], None, "*", "^", "+", False, False, "a^2"),
-    ([[("a", 2), ("b", 3)]], None, "*", "^", "+", False, False, "a^2*b^3"),
-    ([[("a", 2), ("b", 3)], [("c", 9)]], None, "*", "^", "+", False, False, "a^2*b^3 + c^9"),
-    ([[("a", 2)]], None, "*", "^", "+", True, True, "1 + a^2"),
-    ([[("a", 2), ("b", 3)]], None, "*", "^", "+", True, True, "1 + (a^2*b^3)"),
-    ([[("a", 2), ("b", 3)], [("c", 9)]], None, "*", "^", "+", True, True, "1 + (a^2*b^3) + c^9"),
-    ([[("a", 2)]], None, "x", "**", "p", False, True, "1 p a**2"),
-    ([[("a", 2), ("b", 3)]], None, "x", "**", "p", False, True, "1 p a**2xb**3"),
-    ([[("a", 2), ("b", 3)], [("c", 9)]], None, "x", "**", "p", False, True, "1 p a**2xb**3 p c**9"),
-    ([[("a", 2)]], None, "x", "**", "p", False, False, "a**2"),
-    ([[("a", 2), ("b", 3)]], None, "x", "**", "p", False, False, "a**2xb**3"),
-    ([[("a", 2), ("b", 3)], [("c", 9)]], None, "x", "**", "p", False, False, "a**2xb**3 p c**9"),
-    ([[("a", 2)]], None, "x", "**", "p", True, True, "1 p a**2"),
-    ([[("a", 2), ("b", 3)]], None, "x", "**", "p", True, True, "1 p (a**2xb**3)"),
-    ([[("a", 2), ("b", 3)], [("c", 9)]], None, "x", "**", "p", True, True, "1 p (a**2xb**3) p c**9"),
-])
+@pytest.mark.parametrize(
+    "terms,label_names,mul,pow,sep,bracket,const,ret",
+    [
+        ([[("a", 2)]], None, "*", "^", "+", False, True, "1 + a^2"),
+        ([[("a", 2), ("b", 3)]], None, "*", "^", "+", False, True, "1 + a^2*b^3"),
+        (
+            [[("a", 2), ("b", 3)], [("c", 9)]],
+            None,
+            "*",
+            "^",
+            "+",
+            False,
+            True,
+            "1 + a^2*b^3 + c^9",
+        ),
+        ([[("a", 2)]], None, "*", "^", "+", False, False, "a^2"),
+        ([[("a", 2), ("b", 3)]], None, "*", "^", "+", False, False, "a^2*b^3"),
+        (
+            [[("a", 2), ("b", 3)], [("c", 9)]],
+            None,
+            "*",
+            "^",
+            "+",
+            False,
+            False,
+            "a^2*b^3 + c^9",
+        ),
+        ([[("a", 2)]], None, "*", "^", "+", True, True, "1 + a^2"),
+        ([[("a", 2), ("b", 3)]], None, "*", "^", "+", True, True, "1 + (a^2*b^3)"),
+        (
+            [[("a", 2), ("b", 3)], [("c", 9)]],
+            None,
+            "*",
+            "^",
+            "+",
+            True,
+            True,
+            "1 + (a^2*b^3) + c^9",
+        ),
+        ([[("a", 2)]], None, "x", "**", "p", False, True, "1 p a**2"),
+        ([[("a", 2), ("b", 3)]], None, "x", "**", "p", False, True, "1 p a**2xb**3"),
+        (
+            [[("a", 2), ("b", 3)], [("c", 9)]],
+            None,
+            "x",
+            "**",
+            "p",
+            False,
+            True,
+            "1 p a**2xb**3 p c**9",
+        ),
+        ([[("a", 2)]], None, "x", "**", "p", False, False, "a**2"),
+        ([[("a", 2), ("b", 3)]], None, "x", "**", "p", False, False, "a**2xb**3"),
+        (
+            [[("a", 2), ("b", 3)], [("c", 9)]],
+            None,
+            "x",
+            "**",
+            "p",
+            False,
+            False,
+            "a**2xb**3 p c**9",
+        ),
+        ([[("a", 2)]], None, "x", "**", "p", True, True, "1 p a**2"),
+        ([[("a", 2), ("b", 3)]], None, "x", "**", "p", True, True, "1 p (a**2xb**3)"),
+        (
+            [[("a", 2), ("b", 3)], [("c", 9)]],
+            None,
+            "x",
+            "**",
+            "p",
+            True,
+            True,
+            "1 p (a**2xb**3) p c**9",
+        ),
+    ],
+)
 def test_human_readable_label_vector(
     terms, label_names, mul, pow, sep, bracket, const, ret
 ):
