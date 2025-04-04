@@ -35,7 +35,7 @@ class Censors(dict):
 
     def __init__(self, label_names, num_pixels, items=None, **kwargs):
         super(Censors, self).__init__(**kwargs)
-        self._label_names = tuple(label_names)
+        self._label_names = list(label_names)
         self._num_pixels = int(num_pixels)
         self.update(items or {})
         return None
