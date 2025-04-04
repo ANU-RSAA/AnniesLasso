@@ -70,6 +70,63 @@ class TestVectorizersCommon:
     @pytest.mark.parametrize(
         "label_names,terms",
         [
+            [
+                ("a", "b", "c"),
+                [[("a", 4)], [("b", 1)], [("c", 2)]],
+            ],
+            [["a", "b", "c"], [[(0, 4)], [(1, 1)], [(2, 2)]]],
+            (["Teff", "g"], [[(0, 1)], [(0, 2), (1, 1)], [(1, 2), (0, 2)]]),
+        ],
+    )
+    class TestVectorizerEq:
+        def test_vectorizer_eq(self, vectorizer, label_names, terms):
+            vec1 = vectorizer(terms=terms, label_names=label_names)
+            vec2 = vectorizer(terms=terms, label_names=label_names)
+            assert (
+                vec1 == vec2 and vec2 == vec1
+            ), f"__eq__ not working on {str(vectorizer)}"
+
+        def test_vectorizer_eq_differing_names(
+            self,
+            vectorizer,
+            label_names,
+            terms,
+        ):
+            class FirstVectorizer(vectorizer):
+                pass
+
+            class SecondVectorizer(vectorizer):
+                pass
+
+            vec1 = FirstVectorizer(terms=terms, label_names=label_names)
+            vec2 = SecondVectorizer(terms=terms, label_names=label_names)
+            assert (
+                vec1 != vec2 and vec2 != vec1
+            ), "Vectorizer __eq__ cannot tell difference between otherwise identical but different classes"
+
+        def test_vectorizer_eq_differing_label_names(
+            self, vectorizer, label_names, terms
+        ):
+            vec1 = vectorizer(label_names=label_names, terms=terms)
+            vec2 = vectorizer(
+                label_names=label_names[-1:] + label_names[:-1], terms=terms
+            )
+            assert (
+                vec1 != vec2 and vec2 != vec1
+            ), "Vectorizer __eq__ cannot tell difference between otherwise identical but different label names"
+
+        def test_vectorizer_eq_differing_terms(self, vectorizer, label_names, terms):
+            vec1 = vectorizer(label_names=label_names, terms=terms)
+            terms2 = copy.deepcopy(terms)
+            terms2[0][0] = (terms2[0][0][0], 99)
+            vec2 = vectorizer(label_names=label_names, terms=terms2)
+            assert (
+                vec1 != vec2 and vec2 != vec1
+            ), "Vectorizer __eq__ cannot tell difference between otherwise identical but different terms"
+
+    @pytest.mark.parametrize(
+        "label_names,terms",
+        [
             [("a", "b"), [[("b", 1)]]],  # Unused term
             [
                 ("a",),

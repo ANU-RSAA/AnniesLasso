@@ -57,6 +57,16 @@ class BaseVectorizer(object):
         self.update_labels_terms(tuple(label_names), terms)
         self.metadata = kwargs.get("metadata", {})
         return None
+    
+    def __eq__(self, other):
+        if self.__class__.__name__ != other.__class__.__name__:
+            return False
+        if np.all(self.label_names != other.label_names):
+            return False
+        if self.terms != other.terms:
+            return False
+        
+        return True
 
     # These can be over-written by sub-classes, but it is useful to have some
     # basic information if the sub-classes do not overwrite it.
