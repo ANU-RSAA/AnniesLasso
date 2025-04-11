@@ -87,6 +87,15 @@ class RestrictedCannonModel(CannonModel):
 
         self.theta_bounds = theta_bounds
         return None
+    
+    def __eq__(self, other):
+        if not(super().__eq__(other)):
+            return False
+        
+        if self.theta_bounds != other.theta_bounds:
+            return False
+        
+        return True
 
     @property
     def theta_bounds(self):
