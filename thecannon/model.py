@@ -211,6 +211,36 @@ class CannonModel(object):
         return "<{0}.{1} object at {2}>".format(
             self.__module__, type(self).__name__, hex(id(self))
         )
+    
+    def __eq__(self, other):
+        if self.__class__.__name__ != other.__class__.__name__:
+            return False
+        if not(np.allclose(self.training_set_flux, other.training_set_flux)):
+            return False
+        if not(np.allclose(self.training_set_ivar, other.training_set_ivar)):
+            return False
+        if not(np.allclose(self.training_set_labels, other.training_set_labels)):
+            return False
+        if self.vectorizer != other.vectorizer:
+            return False
+        if not(np.allclose(self.regularization, other.regularization)):
+            return False
+        if self.censors != other.censors:
+            return False
+        if not(np.allclose((self.dispersion, other.dispersion))):
+            return False
+        if not(np.allclose(self._scales, other._scales)):
+            return False
+        if not(np.allclose(self._fiducials, other.fiducials)):
+            return False
+        if not(np.allclose(self.theta, other.theta)):
+            return False
+        if not(np.allclose(self.s2, other.s2)):
+            return False
+        if self.is_trained != other.is_trained:
+            return False
+        
+        return True
 
     # Model attributes that cannot (well, should not) be changed.
 
