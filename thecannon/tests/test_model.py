@@ -261,6 +261,9 @@ class TestCannonModelInit:
                 m.training_set_labels[:, i - 1] == np.ones(label_shape) * i
             ), "Training set labels not assigned to right label column!"
 
+        m2 = test_model(training_labels, fluxes, ivar, vec)
+        assert m == m2, "__eq__ does not recognize identically-created Model"
+
     @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
     @pytest.mark.parametrize("bad_value", [np.nan, np.inf])
     @pytest.mark.parametrize("input_type", ["recarray", "ndarray"])

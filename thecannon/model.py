@@ -25,6 +25,23 @@ from . import censoring, fitting, utils, vectorizer as vectorizer_module, __vers
 
 logger = logging.getLogger(__name__)
 
+def _compare_none_or_arrays(first, second, rtol=1e-05, atol=1e-08, equal_nan=False):
+    """
+    Compare arguments for equality, where they are expected to be:
+    - None
+    - integer
+    - arrays    
+    """
+    if first is None and second is None:
+        return True
+    if isinstance(first, (list, np.ndarray)) != isinstance(second, (list, np.ndarray)):
+        # Mixed input types, so no equivalence
+        return False
+    # Go ahead and do the comparison
+    return np.allclose(first, second, rtol=rtol, atol=atol, equal_nan=equal_nan) 
+
+    
+
 
 def requires_training(method):
     """
@@ -215,27 +232,27 @@ class CannonModel(object):
     def __eq__(self, other):
         if self.__class__.__name__ != other.__class__.__name__:
             return False
-        if not(np.allclose(self.training_set_flux, other.training_set_flux)):
+        if not(_compare_none_or_arrays(self.training_set_flux, other.training_set_flux)):
             return False
-        if not(np.allclose(self.training_set_ivar, other.training_set_ivar)):
+        if not(_compare_none_or_arrays(self.training_set_ivar, other.training_set_ivar)):
             return False
-        if not(np.allclose(self.training_set_labels, other.training_set_labels)):
+        if not(_compare_none_or_arrays(self.training_set_labels, other.training_set_labels)):
             return False
         if self.vectorizer != other.vectorizer:
             return False
-        if not(np.allclose(self.regularization, other.regularization)):
+        if not(_compare_none_or_arrays(self.regularization, other.regularization)):
             return False
         if self.censors != other.censors:
             return False
-        if not(np.allclose((self.dispersion, other.dispersion))):
+        if not(_compare_none_or_arrays(self.dispersion, other.dispersion)):
             return False
-        if not(np.allclose(self._scales, other._scales)):
+        if not(_compare_none_or_arrays(self._scales, other._scales)):
             return False
-        if not(np.allclose(self._fiducials, other.fiducials)):
+        if not(_compare_none_or_arrays(self._fiducials, other._fiducials)):
             return False
-        if not(np.allclose(self.theta, other.theta)):
+        if not(_compare_none_or_arrays(self.theta, other.theta)):
             return False
-        if not(np.allclose(self.s2, other.s2)):
+        if not(_compare_none_or_arrays(self.s2, other.s2)):
             return False
         if self.is_trained != other.is_trained:
             return False
