@@ -5,7 +5,7 @@ Unit tests for `thecannon.censoring`.
 import pytest
 import numpy as np
 
-from ..censoring import Censors, create_mask#, design_matrix_mask
+from ..censoring import Censors, create_mask  # , design_matrix_mask
 from ..vectorizer.base import BaseVectorizer
 
 # Censors tests
@@ -42,6 +42,10 @@ def test_censors_init(label_names, num_pixels):
     # Check the property returns
     assert cn.label_names == list(label_names)
     assert cn.num_pixels == num_pixels
+
+    # Check that an identically-created Censor is considered equal
+    cn2 = Censors(label_names=label_names, num_pixels=num_pixels, items=dummy_items)
+    assert cn == cn2, "__eq__ not returning True as expected"
 
 
 class TestCensorsBadSetitem:

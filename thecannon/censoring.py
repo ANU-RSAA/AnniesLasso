@@ -8,10 +8,10 @@ Utilities to deal with wavelength censoring.
 from __future__ import division, print_function, absolute_import, unicode_literals
 
 __all__ = [
-    "Censors", 
-    "create_mask", 
+    "Censors",
+    "create_mask",
     # "design_matrix_mask"
-    ]
+]
 
 import numpy as np
 
@@ -69,13 +69,19 @@ class Censors(dict):
 
         dict.__setitem__(self, label_name, mask)
         return None
-    
+
     def __eq__(self, other):
         if self.num_pixels != other.num_pixels:
             return False
         if self.label_names != other.label_names:
             return False
-        return super().__eq__(other)
+        # Need to do this manually, otherwise get ambiguous truth value in array error
+        if self.keys() != other.keys():
+            return False
+        for k in self.keys():
+            if np.any(self[k] != other[k]):
+                return False
+        return True
 
     def update(self, *args, **kwargs):
         if args:
