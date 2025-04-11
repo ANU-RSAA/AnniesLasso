@@ -1158,6 +1158,56 @@ class TestCannonModelInit:
         with pytest.raises(ValueError, match="expected"):
             _ = m.in_convex_hull(test_labels)
 
+    @pytest.mark.parametrize("training_set_shape", [
+        3, 9, 22
+    ])
+    class TestCannonModelNeTrainingDiffs:
+        def test_cannonmodel_ne_training_set_flux(self, test_model, module, name, vectorizer, label_names, terms, training_set_shape):
+            training_set_flux = np.ones((training_set_shape, len(label_names)))
+            training_set_ivar = np.ones((training_set_shape, len(label_names)))
+            training_set_labels = np.ones((training_set_shape, len(label_names)))
+
+            m1 = test_model(training_set_labels, training_set_flux, training_set_ivar, vectorizer(label_names=label_names, terms=terms))
+            m2 = test_model(training_set_labels, 
+                            np.zeros((training_set_shape, len(label_names))), 
+                            training_set_ivar, vectorizer(label_names=label_names, terms=terms))
+            
+            assert m1 != m2, "__eq__ failed to detect differing training_set_flux"
+
+        def test_cannonmodel_ne_training_set_ivar(self, test_model, module, name, vectorizer, label_names, terms, training_set_shape):
+            training_set_flux = np.ones((training_set_shape, len(label_names)))
+            training_set_ivar = np.ones((training_set_shape, len(label_names)))
+            training_set_labels = np.ones((training_set_shape, len(label_names)))
+
+            m1 = test_model(training_set_labels, training_set_flux, training_set_ivar, vectorizer(label_names=label_names, terms=terms))
+            m2 = test_model(training_set_labels, 
+                            training_set_flux, 
+                            np.zeros((training_set_shape, len(label_names))), vectorizer(label_names=label_names, terms=terms))
+            
+            assert m1 != m2, "__eq__ failed to detect differing training_set_ivar"
+
+        def test_cannonmodel_ne_training_set_labels(self, test_model, module, name, vectorizer, label_names, terms, training_set_shape):
+            training_set_flux = np.ones((training_set_shape, len(label_names)))
+            training_set_ivar = np.ones((training_set_shape, len(label_names)))
+            training_set_labels = np.ones((training_set_shape, len(label_names)))
+
+            m1 = test_model(training_set_labels, training_set_flux, training_set_ivar, vectorizer(label_names=label_names, terms=terms))
+            m2 = test_model(np.zeros((training_set_shape, len(label_names))), 
+                            training_set_flux, 
+                            training_set_ivar, vectorizer(label_names=label_names, terms=terms))
+            
+            assert m1 != m2, "__eq__ failed to detect differing training_labels"
+
+        def test_cannonmodel_ne_training_set_None(self, test_model, module, name, vectorizer, label_names, terms, training_set_shape):
+            training_set_flux = np.ones((training_set_shape, len(label_names)))
+            training_set_ivar = np.ones((training_set_shape, len(label_names)))
+            training_set_labels = np.ones((training_set_shape, len(label_names)))
+
+            m1 = test_model(training_set_labels, training_set_flux, training_set_ivar, vectorizer(label_names=label_names, terms=terms))
+            m2 = test_model(training_set_labels, 
+                            None, 
+                            None, vectorizer(label_names=label_names, terms=terms))
+
     @pytest.mark.parametrize(
         "test_value",
         [
