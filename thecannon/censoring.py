@@ -76,7 +76,7 @@ class Censors(dict):
         if self.label_names != other.label_names:
             return False
         # Need to do this manually, otherwise get ambiguous truth value in array error
-        if self.keys() != other.keys():
+        if self.keys() != other.keys(): # Probably redundant, but safest to include as backup
             return False
         for k in self.keys():
             if np.any(self[k] != other[k]):

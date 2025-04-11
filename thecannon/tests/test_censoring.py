@@ -65,6 +65,12 @@ class TestCensorInitAndEq:
 
         assert cn1 != cn2, "__eq__ did not pick up on different num_pixels"
 
+    def test_censors_neq_items(self, label_names, num_pixels):
+        cn1 = Censors(label_names, num_pixels, items={l: np.ones(num_pixels, dtype=bool) for l in label_names})
+        cn2 = Censors(label_names, num_pixels, items={l: np.zeros(num_pixels, dtype=bool) for l in label_names})
+
+        assert cn1 != cn2, "__eq__ did not pick up on different masks in Censor"
+
 
 class TestCensorsBadSetitem:
 
