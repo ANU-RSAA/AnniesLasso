@@ -142,7 +142,7 @@ def create_mask(dispersion, censored_regions):
 
         try:
             censored = (end >= dispersion) * (dispersion >= start)
-        except np.core._exceptions._UFuncNoLoopError as e:
+        except (np.core._exceptions._UFuncNoLoopError, TypeError) as e:
             raise ValueError(
                 "Encountered error in computing censored array, likely bad censored_region value type"
             )
