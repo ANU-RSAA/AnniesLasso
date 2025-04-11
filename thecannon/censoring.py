@@ -82,6 +82,9 @@ class Censors(dict):
             if np.any(self[k] != other[k]):
                 return False
         return True
+    
+    def __ne__(self, other):
+        return not(self.__eq__(other))
 
     def update(self, *args, **kwargs):
         if args:

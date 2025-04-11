@@ -18,34 +18,52 @@ from ..vectorizer.base import BaseVectorizer
     ],
 )
 @pytest.mark.parametrize("num_pixels", [2, 4, 6, 8, 10, 100, 1000, 10000])
-def test_censors_init(label_names, num_pixels):
-    dummy_items = {l: np.ones(num_pixels, dtype=bool) for l in label_names}
+class TestCensorInitAndEq:
+    def test_censors_init_and_eq(self, label_names, num_pixels):
+        dummy_items = {l: np.ones(num_pixels, dtype=bool) for l in label_names}
 
-    # This creation line implicitly tests Censors.__setitem__
-    cn = Censors(label_names, num_pixels, items=dummy_items)
+        # This creation line implicitly tests Censors.__setitem__
+        cn = Censors(label_names, num_pixels, items=dummy_items)
 
-    # Check that everything has been set correctly
-    assert cn._label_names == list(label_names)
-    assert cn._num_pixels == num_pixels
-    assert cn.keys() == dummy_items.keys()
-    for k in cn.keys():
-        assert np.all(cn[k] == dummy_items[k])
+        # Check that everything has been set correctly
+        assert cn._label_names == list(label_names)
+        assert cn._num_pixels == num_pixels
+        assert cn.keys() == dummy_items.keys()
+        for k in cn.keys():
+            assert np.all(cn[k] == dummy_items[k])
 
-    # Check the __getstate__ return
-    gs = cn.__getstate__()
-    assert gs["label_names"] == list(label_names)
-    assert gs["num_pixels"] == num_pixels
-    assert gs["items"].keys() == dummy_items.keys()
-    for k in gs["items"].keys():
-        assert np.all(gs["items"][k] == dummy_items[k])
+        # Check the __getstate__ return
+        gs = cn.__getstate__()
+        assert gs["label_names"] == list(label_names)
+        assert gs["num_pixels"] == num_pixels
+        assert gs["items"].keys() == dummy_items.keys()
+        for k in gs["items"].keys():
+            assert np.all(gs["items"][k] == dummy_items[k])
 
-    # Check the property returns
-    assert cn.label_names == list(label_names)
-    assert cn.num_pixels == num_pixels
+        # Check the property returns
+        assert cn.label_names == list(label_names)
+        assert cn.num_pixels == num_pixels
 
-    # Check that an identically-created Censor is considered equal
-    cn2 = Censors(label_names=label_names, num_pixels=num_pixels, items=dummy_items)
-    assert cn == cn2, "__eq__ not returning True as expected"
+        # Check that an identically-created Censor is considered equal
+        cn2 = Censors(label_names=label_names, num_pixels=num_pixels, items=dummy_items)
+        assert cn == cn2, "__eq__ not returning True as expected"
+
+    def test_censors_neq_label_names(self, label_names, num_pixels):
+        cn1 = Censors(label_names, num_pixels, items={l: np.ones(num_pixels, dtype=bool) for l in label_names})
+
+        # Rearrange label_names
+        cn2 = Censors(label_names[-1:] + label_names[1:], num_pixels, items={l: np.ones(num_pixels, dtype=bool) for l in label_names[-1:] + label_names[1:]})
+        assert cn1 != cn2, "__eq__ did not pick up on rearranged label_names list"
+
+        # Drop a label name
+        cn3 = Censors(label_names[1:], num_pixels, items={l: np.ones(num_pixels, dtype=bool) for l in label_names[1:]})
+        assert cn1 != cn2, "__eq__ did not pick up on different length label_names list"
+
+    def test_censors_neq_num_pixels(self, label_names, num_pixels):
+        cn1 = Censors(label_names, num_pixels, items={l: np.ones(num_pixels, dtype=bool) for l in label_names})
+        cn2 = Censors(label_names, num_pixels + 1, items={l: np.ones(num_pixels+1, dtype=bool) for l in label_names})
+
+        assert cn1 != cn2, "__eq__ did not pick up on different num_pixels"
 
 
 class TestCensorsBadSetitem:
