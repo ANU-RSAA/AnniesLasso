@@ -415,6 +415,15 @@ class TestCannonModelInit:
             )
         ), "Bad censoring array"
 
+        m2 = test_model(
+            training_set_labels,
+            training_set_flux,
+            training_set_ivar,
+            vec,
+            censors=censors,
+        )
+        assert m == m2, "__eq__ does not recognize identically-created Model"
+
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
     def test_cannonmodel_censoring_censor_input(
         self, test_model, module, name, vectorizer, label_names, terms, training_shape
@@ -443,6 +452,15 @@ class TestCannonModelInit:
         assert np.all(
             np.all([m.censors[k] == censors[k] for k in label_names])
         ), "Bad censoring array"
+
+        m2 = test_model(
+            training_set_labels,
+            training_set_flux,
+            training_set_ivar,
+            vec,
+            censors=censors,
+        )
+        assert m == m2, "__eq__ does not recognize identically-created Model"
 
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
     def test_cannonmodel_censoring_censor_input_bad_vec_terms(
@@ -494,7 +512,7 @@ class TestCannonModelInit:
 
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
     @pytest.mark.parametrize("censors", [list(), 1, 1.0, "dict", "censors"])
-    def test_cannonmodel_censoring_censor_inpu_bad_type(
+    def test_cannonmodel_censoring_censor_input_bad_type(
         self, test_model, module, name, vectorizer, label_names, terms, training_shape, censors
     ):
         vec = vectorizer(label_names=label_names, terms=terms)
@@ -591,6 +609,15 @@ class TestCannonModelInit:
         assert np.all(
             m.dispersion == dispersion
         ), "Dispersion not correctly carried through"
+
+        m2 = test_model(
+            training_set_labels,
+            training_set_flux,
+            training_set_ivar,
+            vec,
+            dispersion=dispersion,
+        )
+        assert m == m2, "__eq__ does not recognize identically-created Model"
 
     @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
     def test_cannonmodel_dispersion_input_bad_size(
@@ -720,6 +747,15 @@ class TestCannonModelInit:
             m.regularization
             == (reg_expected if reg_expected is not None else regularization)
         ), "Unexpected regularization set"
+
+        m2 = test_model(
+            training_set_labels,
+            training_set_flux,
+            training_set_ivar,
+            vec,
+            regularization=regularization,
+        )
+        assert m == m2, "__eq__ does not recognize identically-created Model"
 
     @pytest.mark.parametrize("training_shape", [10, 100, 1000])
     def test_cannonmodel_regularization_bad_shape(
@@ -889,6 +925,11 @@ class TestCannonModelInit:
 
         assert np.all(m._scales == scale_labels_function(test_labels))
 
+        m2 = test_model(
+            test_labels, None, None, vec, __scale_labels_function=scale_labels_function
+        )
+        assert m == m2, "__eq__ does not recognize identically-created Model"
+
     @pytest.mark.parametrize(
         "scale_labels_function",
         [
@@ -947,6 +988,15 @@ class TestCannonModelInit:
         )
 
         assert np.all(m._fiducials == fiducial_labels_function(test_labels))
+
+        m2 = test_model(
+            test_labels,
+            None,
+            None,
+            vec,
+            __fiducial_labels_function=fiducial_labels_function,
+        )
+        assert m == m2, "__eq__ does not recognize identically-created Model"
 
     @pytest.mark.parametrize(
         "fiducial_labels_function",
@@ -1029,6 +1079,16 @@ class TestCannonModelInit:
             m._design_matrix
             == vec((m.training_set_labels - m._fiducials) / m._scales).T
         ), "definition of _design_matrix has changed!"
+
+        m2 = test_model(
+            test_labels,
+            None,
+            None,
+            vec,
+            __scale_labels_function=scale_labels_function,
+            __fiducial_labels_function=fiducial_labels_function,
+        )
+        assert m == m2, "__eq__ does not recognize identically-created Model"
 
     # FIXME work out reliable test training_set_labels
     @pytest.mark.skip
