@@ -259,8 +259,7 @@ class CannonModel(object):
             return False
         if not (_compare_none_or_arrays(self.s2, other.s2)):
             return False
-        if self.is_trained != other.is_trained:
-            return False
+        # Training status should be caught by the two checks above
 
         return True
 

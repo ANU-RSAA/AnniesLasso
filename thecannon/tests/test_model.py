@@ -1628,6 +1628,120 @@ class TestCannonModelInit:
 
             assert m1 != m2 and m2 != m1, f"__eq__ failed to detect different {kw}"
 
+        def test_cannonmodel_ne_trained(
+            self,
+            test_model,
+            module,
+            name,
+            vectorizer,
+            label_names,
+            terms,
+            training_set_shape,
+        ):
+            training_set_flux = np.ones(training_set_shape)
+            training_set_ivar = np.ones(training_set_shape)
+            training_set_labels = np.linspace(
+                0.0, 10.0, num=training_set_shape[0] * len(label_names)
+            ).reshape((training_set_shape[0], len(label_names)))
+
+            m1 = test_model(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vectorizer(label_names=label_names, terms=terms),
+                # Defaults
+            )
+            m2 = test_model(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vectorizer(label_names=label_names, terms=terms),
+            )
+
+            # Fake m2 being trained
+            m2._theta = np.ones((training_set_shape[0], len(terms) + 1))
+            m2._s2 = np.ones(training_set_shape[0])
+
+            assert m1 != m2 and m2 != m1, f"__eq__ failed to detect different trained status"
+
+        def test_cannonmodel_ne_s2(
+            self,
+            test_model,
+            module,
+            name,
+            vectorizer,
+            label_names,
+            terms,
+            training_set_shape,
+        ):
+            training_set_flux = np.ones(training_set_shape)
+            training_set_ivar = np.ones(training_set_shape)
+            training_set_labels = np.linspace(
+                0.0, 10.0, num=training_set_shape[0] * len(label_names)
+            ).reshape((training_set_shape[0], len(label_names)))
+
+            m1 = test_model(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vectorizer(label_names=label_names, terms=terms),
+                # Defaults
+            )
+            m1._theta = np.ones((training_set_shape[0], len(terms) + 1))
+            m1._s2 = np.zeros(training_set_shape[0])
+
+            m2 = test_model(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vectorizer(label_names=label_names, terms=terms),
+            )
+
+            # Fake m2 being trained
+            m2._theta = np.ones((training_set_shape[0], len(terms) + 1))
+            m2._s2 = np.ones(training_set_shape[0])
+
+            assert m1 != m2 and m2 != m1, f"__eq__ failed to detect different s2"
+
+        def test_cannonmodel_ne_theta(
+            self,
+            test_model,
+            module,
+            name,
+            vectorizer,
+            label_names,
+            terms,
+            training_set_shape,
+        ):
+            training_set_flux = np.ones(training_set_shape)
+            training_set_ivar = np.ones(training_set_shape)
+            training_set_labels = np.linspace(
+                0.0, 10.0, num=training_set_shape[0] * len(label_names)
+            ).reshape((training_set_shape[0], len(label_names)))
+
+            m1 = test_model(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vectorizer(label_names=label_names, terms=terms),
+                # Defaults
+            )
+            m1._theta = np.zeros((training_set_shape[0], len(terms) + 1))
+            m1._s2 = np.ones(training_set_shape[0])
+
+            m2 = test_model(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vectorizer(label_names=label_names, terms=terms),
+            )
+
+            # Fake m2 being trained
+            m2._theta = np.ones((training_set_shape[0], len(terms) + 1))
+            m2._s2 = np.ones(training_set_shape[0])
+
+            assert m1 != m2 and m2 != m1, f"__eq__ failed to detect different theta"
+
     @pytest.mark.parametrize(
         "test_value",
         [
