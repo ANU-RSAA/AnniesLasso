@@ -7,6 +7,7 @@ from thecannon.vectorizer.base import BaseVectorizer
 from thecannon.vectorizer.polynomial import PolynomialVectorizer
 from thecannon.censoring import Censors
 from unittest import mock
+from copy import copy, deepcopy
 
 import numpy as np
 
@@ -1287,7 +1288,76 @@ class TestCannonModelInit:
             (45, 45),
         ],
     )
-    class TestCannonModelNe:
+    class TestCannonModelEqNe:
+        @pytest.mark.parametrize("censor", [True, False])
+        @pytest.mark.parametrize("regularization", [None, 1.0, "arr"])
+        @pytest.mark.parametrize("scales", [
+            None, 
+            lambda l: np.percentile(l, 80.0, axis=0),
+            lambda l: np.ptp(np.percentile(l, [25.0, 60.0], axis=0), axis=0),
+        ])
+        @pytest.mark.parametrize("fiducial", [
+            None, 
+            lambda l: np.percentile(l, 80.0, axis=0),
+            lambda l: np.ptp(np.percentile(l, [25.0, 60.0], axis=0), axis=0),
+        ])
+        @pytest.mark.parametrize("trained", [True, False])
+        def test_cannonmodel_eq(
+            self,
+            test_model,
+            module,
+            name,
+            vectorizer,
+            label_names,
+            terms,
+            training_set_shape,
+            censor,
+            regularization,
+            scales,
+            fiducial,
+            trained
+        ):
+            training_set_flux = np.ones(training_set_shape)
+            training_set_ivar = np.ones(training_set_shape)
+            training_set_labels = np.linspace(
+                0.0, 10.0, num=training_set_shape[0] * len(label_names)
+            ).reshape((training_set_shape[0], len(label_names)))
+            extra_kw = {}
+            if scales is not None:
+                extra_kw["__scale_labels_function"] = scales
+            if fiducial is not None:
+                extra_kw["__fiducial_labels_function"] = fiducial
+            if censor:
+                extra_kw["censors"] = {l: np.ones(training_set_shape[1]) for l in label_names}
+            if regularization == "arr":
+                regularization = np.ones(training_set_shape[1])
+
+            m1 = test_model(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vectorizer(label_names=label_names, terms=terms),
+                regularization=regularization,
+                **extra_kw
+            )
+            m2 = test_model(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vectorizer(label_names=label_names, terms=terms),
+                regularization=regularization,
+                **extra_kw
+            )
+
+            assert m1 == m2 and m2 == m1, "__eq__ did not correctly identify identically created models!"
+
+            # Check that a copy and deepcopy also matches
+            m3 = copy(m1)
+            assert m1 == m3 and m3 == m1 and m2 == m3 and m3 == m2, "__eq__ did not correctly identify a copy model"
+
+            m4 = copy(m1)
+            assert m1 == m4 and m4 == m1 and m2 == m4 and m4 == m2, "__eq__ did not correctly identify a copy model"
+
         def test_cannonmodel_ne_diff_models(
             self,
             test_model,

@@ -4,6 +4,7 @@ Unit tests for `thecannon.censoring`.
 
 import pytest
 import numpy as np
+from copy import copy, deepcopy
 
 from ..censoring import Censors, create_mask  # , design_matrix_mask
 from ..vectorizer.base import BaseVectorizer
@@ -47,6 +48,13 @@ class TestCensorInitAndEq:
         # Check that an identically-created Censor is considered equal
         cn2 = Censors(label_names=label_names, num_pixels=num_pixels, items=dummy_items)
         assert cn == cn2, "__eq__ not returning True as expected"
+
+        # Check copies and deepcopies match
+        cn3 = copy(cn)
+        assert cn == cn3 and cn3 == cn, "__eq__ not saying copy are equal"
+
+        cn4 = deepcopy(cn)
+        assert cn == cn4 and cn4 == cn, "__eq__ not saying deepcopy are equal"
 
     def test_censors_neq_label_names(self, label_names, num_pixels):
         cn1 = Censors(label_names, num_pixels, items={l: np.ones(num_pixels, dtype=bool) for l in label_names})

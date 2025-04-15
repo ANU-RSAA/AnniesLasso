@@ -104,6 +104,13 @@ class TestVectorizersCommon:
                 vec1 != vec2 and vec2 != vec1
             ), "Vectorizer __eq__ cannot tell difference between otherwise identical but different classes"
 
+            # Check copy and deepcopy
+            vec3 = copy.copy(vec1)
+            assert vec1 == vec3 and vec3 == vec1, "__eq__ reporting that copy are not equal"
+
+            vec4 = copy.deepcopy(vec1)
+            assert vec1 == vec4 and vec4 == vec1, "__eq__ reporting that deepcopy are not equal"
+
         def test_vectorizer_eq_differing_label_names(
             self, vectorizer, label_names, terms
         ):

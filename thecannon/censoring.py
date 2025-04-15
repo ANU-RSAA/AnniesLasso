@@ -7,6 +7,8 @@ Utilities to deal with wavelength censoring.
 
 from __future__ import division, print_function, absolute_import, unicode_literals
 
+from copy import deepcopy
+
 __all__ = [
     "Censors",
     "create_mask",
@@ -85,6 +87,22 @@ class Censors(dict):
     
     def __ne__(self, other):
         return not(self.__eq__(other))
+    
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        result.update(self)
+        return result
+    
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, deepcopy(v, memo))
+        result.update(self)
+        return result
 
     def update(self, *args, **kwargs):
         if args:
