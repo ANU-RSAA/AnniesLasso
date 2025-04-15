@@ -1,6 +1,6 @@
 name: test_model_output
 
-on: workflow_dispatch
+on: push
 
 jobs:
   test_model_output_defaults:
