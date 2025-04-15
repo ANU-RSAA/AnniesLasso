@@ -26,14 +26,21 @@ from . import censoring, fitting, utils, vectorizer as vectorizer_module, __vers
 logger = logging.getLogger(__name__)
 
 
-def _compare_none_or_arrays(first, second, rtol=1e-05, atol=1e-08, equal_nan=False):
+def _compare_none_or_arrays(first, second, rtol=1e-05, atol=1e-08, equal_nan=False, allow_one_none=False):
     """
     Compare arguments for equality, where they are expected to be:
     - None
     - integer
     - arrays
+
+    The kwargs rtol, atol, and equal_nan are passed through to the `np.allclose` method.
+
+    The kwarg allow_one_none, if set to True, will cause the function to return True if 
+    only one of `first` and `second` is None.
     """
     if first is None and second is None:
+        return True
+    if allow_one_none and ((first is None) != (second is None)):
         return True
     if isinstance(first, (list, np.ndarray)) != isinstance(second, (list, np.ndarray)):
         # Mixed input types, so no equivalence
@@ -232,11 +239,11 @@ class CannonModel(object):
         if self.__class__.__name__ != other.__class__.__name__:
             return False
         if not (
-            _compare_none_or_arrays(self.training_set_flux, other.training_set_flux)
+            _compare_none_or_arrays(self.training_set_flux, other.training_set_flux, allow_one_none=True)
         ):
             return False
         if not (
-            _compare_none_or_arrays(self.training_set_ivar, other.training_set_ivar)
+            _compare_none_or_arrays(self.training_set_ivar, other.training_set_ivar, allow_one_none=True)
         ):
             return False
         if not (
