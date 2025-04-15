@@ -8,6 +8,7 @@ from thecannon.vectorizer.polynomial import PolynomialVectorizer
 from thecannon.censoring import Censors
 from unittest import mock
 from copy import copy, deepcopy
+from pathlib import Path
 
 import numpy as np
 
@@ -1358,6 +1359,7 @@ class TestCannonModelInit:
             fiducial,
             theta_bounds,
             trained,
+            tmp_path
         ):
             if theta_bounds == "arr" and test_model != restricted.RestrictedCannonModel:
                 pytest.skip()
@@ -1412,6 +1414,11 @@ class TestCannonModelInit:
             assert (
                 m1 == m4 and m4 == m1 and m2 == m4 and m4 == m2
             ), "__eq__ did not correctly identify a copy model"
+
+            # Confirm a saved-and-loaded model is considered equivalent
+            m1.write(tmp_path / "model.model", overwrite=True)
+            m5 = test_model.read(tmp_path / "model.model")
+            assert m1 == m5 and m5 == m1, "__eq__ did not correctly identify a model loaded from disk"
 
         def test_cannonmodel_ne_diff_models(
             self,

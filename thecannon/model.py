@@ -105,7 +105,8 @@ class CannonModel(object):
     _data_attributes = ("training_set_labels", "training_set_flux", "training_set_ivar")
 
     # Descriptive attributes are needed to train *and* test the model.
-    _descriptive_attributes = ("vectorizer", "censors", "regularization", "dispersion")
+    _descriptive_attributes = ("vectorizer", "censors", "regularization", "dispersion", "_scales", "_fiducials")
+    _computed_descriptive_attributes = ("_scales", "_fiducials")
 
     # Trained attributes are set only at training time.
     _trained_attributes = ("theta", "s2")
@@ -654,8 +655,10 @@ class CannonModel(object):
         )
 
         if "metadata" in attributes:
-            logger.warn("'metadata' is a protected attribute. Ignoring.")
+            logger.warning("'metadata' is a protected attribute. Ignoring.")
             attributes.remote("metadata")
+
+        # import pdb; pdb.set_trace()
 
         # Store up all the trained attributes and a hash of the training set.
         state = {}
@@ -677,6 +680,7 @@ class CannonModel(object):
             modified=str(datetime.now()),
             data_attributes=self._data_attributes,
             descriptive_attributes=self._descriptive_attributes,
+            computed_descriptive_attributes=self._computed_descriptive_attributes,
             trained_attributes=self._trained_attributes,
             training_set_hash=utils.short_hash(
                 getattr(self, attr) for attr in self._data_attributes
@@ -688,7 +692,7 @@ class CannonModel(object):
             state.pop("training_set_ivar")
 
         elif not self.is_trained:
-            logger.warn(
+            logger.warning(
                 "The training set spectra won't be saved, and this model"
                 "is not already trained. The saved model will not be "
                 "able to be trained when loaded!"
@@ -718,6 +722,8 @@ class CannonModel(object):
                 if encoding == encodings:
                     raise
 
+        # import pdb; pdb.set_trace()
+
         # Parse the state.
         metadata = state.get("metadata", {})
         version_saved = metadata.get("version", "0.1.0")
@@ -737,7 +743,11 @@ class CannonModel(object):
             kwds["censors"] = censoring.Censors(**kwds["censors"])
 
             model = cls(**kwds)
-
+            # Computed descriptive attributes need to be set directly, as the functions
+            # used to compute them in __init__ are not recorded
+            for attr in metadata.get("computed_descriptive_attributes", []):  # Protect against old saves not defining this
+                setattr(model, attr, state.get(attr, getattr(model, attr)))  # No-op if not defined
+    
             # Set training attributes.
             for attr in metadata["trained_attributes"]:
                 setattr(model, "_{}".format(attr), state.get(attr, None))
