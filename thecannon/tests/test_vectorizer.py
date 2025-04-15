@@ -65,7 +65,9 @@ class TestVectorizersCommon:
             label_names_this_test = copy.deepcopy(label_names)
             vec = vectorizer(terms=terms, label_names=label_names_this_test)
             label_names_this_test = [str(i) for i in range(len(label_names))]
-            assert vec.label_names == list(label_names), "Leak through of changed label_names"
+            assert vec.label_names == list(
+                label_names
+            ), "Leak through of changed label_names"
 
     @pytest.mark.parametrize(
         "label_names,terms",
@@ -106,10 +108,14 @@ class TestVectorizersCommon:
 
             # Check copy and deepcopy
             vec3 = copy.copy(vec1)
-            assert vec1 == vec3 and vec3 == vec1, "__eq__ reporting that copy are not equal"
+            assert (
+                vec1 == vec3 and vec3 == vec1
+            ), "__eq__ reporting that copy are not equal"
 
             vec4 = copy.deepcopy(vec1)
-            assert vec1 == vec4 and vec4 == vec1, "__eq__ reporting that deepcopy are not equal"
+            assert (
+                vec1 == vec4 and vec4 == vec1
+            ), "__eq__ reporting that deepcopy are not equal"
 
         def test_vectorizer_eq_differing_label_names(
             self, vectorizer, label_names, terms
@@ -224,9 +230,7 @@ def test_base_vectorizer_get_label_vector_derivative():
 )
 def test_polynomial_vectorizer_basic_init(label_names, terms, terms_out, order):
     vec = PolynomialVectorizer(label_names=label_names, order=order, terms=terms)
-    assert vec.label_names == list(
-        label_names
-    ), "Label names not initialized correctly"
+    assert vec.label_names == list(label_names), "Label names not initialized correctly"
     assert vec.terms == (
         terms_out if terms_out is not None else terms
     ), "Terms not initialized correctly"

@@ -1291,16 +1291,22 @@ class TestCannonModelInit:
     class TestCannonModelEqNe:
         @pytest.mark.parametrize("censor", [True, False])
         @pytest.mark.parametrize("regularization", [None, 1.0, "arr"])
-        @pytest.mark.parametrize("scales", [
-            None, 
-            lambda l: np.percentile(l, 80.0, axis=0),
-            lambda l: np.ptp(np.percentile(l, [25.0, 60.0], axis=0), axis=0),
-        ])
-        @pytest.mark.parametrize("fiducial", [
-            None, 
-            lambda l: np.percentile(l, 80.0, axis=0),
-            lambda l: np.ptp(np.percentile(l, [25.0, 60.0], axis=0), axis=0),
-        ])
+        @pytest.mark.parametrize(
+            "scales",
+            [
+                None,
+                lambda l: np.percentile(l, 80.0, axis=0),
+                lambda l: np.ptp(np.percentile(l, [25.0, 60.0], axis=0), axis=0),
+            ],
+        )
+        @pytest.mark.parametrize(
+            "fiducial",
+            [
+                None,
+                lambda l: np.percentile(l, 80.0, axis=0),
+                lambda l: np.ptp(np.percentile(l, [25.0, 60.0], axis=0), axis=0),
+            ],
+        )
         @pytest.mark.parametrize("trained", [True, False])
         def test_cannonmodel_eq(
             self,
@@ -1315,7 +1321,7 @@ class TestCannonModelInit:
             regularization,
             scales,
             fiducial,
-            trained
+            trained,
         ):
             training_set_flux = np.ones(training_set_shape)
             training_set_ivar = np.ones(training_set_shape)
@@ -1328,7 +1334,9 @@ class TestCannonModelInit:
             if fiducial is not None:
                 extra_kw["__fiducial_labels_function"] = fiducial
             if censor:
-                extra_kw["censors"] = {l: np.ones(training_set_shape[1]) for l in label_names}
+                extra_kw["censors"] = {
+                    l: np.ones(training_set_shape[1]) for l in label_names
+                }
             if regularization == "arr":
                 regularization = np.ones(training_set_shape[1])
 
@@ -1338,7 +1346,7 @@ class TestCannonModelInit:
                 training_set_ivar,
                 vectorizer(label_names=label_names, terms=terms),
                 regularization=regularization,
-                **extra_kw
+                **extra_kw,
             )
             m2 = test_model(
                 training_set_labels,
@@ -1346,17 +1354,23 @@ class TestCannonModelInit:
                 training_set_ivar,
                 vectorizer(label_names=label_names, terms=terms),
                 regularization=regularization,
-                **extra_kw
+                **extra_kw,
             )
 
-            assert m1 == m2 and m2 == m1, "__eq__ did not correctly identify identically created models!"
+            assert (
+                m1 == m2 and m2 == m1
+            ), "__eq__ did not correctly identify identically created models!"
 
             # Check that a copy and deepcopy also matches
             m3 = copy(m1)
-            assert m1 == m3 and m3 == m1 and m2 == m3 and m3 == m2, "__eq__ did not correctly identify a copy model"
+            assert (
+                m1 == m3 and m3 == m1 and m2 == m3 and m3 == m2
+            ), "__eq__ did not correctly identify a copy model"
 
             m4 = copy(m1)
-            assert m1 == m4 and m4 == m1 and m2 == m4 and m4 == m2, "__eq__ did not correctly identify a copy model"
+            assert (
+                m1 == m4 and m4 == m1 and m2 == m4 and m4 == m2
+            ), "__eq__ did not correctly identify a copy model"
 
         def test_cannonmodel_ne_diff_models(
             self,
@@ -1589,7 +1603,7 @@ class TestCannonModelInit:
             label_names,
             terms,
             training_set_shape,
-            comparison_censor
+            comparison_censor,
         ):
             training_set_flux = np.ones(training_set_shape)
             training_set_ivar = np.ones(training_set_shape)
@@ -1600,19 +1614,21 @@ class TestCannonModelInit:
                 training_set_flux,
                 training_set_ivar,
                 vectorizer(label_names=label_names, terms=terms),
-                censors={l: np.ones(training_set_shape[1]) for l in label_names}
+                censors={l: np.ones(training_set_shape[1]) for l in label_names},
             )
             m2 = test_model(
                 training_set_labels,
                 training_set_flux,
                 training_set_ivar,
                 vectorizer(label_names=label_names, terms=terms),
-                censors=None if not(comparison_censor) else {l: np.zeros(training_set_shape[1]) for l in label_names}
+                censors=(
+                    None
+                    if not (comparison_censor)
+                    else {l: np.zeros(training_set_shape[1]) for l in label_names}
+                ),
             )
 
-            assert (
-                m1 != m2 and m2 != m1
-            ), "__eq__ failed to detect different Censors"
+            assert m1 != m2 and m2 != m1, "__eq__ failed to detect different Censors"
 
         @pytest.mark.parametrize("regularization", [None, 1.0, "arr"])
         def test_cannonmodel_ne_regularization(
@@ -1767,7 +1783,9 @@ class TestCannonModelInit:
             m2._theta = np.ones((training_set_shape[0], len(terms) + 1))
             m2._s2 = np.ones(training_set_shape[0])
 
-            assert m1 != m2 and m2 != m1, f"__eq__ failed to detect different trained status"
+            assert (
+                m1 != m2 and m2 != m1
+            ), f"__eq__ failed to detect different trained status"
 
         def test_cannonmodel_ne_s2(
             self,

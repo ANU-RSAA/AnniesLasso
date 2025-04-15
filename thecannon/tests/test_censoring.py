@@ -57,25 +57,56 @@ class TestCensorInitAndEq:
         assert cn == cn4 and cn4 == cn, "__eq__ not saying deepcopy are equal"
 
     def test_censors_neq_label_names(self, label_names, num_pixels):
-        cn1 = Censors(label_names, num_pixels, items={l: np.ones(num_pixels, dtype=bool) for l in label_names})
+        cn1 = Censors(
+            label_names,
+            num_pixels,
+            items={l: np.ones(num_pixels, dtype=bool) for l in label_names},
+        )
 
         # Rearrange label_names
-        cn2 = Censors(label_names[-1:] + label_names[1:], num_pixels, items={l: np.ones(num_pixels, dtype=bool) for l in label_names[-1:] + label_names[1:]})
+        cn2 = Censors(
+            label_names[-1:] + label_names[1:],
+            num_pixels,
+            items={
+                l: np.ones(num_pixels, dtype=bool)
+                for l in label_names[-1:] + label_names[1:]
+            },
+        )
         assert cn1 != cn2, "__eq__ did not pick up on rearranged label_names list"
 
         # Drop a label name
-        cn3 = Censors(label_names[1:], num_pixels, items={l: np.ones(num_pixels, dtype=bool) for l in label_names[1:]})
+        cn3 = Censors(
+            label_names[1:],
+            num_pixels,
+            items={l: np.ones(num_pixels, dtype=bool) for l in label_names[1:]},
+        )
         assert cn1 != cn2, "__eq__ did not pick up on different length label_names list"
 
     def test_censors_neq_num_pixels(self, label_names, num_pixels):
-        cn1 = Censors(label_names, num_pixels, items={l: np.ones(num_pixels, dtype=bool) for l in label_names})
-        cn2 = Censors(label_names, num_pixels + 1, items={l: np.ones(num_pixels+1, dtype=bool) for l in label_names})
+        cn1 = Censors(
+            label_names,
+            num_pixels,
+            items={l: np.ones(num_pixels, dtype=bool) for l in label_names},
+        )
+        cn2 = Censors(
+            label_names,
+            num_pixels + 1,
+            items={l: np.ones(num_pixels + 1, dtype=bool) for l in label_names},
+        )
 
         assert cn1 != cn2, "__eq__ did not pick up on different num_pixels"
 
     def test_censors_neq_items(self, label_names, num_pixels):
-        cn1 = Censors(label_names, num_pixels, items={l: np.ones(num_pixels, dtype=bool) for l in label_names})
-        cn2 = Censors(label_names, num_pixels, items={l: np.zeros(num_pixels, dtype=bool) for l in label_names})
+        cn1 = Censors(
+            label_names,
+            num_pixels,
+            items={l: np.ones(num_pixels, dtype=bool) for l in label_names},
+        )
+        cn2 = Censors(
+            label_names,
+            num_pixels,
+            items={l: np.zeros(num_pixels, dtype=bool) for l in label_names},
+        )
 
         assert cn1 != cn2, "__eq__ did not pick up on different masks in Censor"
 

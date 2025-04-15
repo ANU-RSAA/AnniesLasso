@@ -78,23 +78,25 @@ class Censors(dict):
         if self.label_names != other.label_names:
             return False
         # Need to do this manually, otherwise get ambiguous truth value in array error
-        if self.keys() != other.keys(): # Probably redundant, but safest to include as backup
+        if (
+            self.keys() != other.keys()
+        ):  # Probably redundant, but safest to include as backup
             return False
         for k in self.keys():
             if np.any(self[k] != other[k]):
                 return False
         return True
-    
+
     def __ne__(self, other):
-        return not(self.__eq__(other))
-    
+        return not (self.__eq__(other))
+
     def __copy__(self):
         cls = self.__class__
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
         result.update(self)
         return result
-    
+
     def __deepcopy__(self, memo):
         cls = self.__class__
         result = cls.__new__(cls)

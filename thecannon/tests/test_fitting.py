@@ -54,15 +54,19 @@ def test_chisq_2d_flux_or_ivar(bad_value, arg, f):
     args = [
         np.ones((5,)),
         np.ones((10, 5)),
-        bad_value
-        if arg == "flux"
-        else np.ones(
-            10,
+        (
+            bad_value
+            if arg == "flux"
+            else np.ones(
+                10,
+            )
         ),
-        bad_value
-        if arg == "ivar"
-        else np.ones(
-            10,
+        (
+            bad_value
+            if arg == "ivar"
+            else np.ones(
+                10,
+            )
         ),
     ]
     if f == "_pixel_objective_function_fixed_scatter":
@@ -364,6 +368,7 @@ def test_fit_pixel_fixed_scatter_bad_array_sizes(flux, ivar, design_matrix):
 def _fake_pixel_obj(first_input, *args):
     return first_input
 
+
 @pytest.mark.parametrize(
     "flux,ivar,design_matrix",
     [
@@ -382,11 +387,12 @@ def _fake_pixel_obj(first_input, *args):
 class TestFitPixelFixedScatterSundries:
 
     @pytest.mark.parametrize(
-    "initial_theta",
-    [
-        [(np.zeros(7), "Bad guess")],
-        [(np.zeros(5), "First one is good"), (np.zeros(9), "Second one is bad")],
-    ])
+        "initial_theta",
+        [
+            [(np.zeros(7), "Bad guess")],
+            [(np.zeros(5), "First one is good"), (np.zeros(9), "Second one is bad")],
+        ],
+    )
     def test_fit_pixel_fixed_scatter_secondary_bad_theta(
         self, initial_theta, design_matrix, flux, ivar, regularization
     ):
@@ -395,30 +401,50 @@ class TestFitPixelFixedScatterSundries:
                 flux, ivar, initial_theta, design_matrix, regularization, None
             )
 
-    @pytest.mark.parametrize("initial_thetas", [
-        [(0.1, "Pick me"), (np.nan, "Don't pick me"), (10.0, "Don't pick me")],
-        [(np.nan, "Don't pick me"), (0.01, "Pick me"), (10.0, "Don't pick me")],
-        [(100.0, "Don't pick me"), (0.01, "Pick me"),],
-    ])
-    def test__select_theta(self, initial_thetas, design_matrix, flux, ivar, regularization):
+    @pytest.mark.parametrize(
+        "initial_thetas",
+        [
+            [(0.1, "Pick me"), (np.nan, "Don't pick me"), (10.0, "Don't pick me")],
+            [(np.nan, "Don't pick me"), (0.01, "Pick me"), (10.0, "Don't pick me")],
+            [
+                (100.0, "Don't pick me"),
+                (0.01, "Pick me"),
+            ],
+        ],
+    )
+    def test__select_theta(
+        self, initial_thetas, design_matrix, flux, ivar, regularization
+    ):
         # Find what value we should get
         for theta, msg in initial_thetas:
             if msg == "Pick me":
                 target_theta = theta
                 break
 
-        with mock.patch("thecannon.fitting._pixel_objective_function_fixed_scatter", wraps=_fake_pixel_obj) as mock_obj:
-            t, s = fitting._select_theta(flux, ivar, initial_thetas, design_matrix, regularization)
+        with mock.patch(
+            "thecannon.fitting._pixel_objective_function_fixed_scatter",
+            wraps=_fake_pixel_obj,
+        ) as mock_obj:
+            t, s = fitting._select_theta(
+                flux, ivar, initial_thetas, design_matrix, regularization
+            )
             assert t == target_theta
             assert s == "Pick me"
 
-    @pytest.mark.parametrize("bad_method", [
-        "a",
-        "stuff",
-        1.0,
-        3,
-        True,
-    ])
-    def test_fit_pixel_fixed_scatter_bad_method(self, bad_method, design_matrix, flux, ivar, regularization):
+    @pytest.mark.parametrize(
+        "bad_method",
+        [
+            "a",
+            "stuff",
+            1.0,
+            3,
+            True,
+        ],
+    )
+    def test_fit_pixel_fixed_scatter_bad_method(
+        self, bad_method, design_matrix, flux, ivar, regularization
+    ):
         with pytest.raises(ValueError, match="unknown optimization"):
-            _ = fitting.fit_pixel_fixed_scatter(flux, ivar, None, design_matrix, 1.0, None, op_method=bad_method)
+            _ = fitting.fit_pixel_fixed_scatter(
+                flux, ivar, None, design_matrix, 1.0, None, op_method=bad_method
+            )
