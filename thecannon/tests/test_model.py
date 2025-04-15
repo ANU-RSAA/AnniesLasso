@@ -1583,6 +1583,51 @@ class TestCannonModelInit:
 
             assert m1 != m2 and m2 != m1, "__eq__ failed to detect different dispersion"
 
+        @pytest.mark.parametrize(
+            "fnc",
+            [
+                lambda l: np.percentile(l, 80.0, axis=0),
+                lambda l: np.ptp(np.percentile(l, [25.0, 60.0], axis=0), axis=0),
+            ],
+        )
+        @pytest.mark.parametrize(
+            "kw", ["__scale_labels_function", "__fiducial_labels_function"]
+        )
+        def test_cannonmodel_ne_labels_functions(
+            self,
+            test_model,
+            module,
+            name,
+            vectorizer,
+            label_names,
+            terms,
+            training_set_shape,
+            fnc,
+            kw,
+        ):
+            training_set_flux = np.ones(training_set_shape)
+            training_set_ivar = np.ones(training_set_shape)
+            training_set_labels = np.linspace(
+                0.0, 10.0, num=training_set_shape[0] * len(label_names)
+            ).reshape((training_set_shape[0], len(label_names)))
+
+            m1 = test_model(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vectorizer(label_names=label_names, terms=terms),
+                # Defaults
+            )
+            m2 = test_model(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vectorizer(label_names=label_names, terms=terms),
+                **{kw: fnc},
+            )
+
+            assert m1 != m2 and m2 != m1, f"__eq__ failed to detect different {kw}"
+
     @pytest.mark.parametrize(
         "test_value",
         [
