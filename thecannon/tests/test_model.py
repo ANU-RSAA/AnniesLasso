@@ -1307,6 +1307,7 @@ class TestCannonModelInit:
                 lambda l: np.ptp(np.percentile(l, [25.0, 60.0], axis=0), axis=0),
             ],
         )
+        @pytest.mark.parametrize("theta_bounds", [None, "arr"])
         @pytest.mark.parametrize("trained", [True, False])
         def test_cannonmodel_eq(
             self,
@@ -1321,8 +1322,12 @@ class TestCannonModelInit:
             regularization,
             scales,
             fiducial,
+            theta_bounds,
             trained,
         ):
+            if theta_bounds == "arr" and test_model != restricted.RestrictedCannonModel:
+                pytest.skip()
+
             training_set_flux = np.ones(training_set_shape)
             training_set_ivar = np.ones(training_set_shape)
             training_set_labels = np.linspace(
@@ -1339,6 +1344,8 @@ class TestCannonModelInit:
                 }
             if regularization == "arr":
                 regularization = np.ones(training_set_shape[1])
+            if theta_bounds == "arr" and test_model == restricted.RestrictedCannonModel:
+                extra_kw["theta_bounds"] = {l: (-1, 1.1) for l in label_names}
 
             m1 = test_model(
                 training_set_labels,
@@ -1864,6 +1871,46 @@ class TestCannonModelInit:
             m2._s2 = np.ones(training_set_shape[0])
 
             assert m1 != m2 and m2 != m1, f"__eq__ failed to detect different theta"
+
+        @pytest.mark.parametrize("comparison_theta_bounds", [None, True])
+        def test_cannonmodel_ne_theta_bounds(
+            self,
+            test_model,
+            module,
+            name,
+            vectorizer,
+            label_names,
+            terms,
+            training_set_shape,
+            comparison_theta_bounds
+        ):
+            if test_model != restricted.RestrictedCannonModel:
+                pytest.skip()
+
+            training_set_flux = np.ones(training_set_shape)
+            training_set_ivar = np.ones(training_set_shape)
+            training_set_labels = np.linspace(
+                0.0, 10.0, num=training_set_shape[0] * len(label_names)
+            ).reshape((training_set_shape[0], len(label_names)))
+
+            m1 = test_model(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vectorizer(label_names=label_names, terms=terms),
+                # Defaults
+            )
+            m1.theta_bounds = {l: (-1, 11) for l in m1.vectorizer.human_readable_label_vector}
+
+            m2 = test_model(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vectorizer(label_names=label_names, terms=terms),
+            )
+            m2.theta_bounds = None if comparison_theta_bounds is None else {l: (-2, 12) for l in m2.vectorizer.human_readable_label_vector}
+    
+            assert m1 != m2 and m2 != m1, "__eq__ failed to detect different theta_bounds"
 
     @pytest.mark.parametrize(
         "test_value",
