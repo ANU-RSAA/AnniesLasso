@@ -1509,6 +1509,41 @@ class TestCannonModelInit:
                 m1 != m2 != m3
             ), "__eq__ failed to detect internal differences in vectorizer"
 
+        @pytest.mark.parametrize("comparison_censor", [True, False])
+        def test_cannonmodel_ne_censors(
+            self,
+            test_model,
+            module,
+            name,
+            vectorizer,
+            label_names,
+            terms,
+            training_set_shape,
+            comparison_censor
+        ):
+            training_set_flux = np.ones(training_set_shape)
+            training_set_ivar = np.ones(training_set_shape)
+            training_set_labels = np.ones((training_set_shape[0], len(label_names)))
+
+            m1 = test_model(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vectorizer(label_names=label_names, terms=terms),
+                censors={l: np.ones(training_set_shape[1]) for l in label_names}
+            )
+            m2 = test_model(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vectorizer(label_names=label_names, terms=terms),
+                censors=None if not(comparison_censor) else {l: np.zeros(training_set_shape[1]) for l in label_names}
+            )
+
+            assert (
+                m1 != m2 and m2 != m1
+            ), "__eq__ failed to detect different Censors"
+
         @pytest.mark.parametrize("regularization", [None, 1.0, "arr"])
         def test_cannonmodel_ne_regularization(
             self,
