@@ -61,6 +61,9 @@ class RestrictedCannonModel(CannonModel):
         `None` to indicate no limit on a boundary.
     """
 
+    # Need to expand descriptive_attributes for this model
+    _descriptive_attributes = ("vectorizer", "censors", "regularization", "dispersion", "_scales", "_fiducials", "theta_bounds")
+
     def __init__(
         self,
         training_set_labels,
