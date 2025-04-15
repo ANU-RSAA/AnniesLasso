@@ -120,7 +120,10 @@ class RestrictedCannonModel(CannonModel):
             terms = label_vector.split(" + ")
             checked_bounds = {}
             for term in theta_bounds.keys():
-                bounds = theta_bounds[term]
+                try:
+                    bounds = tuple(theta_bounds[term])
+                except TypeError:
+                    raise ValueError("bounds must be in tuple-like form")
                 term = str(term)
 
                 if term not in terms:

@@ -1207,6 +1207,40 @@ class TestCannonModelInit:
         )
         assert m == m2, "__eq__ does not recognize identically-created Model"
 
+    @pytest.mark.parametrize("bad_theta_bound", [
+        1,    # int
+        1.0,  # float
+        (1.0, ),  # 1-tuple
+        (1.0, 2.0, 3.0, ),  # 3-tuple
+        [1.0, 2.0, 3.0],  # len 3 list
+        [1.0, ], # len 1 list
+        [2.0, 1.0], # Reversed list
+        (2.0, 1.0), # Reversed tuple
+    ])
+    def test_restrictedcannonmodel_theta_bounds_bad_values(
+        self,
+        test_model,
+        module,
+        name,
+        vectorizer,
+        label_names,
+        terms,
+        bad_theta_bound
+    ):
+        if test_model != restricted.RestrictedCannonModel:
+            pytest.skip()
+
+        m = test_model(
+            np.ones((10, len(label_names))),
+            None, None,
+            vectorizer(label_names=label_names, terms=terms)
+        )
+
+        tb = {m.vectorizer.human_readable_label_vector.split(" + ")[-1]: bad_theta_bound}
+
+        with pytest.raises(ValueError, match="bounds must"):
+            m.theta_bounds = tb
+
     # FIXME work out reliable test training_set_labels
     @pytest.mark.skip
     @pytest.mark.parametrize(
