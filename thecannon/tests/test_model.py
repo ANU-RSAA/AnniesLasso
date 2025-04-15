@@ -1279,11 +1279,14 @@ class TestCannonModelInit:
         with pytest.raises(ValueError, match="expected"):
             _ = m.in_convex_hull(test_labels)
 
-    @pytest.mark.parametrize("training_set_shape", [
-        (3, 50),
-        (10, 1000),
-        (45, 45),
-    ])
+    @pytest.mark.parametrize(
+        "training_set_shape",
+        [
+            (3, 50),
+            (10, 1000),
+            (45, 45),
+        ],
+    )
     class TestCannonModelNe:
         def test_cannonmodel_ne_diff_models(
             self,
@@ -1516,7 +1519,7 @@ class TestCannonModelInit:
             label_names,
             terms,
             training_set_shape,
-            regularization
+            regularization,
         ):
             training_set_flux = np.ones(training_set_shape)
             training_set_ivar = np.ones(training_set_shape)
@@ -1540,7 +1543,45 @@ class TestCannonModelInit:
                 regularization=regularization,
             )
 
-            assert m1 != m2 and m2 != m1, "__eq__ failed to detect different regularization"
+            assert (
+                m1 != m2 and m2 != m1
+            ), "__eq__ failed to detect different regularization"
+
+        @pytest.mark.parametrize("dispersion", [None, "arr"])
+        def test_cannonmodel_ne_dispersion(
+            self,
+            test_model,
+            module,
+            name,
+            vectorizer,
+            label_names,
+            terms,
+            training_set_shape,
+            dispersion,
+        ):
+            training_set_flux = np.ones(training_set_shape)
+            training_set_ivar = np.ones(training_set_shape)
+            training_set_labels = np.ones((training_set_shape[0], len(label_names)))
+
+            if dispersion == "arr":
+                dispersion = np.ones(training_set_shape[1])
+
+            m1 = test_model(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vectorizer(label_names=label_names, terms=terms),
+                dispersion=np.ones(training_set_shape[1]) * 2,
+            )
+            m2 = test_model(
+                training_set_labels,
+                training_set_flux,
+                training_set_ivar,
+                vectorizer(label_names=label_names, terms=terms),
+                dispersion=dispersion,
+            )
+
+            assert m1 != m2 and m2 != m1, "__eq__ failed to detect different dispersion"
 
     @pytest.mark.parametrize(
         "test_value",

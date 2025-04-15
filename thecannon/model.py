@@ -25,12 +25,13 @@ from . import censoring, fitting, utils, vectorizer as vectorizer_module, __vers
 
 logger = logging.getLogger(__name__)
 
+
 def _compare_none_or_arrays(first, second, rtol=1e-05, atol=1e-08, equal_nan=False):
     """
     Compare arguments for equality, where they are expected to be:
     - None
     - integer
-    - arrays    
+    - arrays
     """
     if first is None and second is None:
         return True
@@ -38,9 +39,7 @@ def _compare_none_or_arrays(first, second, rtol=1e-05, atol=1e-08, equal_nan=Fal
         # Mixed input types, so no equivalence
         return False
     # Go ahead and do the comparison
-    return np.allclose(first, second, rtol=rtol, atol=atol, equal_nan=equal_nan) 
-
-    
+    return np.allclose(first, second, rtol=rtol, atol=atol, equal_nan=equal_nan)
 
 
 def requires_training(method):
@@ -170,9 +169,7 @@ class CannonModel(object):
         # to training_set_labels
         __scale_labels_function = kwargs.get(
             "__scale_labels_function",
-            lambda l: np.ptp(
-                np.percentile(l, [2.5, 97.5], axis=0), axis=0
-            ),
+            lambda l: np.ptp(np.percentile(l, [2.5, 97.5], axis=0), axis=0),
         )
         __fiducial_labels_function = kwargs.get(
             "__fiducial_labels_function",
@@ -181,7 +178,7 @@ class CannonModel(object):
 
         try:
             self._scales = __scale_labels_function(self.training_set_labels)
-            assert self._scales.shape == (self.training_set_labels.shape[1], )
+            assert self._scales.shape == (self.training_set_labels.shape[1],)
         except TypeError as e:
             raise ValueError("__scale_labels_function must be callable")
         except AssertionError as e:
@@ -218,9 +215,11 @@ class CannonModel(object):
                 trained="trained" if self.is_trained else "",
                 K=self.training_set_labels.shape[1],
                 N=self.training_set_labels.shape[0],
-                M=self.training_set_flux.shape[1]
-                if self.training_set_flux is not None
-                else "no",
+                M=(
+                    self.training_set_flux.shape[1]
+                    if self.training_set_flux is not None
+                    else "no"
+                ),
             )
         )
 
@@ -228,35 +227,41 @@ class CannonModel(object):
         return "<{0}.{1} object at {2}>".format(
             self.__module__, type(self).__name__, hex(id(self))
         )
-    
+
     def __eq__(self, other):
         if self.__class__.__name__ != other.__class__.__name__:
             return False
-        if not(_compare_none_or_arrays(self.training_set_flux, other.training_set_flux)):
+        if not (
+            _compare_none_or_arrays(self.training_set_flux, other.training_set_flux)
+        ):
             return False
-        if not(_compare_none_or_arrays(self.training_set_ivar, other.training_set_ivar)):
+        if not (
+            _compare_none_or_arrays(self.training_set_ivar, other.training_set_ivar)
+        ):
             return False
-        if not(_compare_none_or_arrays(self.training_set_labels, other.training_set_labels)):
+        if not (
+            _compare_none_or_arrays(self.training_set_labels, other.training_set_labels)
+        ):
             return False
         if self.vectorizer != other.vectorizer:
             return False
-        if not(_compare_none_or_arrays(self.regularization, other.regularization)):
+        if not (_compare_none_or_arrays(self.regularization, other.regularization)):
             return False
         if self.censors != other.censors:
             return False
-        if not(_compare_none_or_arrays(self.dispersion, other.dispersion)):
+        if not (_compare_none_or_arrays(self.dispersion, other.dispersion)):
             return False
-        if not(_compare_none_or_arrays(self._scales, other._scales)):
+        if not (_compare_none_or_arrays(self._scales, other._scales)):
             return False
-        if not(_compare_none_or_arrays(self._fiducials, other._fiducials)):
+        if not (_compare_none_or_arrays(self._fiducials, other._fiducials)):
             return False
-        if not(_compare_none_or_arrays(self.theta, other.theta)):
+        if not (_compare_none_or_arrays(self.theta, other.theta)):
             return False
-        if not(_compare_none_or_arrays(self.s2, other.s2)):
+        if not (_compare_none_or_arrays(self.s2, other.s2)):
             return False
         if self.is_trained != other.is_trained:
             return False
-        
+
         return True
 
     # Model attributes that cannot (well, should not) be changed.
