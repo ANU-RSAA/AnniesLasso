@@ -26,7 +26,7 @@ jobs:
 
     - name: Run run_cannon_andy_svens_python.py
       run: |
-        python ./thecannon/tests/actions/run_cannon_andy_svens_python.py
+        python ./thecannon/tests/actions/run_cannon_generate_test_model.py
 
     - name: Check the model is the same as the reference
       uses: LouisBrunner/diff-action@v2.0.0

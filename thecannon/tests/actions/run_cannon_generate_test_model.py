@@ -62,7 +62,7 @@ prospect_test_labels, prospect_test_cov, prospect_metadata = prospect_model.test
 # In[ ]:
 
 
-prospect_model.write("prospect_model_svens_python.model", overwrite=True)
+prospect_model.write("prospect_model_test.model", overwrite=True)
 
 
 # In[ ]:
