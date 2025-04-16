@@ -61,6 +61,9 @@ class RestrictedCannonModel(CannonModel):
         `None` to indicate no limit on a boundary.
     """
 
+    # Need to expand descriptive_attributes for this model
+    _descriptive_attributes = ("vectorizer", "censors", "regularization", "dispersion", "_scales", "_fiducials", "theta_bounds")
+
     def __init__(
         self,
         training_set_labels,
@@ -87,6 +90,15 @@ class RestrictedCannonModel(CannonModel):
 
         self.theta_bounds = theta_bounds
         return None
+    
+    def __eq__(self, other):
+        if not(super().__eq__(other)):
+            return False
+        
+        if self.theta_bounds != other.theta_bounds:
+            return False
+        
+        return True
 
     @property
     def theta_bounds(self):
@@ -111,7 +123,10 @@ class RestrictedCannonModel(CannonModel):
             terms = label_vector.split(" + ")
             checked_bounds = {}
             for term in theta_bounds.keys():
-                bounds = theta_bounds[term]
+                try:
+                    bounds = tuple(theta_bounds[term])
+                except TypeError:
+                    raise ValueError("bounds must be in tuple-like form")
                 term = str(term)
 
                 if term not in terms:

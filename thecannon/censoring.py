@@ -7,11 +7,13 @@ Utilities to deal with wavelength censoring.
 
 from __future__ import division, print_function, absolute_import, unicode_literals
 
+from copy import deepcopy
+
 __all__ = [
-    "Censors", 
-    "create_mask", 
+    "Censors",
+    "create_mask",
     # "design_matrix_mask"
-    ]
+]
 
 import numpy as np
 
@@ -69,6 +71,40 @@ class Censors(dict):
 
         dict.__setitem__(self, label_name, mask)
         return None
+
+    def __eq__(self, other):
+        if self.num_pixels != other.num_pixels:
+            return False
+        if self.label_names != other.label_names:
+            return False
+        # Need to do this manually, otherwise get ambiguous truth value in array error
+        if (
+            self.keys() != other.keys()
+        ):  # Probably redundant, but safest to include as backup
+            return False
+        for k in self.keys():
+            if np.any(self[k] != other[k]):
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self.__eq__(other))
+
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        result.update(self)
+        return result
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, deepcopy(v, memo))
+        result.update(self)
+        return result
 
     def update(self, *args, **kwargs):
         if args:
@@ -135,7 +171,7 @@ def create_mask(dispersion, censored_regions):
 
         try:
             censored = (end >= dispersion) * (dispersion >= start)
-        except np.core._exceptions._UFuncNoLoopError as e:
+        except (np.core._exceptions._UFuncNoLoopError, TypeError) as e:
             raise ValueError(
                 "Encountered error in computing censored array, likely bad censored_region value type"
             )
