@@ -34,4 +34,4 @@ jobs:
 
     - name: Compare the prospect restricted models
       run : |
-        python ./thecannon/tests/actions/compare_generated_prosect_restricted_models.py
+        python ./thecannon/tests/actions/compare_generated_prospect_restricted_models.py
