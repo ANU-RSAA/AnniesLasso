@@ -28,11 +28,10 @@ jobs:
       run: |
         python ./thecannon/tests/actions/run_cannon_generate_test_model.py
 
-    - name: Check the model is the same as the reference
-      uses: LouisBrunner/diff-action@v2.0.0
-      with:
-        old: thecannon/tests/data/prospect_model_restricted_svens_python.model
-        new: prospect_model_restricted_test.model
-        mode: strict
-        tolerance: same
-        output: model_comparison.txt
+    - name: Compare the prospect models
+      run : |
+        python ./thecannon/tests/actions/compare_generated_prospect_models.py
+
+    - name: Compare the prospect restricted models
+      run : |
+        python ./thecannon/tests/actions/compare_generated_prosect_restricted_models.py
