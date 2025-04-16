@@ -10,7 +10,7 @@ vc.tex
 sandbox_*.py
 *.pyc
 *.pkl
-*.model
+/*.model
 
 build/
 dist/
