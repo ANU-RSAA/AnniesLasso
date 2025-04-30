@@ -108,6 +108,7 @@ class Censors(dict):
         return result
 
     def update(self, *args, **kwargs):
+        """Update with a second Censors dict."""
         if args:
             if len(args) > 1:
                 raise TypeError(
@@ -121,6 +122,7 @@ class Censors(dict):
             self[key] = kwargs[key]
 
     def setdefault(self, key, value=None):
+        """Set default value"""
         if key not in self:
             self[key] = value
         return self[key]

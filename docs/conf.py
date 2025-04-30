@@ -11,6 +11,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
+    "sphinx.ext.autosummary",
     # "breathe",
 ]
 intersphinx_mapping = {
@@ -29,6 +30,8 @@ source_suffix = ".rst"
 master_doc = "index"
 
 napoleon_numpy_docstring = True
+
+autosummary_generate = False
 
 # General information about the project.
 project = "The Cannon"
