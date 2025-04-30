@@ -500,7 +500,7 @@ def fit_pixel_fixed_scatter(
 
     :param initial_thetas:
         A list of initial theta values to start from, and their source. For
-        example: `[(theta_0, "guess"), (theta_1, "old_theta")]
+        example: `[(theta_0, "guess"), (theta_1, "old_theta")]`
 
     :param design_matrix:
         The model design matrix.

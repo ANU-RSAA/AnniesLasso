@@ -25,13 +25,13 @@ class Censors(dict):
     A dictionary sub-class that allows for label censoring masks to be
     applied on a per-pixel basis to CannonModel objects.
 
-    :param label_names:
+    Parameters
+    ----------
+    label_names: iterable of str
         A list containing the label names that form the model vectorizer.
-
-    :param num_pixels:
+    num_pixels: int
         The number of pixels per star.
-
-    :param items: [optional]
+    items: dict, optional
         A dictionary containing label names as keys and masks as values.
     """
 
@@ -46,10 +46,11 @@ class Censors(dict):
         """
         Update an entry in the pixel censoring dictionary.
 
-        :param label_name:
+        Parameters
+        ----------
+        label_name: str
             The name of the label to apply the censoring to.
-
-        :param mask:
+        mask: array-like of bool
             A boolean mask with a size that equals the number of pixels per star.
             Note that a mask value of `True` indicates the label is censored at
             the given pixel, and therefore that label will not contribute to
@@ -146,14 +147,17 @@ def create_mask(dispersion, censored_regions):
     Return a boolean censoring mask based on a structured list of (start, end)
     regions.
 
-    :param dispersion:
+    Parameters
+    ----------
+    dispersion: array-like of floats
         An array of dispersion values.
-
-    :param censored_regions:
+    censored_regions: list of two-tuples
         A list of two-length tuples containing the `(start, end)` points of a
         censored region.
 
-    :returns:
+    Returns
+    -------
+    array-like of bool
         A boolean mask indicating whether the pixels in the `dispersion` array
         are masked.
     """

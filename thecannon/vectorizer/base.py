@@ -29,17 +29,20 @@ class BaseVectorizer(object):
         vector.
 
         The list describes the terms of the label vector as follows:
+
         ```
         [
-            [[(<label index>, <label power>), ...], [(<label index>, <label power>), ...)], ...],
-            ...
+        [[(<label index>, <label power>), ...], [(<label index>, <label power>), ...)], ...],
+        ...
         ]
         ```
 
         So, for example, if `label_names=['a', 'b']`, then the following element in `terms`:
+        
         ```
         [[(0, 1), (1, 1)], [(1, 2)]]
         ```
+
         is equivalent to `a^1 * b^1 + b^2`. The actual label names can also be used as the first
         element of each tuple.
     """
