@@ -11,12 +11,12 @@ CannonModel
 .. autoclass:: thecannon.CannonModel
    :members:
 
+.. autoclass:: thecannon.restricted.RestrictedCannonModel
+   :members:
+
 
 Censoring
 ---------
-
-.. autoclass:: thecannon.censoring.Censors
-   :members:
 
 .. automodule:: thecannon.censoring
    :members:
