@@ -7,7 +7,14 @@ A polynomial vectorizer for The Cannon.
 
 from __future__ import division, print_function, absolute_import, unicode_literals
 
-__all__ = ["PolynomialVectorizer"]
+__all__ = [
+    "PolynomialVectorizer", 
+    "parse_label_vector_description",
+    "human_readable_label_term",
+    "human_readable_label_vector",
+    "terminator",
+    "get_label_names",
+    ]
 
 import numpy as np
 from collections import Counter, OrderedDict
@@ -95,8 +102,10 @@ class PolynomialVectorizer(BaseVectorizer):
         This function computes term-by-term values of the model terms, for the input
         vector of individual label values/input array of label values for a number of
         test cases.
-
-        :param labels:
+        
+        Parameters
+        ----------
+        labels: 1D or 2D array
             The scaled and offset labels to use to calculate the label vector(s).
             This can be a ond-dimensional vector of `K` labels, or a
             two-dimensional array of `N` by `K` labels.
@@ -108,7 +117,9 @@ class PolynomialVectorizer(BaseVectorizer):
             this also means that `labels` must be ordered in the same way as, e.g.,
             `self.label_names`, but there is no way to test/enforce this.)
 
-        :returns:
+        Returns
+        -------
+        2D array
             The returning array will be of shape `(N, D+1)`,
             where `D` is the number of terms in the label vector description. The extra term
             (which is always a representation of "+1") stores the model mean.
@@ -143,12 +154,16 @@ class PolynomialVectorizer(BaseVectorizer):
         """
         Return the derivatives of the label vector with respect to fluxes.
 
-        :param labels:
+        Parameters
+        ----------
+        labels: 1D array
             The scaled labels to calculate the label vector derivatives. This should
             be a one-dimensional vector of `K` labels (using the same order and
             length provided by self.label_names).
 
-        :returns:
+        Returns
+        -------
+        2D array
             The returning array will be of shape `(N, D)`,
             where `D` is the number of terms in the label vector description.
         """
@@ -191,18 +206,22 @@ class PolynomialVectorizer(BaseVectorizer):
         """
         Return a human-readable form of the label vector.
 
-        :param mul: [optional]
+        Parameters
+        ----------
+        mul: str, optional
             String to use to represent a multiplication operator. For example,
             if giving LaTeX label definitions one may want to use '\cdot' for
             the `mul` term.
 
-        :param pow: [optional]
+        pow: str, optional
             String to use to represent a power operator.
 
-        :param bracket: [optional]
+        bracket: bool, optional
             Show brackets around each term.
 
-        :returns:
+        Returns
+        -------
+        str
             A human-readable string representing the label vector.
         """
         return human_readable_label_vector(
@@ -220,14 +239,18 @@ class PolynomialVectorizer(BaseVectorizer):
         """
         Return a human-readable form of a single term in the label vector.
 
-        :param term_index:
+        Parameters
+        ----------
+        term_index: int
             The term in the label vector to return.
 
-        :param label_names: [optional]
+        abel_names: list of str, optional
             The label names to use. For example, these could be LaTeX
             representations of the label names.
 
-        :returns:
+        Returns
+        -------
+        str
             A human-readable string representing a single term in the label vector.
         """
 
@@ -246,7 +269,9 @@ def _is_structured_label_vector(label_vector):
     Return whether the provided label vector is structured as a polynomial
     vector description appropriately or not.
 
-    :param label_vector:
+    Parameters
+    ----------
+    label_vector: str
         A structured or unstructured description of a polynomial label vector.
     """
     if not isinstance(label_vector, (list, tuple)):
@@ -274,21 +299,23 @@ def parse_label_vector_description(description, label_names=None, **kwargs):
     Return a structured form of a label vector from unstructured,
     human-readable input.
 
-    :param description:
+    Parameters
+    ----------
+    description: str or list
         A human-readable or structured form of a label vector.
 
-    :type description:
-        str or list
-
-    :param label_names: [optional]
+    label_names: list of str, [optional]
         If `label_names` are provided, instead of label names being provided as
         the output parameter, the corresponding index location will be given.
 
-    :returns:
+    Returns
+    -------
+    list
         A structured form of the label vector as a multi-level list.
 
 
-    :Example:
+    Example
+    -------
 
     >>> parse_label_vector_description("Teff^4 + logg*Teff^3 + feh + feh^0*Teff")
     [
@@ -357,24 +384,28 @@ def human_readable_label_term(term, label_names=None, mul="*", pow="^", bracket=
     """
     Return a human-readable form of a single term in the label vector.
 
-    :param term:
+    Parameters
+    ----------
+    term: list
         A structured term.
 
-    :param label_names: [optional]
+    label_names: list of str, optional
         The names for each label in the label vector.
 
-    :param mul: [optional]
+    mul: str, optional
         String to use to represent a multiplication operator. For example,
         if giving LaTeX label definitions one may want to use '\cdot' for
         the `mul` term.
 
-    :param pow: [optional]
+    pow: str, optional
         String to use to represent a power operator.
 
-    :param bracket: [optional]
+    bracket: bool, optional
         Show brackets around each term.
 
-    :returns:
+    Returns
+    -------
+    str
         A human-readable string representing the label vector.
     """
     # Input checking
@@ -413,27 +444,31 @@ def human_readable_label_vector(
     """
     Return a human-readable form of the label vector.
 
-    :param terms:
+    Parameters
+    ----------
+    terms: list
         The structured terms of the label vector.
 
-    :param label_names: [optional]
+    label_names: list of str, optional
         The names for each label in the label vector.
 
-    :param mul: [optional]
+    mul: str, optional
         String to use to represent a multiplication operator. For example,
         if giving LaTeX label definitions one may want to use '\cdot' for
         the `mul` term.
 
-    :param pow: [optional]
+    pow: str, optional
         String to use to represent a power operator.
 
-    :param bracket: [optional]
+    bracket: bool, optional
         Show brackets around each term.
 
-    :param const: [optional]
+    const: bool, optional
         Add a constant "1" to the start of the label vector.
 
-    :returns:
+    Returns
+    -------
+    str
         A human-readable string representing the label vector.
     """
     if not _is_structured_label_vector(terms):
@@ -454,26 +489,30 @@ def terminator(label_names, order, cross_term_order=-1, **kwargs):
     Create the terms required for a label vector description based on the label
     names provided and the order given.
 
-    :param label_names:
+    Parameters
+    ----------
+    label_names: list of str
         The names of the labels to use in describing the label vector.
 
-    :param order:
+    order: int
         The maximum order of the terms (e.g., order 3 implies A^3 is a term).
 
-    :param cross_term_order: [optional]
+    cross_term_order: int, optional
         The maximum order of the cross-terms (e.g., cross_term_order 2 implies
         A^2*B is a term). If the provided `cross_term_order` value is negative,
         then `cross_term_order = order - 1` will be assumed.
 
-    :param mul: [optional]
+    mul: str, optional
         The operator to use to represent multiplication in the description of
         the label vector.
 
-    :param pow: [optional]
+    pow: str, optional
         The operator to use to represent exponents in the description of the
         label vector.
 
-    :returns:
+    Returns
+    -------
+    str
         A human-readable form of the label vector.
     """
 
@@ -508,10 +547,14 @@ def get_label_names(label_vector):
     Return the label names that contribute to the structured label vector
     description provided.
 
-    :param label_vector:
+    Parameters
+    ----------
+    label_vector: list
         A structured description of the label vector.
 
-    :returns:
+    Returns
+    -------
+    list of str
         A list of the label names that make up the label vector.
     """
     return list(

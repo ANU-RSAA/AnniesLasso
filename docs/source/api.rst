@@ -49,5 +49,7 @@ PolynomialVectorizer
 
 .. automodule:: thecannon.vectorizer.polynomial
    :members:
+   :imported-members:
+   :private-members:
 
 

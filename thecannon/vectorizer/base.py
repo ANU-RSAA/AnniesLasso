@@ -20,21 +20,20 @@ class BaseVectorizer(object):
     Note that either `label_names` *and* `order` must be provided, or the `terms`
     keyword argument needs to be explicitly specified.
 
+    Parameters
+    ----------
 
-    :param label_names:
+    label_names: list of str
         A list of label names that are terms in the label vector.
 
-    :param terms:
+    terms: list
         A structured list of lists of tuples that defines the full extent of the label
         vector.
 
         The list describes the terms of the label vector as follows:
 
         ```
-        [
-        [[(<label index>, <label power>), ...], [(<label index>, <label power>), ...)], ...],
-        ...
-        ]
+        [[[(<label index>, <label power>), ...], [(<label index>, <label power>), ...)], ...], ...]
         ```
 
         So, for example, if `label_names=['a', 'b']`, then the following element in `terms`:
@@ -184,7 +183,9 @@ class BaseVectorizer(object):
         """
         Return the label vector based on the labels provided.
 
-        :param labels:
+        Parameters
+        ----------
+        labels: list
             The values of the labels. These should match the length and order of
             the `label_names` attribute.
         """
@@ -197,7 +198,9 @@ class BaseVectorizer(object):
         Return the derivative of the label vector with respect to the given
         label.
 
-        :param labels:
+        Parameters
+        ----------
+        labels: iterable
             The values of the labels to calculate the label vector for.
         """
         raise NotImplementedError(
