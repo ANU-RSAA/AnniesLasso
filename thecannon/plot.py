@@ -31,20 +31,22 @@ def theta(
     common_axis=False,
     latex_label_names=None,
     xlim=None,
-    **kwargs
+    **kwargs,
 ):
     """
     Plot the spectral derivates (:math:`\boldsymbol{\theta}` coefficiets) from a
     trained model.
 
-    :param model:
+    Parameters
+    ----------
+    model: `CannonModel` instance
         A trained CannonModel object.
 
-    :param indices: [optional]
+    indices: list/array of int, optional
         The indices of :math:`\boldsymbol{\theta}` to plot. By default all
         coefficients will be shown.
 
-    :param label_terms: [optional]:
+    label_terms: list of str, optional
         Specify the label terms to show coefficients for. This is similar to
         specifying the `indices`, except you don't have to calculate the position
         of each label name.
@@ -60,23 +62,24 @@ def theta(
         linear coefficient of ``'TEFF'``, but ``'TEFF'`` on its own may not be
         recognisable to a vectorizer that uses sine and cosine functions.)
 
-    :param show_label_terms: [optional]
+    show_label_terms: bool, optional
         Show the label terms on the right hand side of each axis.
 
-    :param normalize: [optional]
+    normalize: bool, optional
         Normalize each coefficient between [-1, 1], except for the first theta
         coefficient (mean flux).
 
-    :param common_axis: [optional]
+    common_axis: bool, optional
         Show all spectral derivatives on a single axes.
 
-    :param latex_label_names: [optional]
+    latex_label_names: list of str, optional
         A list containing the label names as LaTeX representations.
 
-    :param xlim: [optional]
+    xlim: 2-tuple of list, optional
         The x-limits to apply to all axes.
 
-    :returns:
+    Returns
+    -------
         A figure showing the spectral derivatives.
     """
 
@@ -175,10 +178,13 @@ def scatter(model, ax=None, **kwargs):
     """
     Plot the noise residuals (:math:`s`) at each pixel.
 
-    :param model:
+    Parameters
+    ----------
+    model: `CannonModel` instance
         A trained CannonModel object.
 
-    :returns:
+    Returns
+    -------
         A figure showing the noise residuals at every pixel.
     """
 
@@ -225,24 +231,28 @@ def one_to_one(
     Plot a one-to-one comparison of the training set labels, and the test set
     labels inferred from the training set spectra.
 
-    :param model:
+    Parameters
+    ----------
+    model: `CannonModel`
         A trained CannonModel object.
 
-    :param test_labels:
+    test_labels: array
         An array of test labels, inferred from the training set spectra.
 
-    :param cov: [optional]
+    cov: 2D array, optional
         The covariance matrix returned for all test labels.
 
-    :param latex_label_names: [optional]
+    latex_label_names: list of str, optional
         A list of label names in LaTeX representation.
 
-    :param show_statistics: [optional]
+    show_statistics: bool, optional
         Show the mean and standard deviation of residuals in each axis.
     """
 
     if model.training_set_labels.shape != test_labels.shape:
-        raise ValueError(f"test labels {test_labels.shape} must have the same shape as training set labels {model.training_set_labels.shape}")
+        raise ValueError(
+            f"test labels {test_labels.shape} must have the same shape as training set labels {model.training_set_labels.shape}"
+        )
 
     N, K = test_labels.shape
     if cov is not None and cov.shape != (N, K, K):
