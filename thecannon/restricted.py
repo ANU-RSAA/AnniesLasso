@@ -24,45 +24,56 @@ class RestrictedCannonModel(CannonModel):
     model more physically realistic and limit information propagated through
     abundance correlations.
 
-    :param training_set_labels:
+    Parameters
+    ----------
+
+    training_set_labels: 2D array
         A set of objects with labels known to high fidelity. This can be
         given as a numpy structured array, or an astropy table.
 
-    :param training_set_flux:
+    training_set_flux: 2D array
         An array of normalised fluxes for stars in the labelled set, given
         as shape `(num_stars, num_pixels)`. The `num_stars` should match the
         number of rows in `training_set_labels`.
 
-    :param training_set_ivar:
+    training_set_ivar: 2D array
         An array of inverse variances on the normalized fluxes for stars in
         the training set. The shape of the `training_set_ivar` array should
         match that of `training_set_flux`.
 
-    :param vectorizer:
+    vectorizer: instance of subcless of `vectorizer.BaseVectorizer`
         A vectorizer to take input labels and produce a design matrix. This
         should be a sub-class of `vectorizer.BaseVectorizer`.
 
-    :param dispersion: [optional]
+    dispersion: 1D array, optional
         The dispersion values corresponding to the given pixels. If provided,
         this should have a size of `num_pixels`.
 
-    :param regularization: [optional]
+    regularization: float or 1D array, optional
         The strength of the L1 regularization. This should either be `None`,
         a float-type value for single regularization strength for all pixels,
         or a float-like array of length `num_pixels`.
 
-    :param censors: [optional]
+    censors: `Censors` instance, optional
         A dictionary containing label names as keys and boolean censoring
         masks as values.
 
-    :param theta_bounds: [optional]
+    heta_bounds: dict, optional
         A dictionary containing label names as keys and two-length tuples as
         values, indicating acceptable minimum and maximum values. Specify
         `None` to indicate no limit on a boundary.
     """
 
     # Need to expand descriptive_attributes for this model
-    _descriptive_attributes = ("vectorizer", "censors", "regularization", "dispersion", "_scales", "_fiducials", "theta_bounds")
+    _descriptive_attributes = (
+        "vectorizer",
+        "censors",
+        "regularization",
+        "dispersion",
+        "_scales",
+        "_fiducials",
+        "theta_bounds",
+    )
 
     def __init__(
         self,
@@ -90,14 +101,14 @@ class RestrictedCannonModel(CannonModel):
 
         self.theta_bounds = theta_bounds
         return None
-    
+
     def __eq__(self, other):
-        if not(super().__eq__(other)):
+        if not (super().__eq__(other)):
             return False
-        
+
         if self.theta_bounds != other.theta_bounds:
             return False
-        
+
         return True
 
     @property
@@ -110,7 +121,9 @@ class RestrictedCannonModel(CannonModel):
         """
         Set lower and upper boundaries on specific theta coefficients.
 
-        :param theta_bounds:
+        Parameters
+        ----------
+        theta_bounds: dict
             A dictionary containing vectorizer terms as keys and two-length
             tuples as values, indicating acceptable minimum and maximum values.
             Specify `None` to indicate no limit on a boundary. For example:
@@ -151,13 +164,16 @@ class RestrictedCannonModel(CannonModel):
         """
         Train the model.
 
-        :param threads: [optional]
+        Parameters
+        ----------
+        threads: int, optional
             The number of parallel threads to use.
 
-        :param op_kwds:
+        op_kwds: dict, optional
             Keyword arguments to provide directly to the optimization function.
 
-        :returns:
+        Returns
+        -------
             A three-length tuple containing the spectral coefficients `theta`,
             the squared scatter term at each pixel `s2`, and metadata related to
             the training of each pixel.

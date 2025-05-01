@@ -39,26 +39,30 @@ class wrapper(object):
     A generic wrapper with a progressbar, which can be used either in serial or
     in parallel.
 
-    :param f:
+    Parameters
+    ----------
+
+    f
         The function to apply.
 
-    :param args:
+    args: list
         Additional arguments to supply to the function `f`.
 
-    :param kwds:
+    kwds: dict
         Keyword arguments to supply to the function `f`.
 
-    :param N:
+    N: int
         The number of items that will be iterated over.
 
-    :param message: [optional]
+    message: str, optional
         An information message to log before showing the progressbar.
 
-    :param size: [optional]
+    size: int, optional
         The width of the progressbar in characters.
 
-    :returns:
-        A generator.
+    Returns
+    -------
+    generator
     """
 
     def __init__(self, f, args, kwds, N, message=None, size=100):
@@ -71,10 +75,12 @@ class wrapper(object):
         """
         Initialise a progressbar.
 
-        :param N:
+        Parameters
+        ----------
+        N: int
             The number of items that will be iterated over.
 
-        :param message: [optional]
+        essage: str, optional
             An information message to log before showing the progressbar.
         """
 
@@ -161,10 +167,15 @@ def short_hash(contents):
     """
     Return a short hash string of some iterable content.
 
-    :param contents:
+    Parameters
+    ----------
+
+    contents: str
         The contents to calculate a hash for.
 
-    :returns:
+    Returns
+    -------
+    str:
         A concatenated string of 10-character length hashes for all items in the
         contents provided.
     """
@@ -179,11 +190,14 @@ def _unpack_value(value):
     """
     Unpack contents if it is pickled to a temporary file.
 
-    :param value:
+    Parameters
+    ----------
+    value:
         A non-string variable or a string referring to a pickled file path.
 
-    :returns:
-        The original value, or the unpacked contents if a valid path was given.
+    Returns
+    -------
+    The original value, or the unpacked contents if a valid path was given.
     """
 
     if isinstance(value, string_types) and os.path.exists(value):
@@ -197,13 +211,17 @@ def _pack_value(value, protocol=-1):
     """
     Pack contents to a temporary file.
 
-    :param value:
+    Parameters
+    ----------
+    alue:
         The contents to temporarily pickle.
 
-    :param protocol: [optional]
+    protocol: int, optional
         The pickling protocol to use.
 
-    :returns:
+    Returns
+    -------
+    str
         A temporary filename where the contents are stored.
     """
 
