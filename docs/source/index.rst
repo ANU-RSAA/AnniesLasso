@@ -24,7 +24,11 @@ The Cannon by including a number of additional features:
  - Pixel censoring masks for individual labels
  - Stratified under-sampling utilities to produce a (more) balanced training set 
 
-This update to The Cannon is being actively developed in a `public GitHub repository <https://github.com/ANU-RSAA/AnniesLasso>`_, 
+This update to The Cannon is being actively developed by the Software group of the 
+Advanced Instrumentation and Technology Centre, `Research School of Astronomy and Astrophysics <https://rsaa.anu.edu.au/>`_, 
+`The Australian National University <https://www.anu.edu.au/>`_. 
+
+The code is available in a `public GitHub repository <https://github.com/ANU-RSAA/AnniesLasso>`_, 
 where you can `open an issue <https://github.com/ANU-RSAA/AnniesLasso/issues/new>`_ if you have any problems.
 
 User Guide
