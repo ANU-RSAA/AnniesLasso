@@ -26,17 +26,39 @@ from . import censoring, fitting, utils, vectorizer as vectorizer_module, __vers
 logger = logging.getLogger(__name__)
 
 
-def _compare_none_or_arrays(first, second, rtol=1e-05, atol=1e-08, equal_nan=False, allow_one_none=False):
+def _compare_none_or_arrays(
+    first, second, rtol=1e-05, atol=1e-08, equal_nan=False, allow_one_none=False
+):
     """
     Compare arguments for equality, where they are expected to be:
     - None
     - integer
     - arrays
 
-    The kwargs rtol, atol, and equal_nan are passed through to the `np.allclose` method.
+    Parameters
+    ----------
+    first, second : None, int, or array-like
+        The two input values to compare
+    rtol, atol : float, optional
+        The kwargs rtol and atol equal_nan are passed through to the `np.allclose` method.
+    equal_nan : bool, optional
+        The kwarg equal_nan is passed through to the `np.allclose` method.
+    allow_one_none : bool, optional
+        If set to True, will cause the function to return True if
+        only one of `first` and `second` is None.
 
-    The kwarg allow_one_none, if set to True, will cause the function to return True if 
-    only one of `first` and `second` is None.
+    Returns
+    -------
+    bool
+        Whether the arguments `first` and `second` can be considered equal or not. The rules
+        for doing so are as follows:
+        - If both `first` and `second` are `None`, then the function returns `True`.
+        - If exactly one of `first` and `second` are `None`, and `allow_one_none` is
+          `True`, then the function returns `True`.
+        - If `first` and `second` are not of the same input type, then `False` is
+          returned.
+        - Otherwise, `first` and `second` are compared using the `np.allclose`
+          method, and the return of that function is returned.
     """
     if first is None and second is None:
         return True
@@ -53,8 +75,10 @@ def requires_training(method):
     """
     A decorator for model methods that require training before being run.
 
-    :param method:
-        A method belonging to CannonModel.
+    Parameters
+    ----------
+    method: str
+        A method name belonging to `CannonModel`.
     """
 
     @wraps(method)
@@ -70,34 +94,31 @@ class CannonModel(object):
     """
     A model for The Cannon which includes L1 regularization and pixel censoring.
 
-    :param training_set_labels:
+    Parameters
+    ----------
+
+    training_set_labels: 2D array
         A set of objects with labels known to high fidelity. This can be
         given as a numpy structured array, or an astropy table.
-
-    :param training_set_flux:
+    training_set_flux: 2D array
         An array of normalised fluxes for stars in the labelled set, given
         as shape `(num_stars, num_pixels)`. The `num_stars` should match the
         number of rows in `training_set_labels`.
-
-    :param training_set_ivar:
+    training_set_ivar: 2D array
         An array of inverse variances on the normalized fluxes for stars in
         the training set. The shape of the `training_set_ivar` array should
         match that of `training_set_flux`.
-
-    :param vectorizer:
+    vectorizer: instance of a subclass of `BaseVectorizer`
         A vectorizer to take input labels and produce a design matrix. This
         should be a sub-class of `vectorizer.BaseVectorizer`.
-
-    :param dispersion: [optional]
+    dispersion: 1D array
         The dispersion values corresponding to the given pixels. If provided,
         this should have a size of `num_pixels`.
-
-    :param regularization: [optional]
+    regularization: float or 1D array
         The strength of the L1 regularization. This should either be `None`,
         a float-type value for single regularization strength for all pixels,
         or a float-like array of length `num_pixels`.
-
-    :param censors: [optional]
+    censors: `Censors` object
         A dictionary containing label names as keys and boolean censoring
         masks as values.
     """
@@ -105,7 +126,14 @@ class CannonModel(object):
     _data_attributes = ("training_set_labels", "training_set_flux", "training_set_ivar")
 
     # Descriptive attributes are needed to train *and* test the model.
-    _descriptive_attributes = ("vectorizer", "censors", "regularization", "dispersion", "_scales", "_fiducials")
+    _descriptive_attributes = (
+        "vectorizer",
+        "censors",
+        "regularization",
+        "dispersion",
+        "_scales",
+        "_fiducials",
+    )
     _computed_descriptive_attributes = ("_scales", "_fiducials")
 
     # Trained attributes are set only at training time.
@@ -240,11 +268,15 @@ class CannonModel(object):
         if self.__class__.__name__ != other.__class__.__name__:
             return False
         if not (
-            _compare_none_or_arrays(self.training_set_flux, other.training_set_flux, allow_one_none=True)
+            _compare_none_or_arrays(
+                self.training_set_flux, other.training_set_flux, allow_one_none=True
+            )
         ):
             return False
         if not (
-            _compare_none_or_arrays(self.training_set_ivar, other.training_set_ivar, allow_one_none=True)
+            _compare_none_or_arrays(
+                self.training_set_ivar, other.training_set_ivar, allow_one_none=True
+            )
         ):
             return False
         if not (
@@ -303,10 +335,14 @@ class CannonModel(object):
         Return a censored design matrix for the given pixel index, and a mask of
         which theta values to ignore when fitting.
 
-        :param pixel_index:
-            The zero-indexed pixel.
+        Parameters
+        ----------
+        pixel_index: int
+            The zero-indexed pixel number.
 
-        :returns:
+        Returns
+        -------
+        (censored_design_mask, excluded_values_mask)
             A two-length tuple containing the censored design mask for this
             pixel, and a boolean mask of values to exclude when fitting for
             the spectral derivatives.
@@ -339,7 +375,7 @@ class CannonModel(object):
 
     @property
     def s2(self):
-        """Return the intrinsic variance (s^2) for all pixels."""
+        """Return the intrinsic variance (:math:`s^2`) for all pixels."""
         return self._s2
 
     # Model attributes that can be changed after initiation.
@@ -354,7 +390,9 @@ class CannonModel(object):
         """
         Set label censoring masks for each pixel.
 
-        :param censors:
+        Parameters
+        ----------
+        censors: `Censors` instance
             A dictionary-like object with label names as keys, and boolean arrays
             as values.
         """
@@ -402,7 +440,8 @@ class CannonModel(object):
         """
         Set the dispersion values for all the pixels.
 
-        :param dispersion:
+        Parameters:
+        dispersion: 1D array
             An array of the dispersion values.
         """
         if dispersion is None:
@@ -441,7 +480,9 @@ class CannonModel(object):
         Specify the strength of the regularization for the model, either as a
         single value for all pixels, or a different strength for each pixel.
 
-        :param regularization:
+        Parameters
+        ----------
+        regularization: float, or 1D array
             The L1-regularization strength for the model.
         """
 
@@ -490,13 +531,14 @@ class CannonModel(object):
         """
         Safely access a (potentially per-pixel) attribute of the model.
 
-        :param array:
+        Parameters
+        ----------
+        array: None or float or array
             Either `None`, a float value, or an array.
-        :param index:
+        index: int
             The zero-indexed pixel to attempt to access.
-
-        :param default: [optional]
-            The default value to return if `array` is None OR if an out-of-bounds index
+        default: optional
+            The default value to return if `array` is None, or if an out-of-bounds index
             is requested from the array.
         """
 
@@ -544,7 +586,11 @@ class CannonModel(object):
         """
         Verify the training labels for the appropriate shape and context.
 
-        :param rho_warning: [optional]
+        Parameters
+        ----------
+        training_set_labels: 2D array
+            The training label values array to check.
+        rho_warning: float, optional
             Maximum correlation value between labels before a warning is given.
         """
 
@@ -600,11 +646,15 @@ class CannonModel(object):
         Return whether the provided labels are inside a complex hull constructed
         from the labelled set.
 
-        :param labels:
+        Parameters
+        ----------
+        labels: 2D array
             A `NxK` array of `N` sets of `K` labels, where `K` is the number of
             labels that make up the vectorizer.
 
-        :returns:
+        Returns
+        -------
+        2D array
             A boolean array as to whether the points are in the complex hull of
             the labelled set.
         """
@@ -630,17 +680,16 @@ class CannonModel(object):
         Serialise the trained model and save it to disk. This will save all
         relevant training attributes, and optionally, the training data.
 
-        :param path:
+        Parameters
+        ----------
+        path: str or `pathlib.Path`
             The path to save the model to.
-
-        :param include_training_set_spectra: [optional]
+        include_training_set_spectra: bool, optional
             Save the labelled set, normalised flux and inverse variance used to
             train the model.
-
-        :param overwrite: [optional]
+        overwrite: bool, optional
             Overwrite the existing file path, if it already exists.
-
-        :param protocol: [optional]
+        protocol: int, optional
             The Python pickling protocol to employ. Use 2 for compatibility with
             previous Python releases, -1 for performance.
         """
@@ -707,7 +756,9 @@ class CannonModel(object):
         """
         Read a saved model from disk.
 
-        :param path:
+        Parameters
+        ----------
+        path: str, or `pathlib.Path` object
             The path where to load the model from.
         """
 
@@ -745,9 +796,13 @@ class CannonModel(object):
             model = cls(**kwds)
             # Computed descriptive attributes need to be set directly, as the functions
             # used to compute them in __init__ are not recorded
-            for attr in metadata.get("computed_descriptive_attributes", []):  # Protect against old saves not defining this
-                setattr(model, attr, state.get(attr, getattr(model, attr)))  # No-op if not defined
-    
+            for attr in metadata.get(
+                "computed_descriptive_attributes", []
+            ):  # Protect against old saves not defining this
+                setattr(
+                    model, attr, state.get(attr, getattr(model, attr))
+                )  # No-op if not defined
+
             # Set training attributes.
             for attr in metadata["trained_attributes"]:
                 setattr(model, "_{}".format(attr), state.get(attr, None))
@@ -766,20 +821,25 @@ class CannonModel(object):
         """
         Train the model.
 
-        :param threads: [optional]
+        Parameters
+        ----------
+
+        threads: int, optional
             The number of parallel threads to use.
 
-        :param op_method: [optional]
-            The optimization algorithm to use: l_bfgs_b (default) and powell
+        p_method: str, optional
+            The optimization algorithm to use: "l_bfgs_b" (default) and "powell"
             are available.
 
-        :param op_strict: [optional]
+        op_strict: bool, optional
             Default to Powell's optimization method if BFGS fails.
 
-        :param op_kwds:
+        op_kwds: bool, optional
             Keyword arguments to provide directly to the optimization function.
 
-        :returns:
+        Returns
+        -------
+        (theta, s2, metadata)
             A three-length tuple containing the spectral coefficients `theta`,
             the squared scatter term at each pixel `s2`, and metadata related to
             the training of each pixel.
@@ -846,7 +906,9 @@ class CannonModel(object):
         """
         Return spectral fluxes, given the labels.
 
-        :param labels:
+        Parameters
+        ----------
+        labels: 2D array
             An array of stellar labels.
         """
 
@@ -868,26 +930,33 @@ class CannonModel(object):
         """
         Run the test step on spectra.
 
-        :param flux:
+        Parameters
+        ----------
+
+        flux: 2D array
             The (pseudo-continuum-normalized) spectral flux.
 
-        :param ivar:
+        ivar: 2D array
             The inverse variance values for the spectral fluxes.
 
-        :param initial_labels: [optional]
+        initial_labels: 2D array, optional
             The initial labels to try for each spectrum. This can be a single
             set of initial values, or one set of initial values for each star.
 
-        :param threads: [optional]
+        threads: int, optional
             The number of parallel threads to use.
 
-        :param use_derivatives: [optional]
+        use_derivatives: bool, optional
             Boolean `True` indicating to use analytic derivatives provided by
             the vectorizer, `None` to calculate on the fly, or a callable
             function to calculate your own derivatives.
 
-        :param op_kwds: [optional]
+        op_kwds: dict, optional
             Optimization keywords that get passed to `scipy.optimize.leastsq`.
+
+        Returns
+        -------
+        (array, array, dict)
         """
 
         if flux is None or ivar is None:
@@ -940,7 +1009,9 @@ class CannonModel(object):
     def _initial_theta(self, pixel_index, **kwargs):
         """
         Return a list of guesses of the spectral coefficients for the given
-        pixel index. Initial values are sourced in the following preference
+        pixel index.
+
+        Initial values are sourced in the following preference
         order:
 
             (1) a previously trained `theta` value for this pixel,
@@ -948,10 +1019,12 @@ class CannonModel(object):
             (3) a neighbouring pixel's `theta` value,
             (4) the fiducial value of [1, 0, ..., 0].
 
-        :param pixel_index:
+        pixel_index: int
             The zero-indexed integer of the pixel.
 
-        :returns:
+        Returns
+        -------
+        list of 2-tuples
             A list of initial theta guesses, and the source of each guess.
         """
 
