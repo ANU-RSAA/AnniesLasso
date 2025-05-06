@@ -30,6 +30,7 @@ source_suffix = ".rst"
 master_doc = "index"
 
 napoleon_numpy_docstring = True
+napoleon_preprocess_types = True
 
 autosummary_generate = False
 

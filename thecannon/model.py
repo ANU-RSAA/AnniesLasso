@@ -96,31 +96,31 @@ class CannonModel(object):
 
     Parameters
     ----------
-
-    training_set_labels: 2D array
+    training_set_labels : 2D array-like
         A set of objects with labels known to high fidelity. This can be
-        given as a numpy structured array, or an astropy table.
-    training_set_flux: 2D array
+        given as a numpy structured array, or an astropy table. This array should
+        have dimensions `(num_stars, num_labels)`.
+    training_set_flux : 2D array-like
         An array of normalised fluxes for stars in the labelled set, given
         as shape `(num_stars, num_pixels)`. The `num_stars` should match the
         number of rows in `training_set_labels`.
-    training_set_ivar: 2D array
+    training_set_ivar : 2D array-like
         An array of inverse variances on the normalized fluxes for stars in
         the training set. The shape of the `training_set_ivar` array should
         match that of `training_set_flux`.
-    vectorizer: instance of a subclass of `BaseVectorizer`
+    vectorizer : subclass of :py:class:`vectorizer.base.BaseVectorizer`
         A vectorizer to take input labels and produce a design matrix. This
-        should be a sub-class of `vectorizer.BaseVectorizer`.
-    dispersion: 1D array
+        should be a sub-class of :py:class:`vectorizer.base.BaseVectorizer`.
+    dispersion : None, or 1D array
         The dispersion values corresponding to the given pixels. If provided,
         this should have a size of `num_pixels`.
-    regularization: float or 1D array
+    regularization : `None`, float, or 1D array
         The strength of the L1 regularization. This should either be `None`,
         a float-type value for single regularization strength for all pixels,
         or a float-like array of length `num_pixels`.
-    censors: `Censors` object
-        A dictionary containing label names as keys and boolean censoring
-        masks as values.
+    censors : None, dict, or :py:class:`censoring.Censors` object
+        A :py:class:`censoring.Censors` object or dictionary, containing label names
+        as keys, and boolean censoring masks as values.
     """
 
     _data_attributes = ("training_set_labels", "training_set_flux", "training_set_ivar")
@@ -308,7 +308,7 @@ class CannonModel(object):
     @property
     def training_set_labels(self):
         """Return the labels in the training set."""
-        return self._training_set_labels
+        return self._training_set_labels100
 
     @property
     def training_set_flux(self):
@@ -337,7 +337,7 @@ class CannonModel(object):
 
         Parameters
         ----------
-        pixel_index: int
+        pixel_index : int
             The zero-indexed pixel number.
 
         Returns
@@ -392,7 +392,7 @@ class CannonModel(object):
 
         Parameters
         ----------
-        censors: `Censors` instance
+        censors : :py:class:`censoring.Censors` instance
             A dictionary-like object with label names as keys, and boolean arrays
             as values.
         """
@@ -441,7 +441,7 @@ class CannonModel(object):
         Set the dispersion values for all the pixels.
 
         Parameters:
-        dispersion: 1D array
+        dispersion : 1D array
             An array of the dispersion values.
         """
         if dispersion is None:
@@ -482,7 +482,7 @@ class CannonModel(object):
 
         Parameters
         ----------
-        regularization: float, or 1D array
+        regularization : float, or 1D array
             The L1-regularization strength for the model.
         """
 
@@ -515,7 +515,7 @@ class CannonModel(object):
 
     @property
     def is_trained(self):
-        """Return true or false for whether the model is trained."""
+        """Return :py:obj:`True` or :py:obj:`False` for whether the model is trained."""
         return all(
             getattr(self, attr, None) is not None for attr in self._trained_attributes
         )
@@ -533,11 +533,11 @@ class CannonModel(object):
 
         Parameters
         ----------
-        array: None or float or array
+        array : None or float or array
             Either `None`, a float value, or an array.
-        index: int
+        index : int
             The zero-indexed pixel to attempt to access.
-        default: optional
+        default : optional
             The default value to return if `array` is None, or if an out-of-bounds index
             is requested from the array.
         """
@@ -588,9 +588,9 @@ class CannonModel(object):
 
         Parameters
         ----------
-        training_set_labels: 2D array
+        training_set_labels : 2D array
             The training label values array to check.
-        rho_warning: float, optional
+        rho_warning : :py:obj:`float`, optional
             Maximum correlation value between labels before a warning is given.
         """
 
@@ -648,7 +648,7 @@ class CannonModel(object):
 
         Parameters
         ----------
-        labels: 2D array
+        labels : 2D array
             A `NxK` array of `N` sets of `K` labels, where `K` is the number of
             labels that make up the vectorizer.
 
@@ -682,9 +682,9 @@ class CannonModel(object):
 
         Parameters
         ----------
-        path: str or `pathlib.Path`
+        path : str or :py:obj:`pathlib.Path`
             The path to save the model to.
-        include_training_set_spectra: bool, optional
+        include_training_set_spectra : bool, optional
             Save the labelled set, normalised flux and inverse variance used to
             train the model.
         overwrite: bool, optional
@@ -758,7 +758,7 @@ class CannonModel(object):
 
         Parameters
         ----------
-        path: str, or `pathlib.Path` object
+        path: str, or :py:class:`pathlib.Path` object
             The path where to load the model from.
         """
 

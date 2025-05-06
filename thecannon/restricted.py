@@ -26,39 +26,38 @@ class RestrictedCannonModel(CannonModel):
 
     Parameters
     ----------
-
-    training_set_labels: 2D array
+    training_set_labels : 2D array
         A set of objects with labels known to high fidelity. This can be
         given as a numpy structured array, or an astropy table.
 
-    training_set_flux: 2D array
+    training_set_flux : 2D array
         An array of normalised fluxes for stars in the labelled set, given
         as shape `(num_stars, num_pixels)`. The `num_stars` should match the
         number of rows in `training_set_labels`.
 
-    training_set_ivar: 2D array
+    training_set_ivar : 2D array
         An array of inverse variances on the normalized fluxes for stars in
         the training set. The shape of the `training_set_ivar` array should
         match that of `training_set_flux`.
 
-    vectorizer: instance of subcless of `vectorizer.BaseVectorizer`
+    vectorizer : subclass of :py:class:`thecannon.vectorizer.base.BaseVectorizer`
         A vectorizer to take input labels and produce a design matrix. This
-        should be a sub-class of `vectorizer.BaseVectorizer`.
+        should be a sub-class of :py:class:`vectorizer.BaseVectorizer`.
 
-    dispersion: 1D array, optional
+    dispersion : 1D array, optional
         The dispersion values corresponding to the given pixels. If provided,
         this should have a size of `num_pixels`.
 
-    regularization: float or 1D array, optional
+    regularization : float or 1D array, optional
         The strength of the L1 regularization. This should either be `None`,
         a float-type value for single regularization strength for all pixels,
         or a float-like array of length `num_pixels`.
 
-    censors: `Censors` instance, optional
+    censors : :py:class:`thecannon.censoring.Censors` instance, optional
         A dictionary containing label names as keys and boolean censoring
         masks as values.
 
-    heta_bounds: dict, optional
+    theta_bounds : dict, optional
         A dictionary containing label names as keys and two-length tuples as
         values, indicating acceptable minimum and maximum values. Specify
         `None` to indicate no limit on a boundary.
@@ -166,10 +165,10 @@ class RestrictedCannonModel(CannonModel):
 
         Parameters
         ----------
-        threads: int, optional
+        threads : int, optional
             The number of parallel threads to use.
 
-        op_kwds: dict, optional
+        op_kwds : dict, optional
             Keyword arguments to provide directly to the optimization function.
 
         Returns
