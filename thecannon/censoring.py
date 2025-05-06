@@ -27,11 +27,11 @@ class Censors(dict):
 
     Parameters
     ----------
-    label_names: iterable of str
+    label_names : iterable of str
         A list containing the label names that form the model vectorizer.
-    num_pixels: int
+    num_pixels : int
         The number of pixels per star.
-    items: dict, optional
+    items : dict, optional
         A dictionary containing label names as keys and masks as values.
     """
 
@@ -108,7 +108,7 @@ class Censors(dict):
         return result
 
     def update(self, *args, **kwargs):
-        """Update with a second Censors dict."""
+        """Update with a second :py:obj:`Censors` dict."""
         if args:
             if len(args) > 1:
                 raise TypeError(
