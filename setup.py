@@ -44,7 +44,7 @@ setup(
     ],
     keywords="The Cannon",
     packages=find_packages(exclude=["documents", "tests"]),
-    install_requires=["numpy", "scipy", "six"],
+    install_requires=["numpy<2.0", "scipy", "six"],
     extras_require={"test": ["coverage"]},
     package_data={
         "": ["LICENSE"],
