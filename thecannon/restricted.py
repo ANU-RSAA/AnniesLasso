@@ -24,43 +24,41 @@ class RestrictedCannonModel(CannonModel):
     model more physically realistic and limit information propagated through
     abundance correlations.
 
+    This model is a subclass of :py:class:`thecannon.model.CannonModel`.
+
     Parameters
     ----------
-    training_set_labels : 2D array
+    training_set_labels : 2D array-like
         A set of objects with labels known to high fidelity. This can be
-        given as a numpy structured array, or an astropy table.
-
-    training_set_flux : 2D array
+        given as a numpy structured array, or an astropy table. This array should
+        have dimensions ``(num_stars, num_labels)``.
+    training_set_flux : 2D array-like
         An array of normalised fluxes for stars in the labelled set, given
-        as shape `(num_stars, num_pixels)`. The `num_stars` should match the
-        number of rows in `training_set_labels`.
-
-    training_set_ivar : 2D array
+        as shape ``(num_stars, num_pixels)``. The ``num_stars`` should match the
+        number of rows in ``training_set_labels``.
+    training_set_ivar : 2D array-like
         An array of inverse variances on the normalized fluxes for stars in
-        the training set. The shape of the `training_set_ivar` array should
-        match that of `training_set_flux`.
-
-    vectorizer : subclass of :py:class:`thecannon.vectorizer.base.BaseVectorizer`
+        the training set. The shape of the ``training_set_ivar`` array should
+        match that of ``training_set_flux``.
+    vectorizer : subclass of :py:class:`vectorizer.base.BaseVectorizer`
         A vectorizer to take input labels and produce a design matrix. This
-        should be a sub-class of :py:class:`vectorizer.BaseVectorizer`.
-
-    dispersion : 1D array, optional
+        should be a sub-class of :py:class:`vectorizer.base.BaseVectorizer`.
+    dispersion : None, or 1D array
         The dispersion values corresponding to the given pixels. If provided,
-        this should have a size of `num_pixels`.
-
-    regularization : float or 1D array, optional
-        The strength of the L1 regularization. This should either be `None`,
+        this should have a size of ``num_pixels``.
+    regularization : ``None``, float, or 1D array
+        The strength of the L1 regularization. This should either be ``None``,
         a float-type value for single regularization strength for all pixels,
-        or a float-like array of length `num_pixels`.
-
-    censors : :py:class:`thecannon.censoring.Censors` instance, optional
-        A dictionary containing label names as keys and boolean censoring
-        masks as values.
-
+        or a float-like array of length ``num_pixels``.
+    censors : None, dict, or :py:class:`censoring.Censors` object
+        A :py:class:`censoring.Censors` object or dictionary, containing label names
+        as keys, and boolean censoring masks as values.
     theta_bounds : dict, optional
         A dictionary containing label names as keys and two-length tuples as
         values, indicating acceptable minimum and maximum values. Specify
-        `None` to indicate no limit on a boundary.
+        `None` to indicate no limit on a boundary.  For example::
+
+                theta_bounds={"FE_H": (None, 0), "TEFF^3": (None, None)}
     """
 
     # Need to expand descriptive_attributes for this model
@@ -119,14 +117,6 @@ class RestrictedCannonModel(CannonModel):
     def theta_bounds(self, theta_bounds):
         """
         Set lower and upper boundaries on specific theta coefficients.
-
-        Parameters
-        ----------
-        theta_bounds: dict
-            A dictionary containing vectorizer terms as keys and two-length
-            tuples as values, indicating acceptable minimum and maximum values.
-            Specify `None` to indicate no limit on a boundary. For example:
-            `theta_bounds={"FE_H": (None, 0), "TEFF^3": (None, None)}`
         """
         theta_bounds = {} if theta_bounds is None else theta_bounds
         if isinstance(theta_bounds, dict):
@@ -167,14 +157,14 @@ class RestrictedCannonModel(CannonModel):
         ----------
         threads : int, optional
             The number of parallel threads to use.
-
-        op_kwds : dict, optional
+        op_kwds : bool, optional
             Keyword arguments to provide directly to the optimization function.
 
         Returns
         -------
-            A three-length tuple containing the spectral coefficients `theta`,
-            the squared scatter term at each pixel `s2`, and metadata related to
+        (theta, s2, metadata)
+            A three-length tuple containing the spectral coefficients ``theta``,
+            the squared scatter term at each pixel ``s2``, and metadata related to
             the training of each pixel.
         """
 

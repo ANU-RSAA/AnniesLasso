@@ -5,8 +5,6 @@
 Fitting functions for use in The Cannon.
 """
 
-# from __future__ import division, print_function, absolute_import, unicode_literals
-
 __all__ = [
     "fit_spectrum",
     "fit_pixel_fixed_scatter",
@@ -75,29 +73,33 @@ def fit_spectrum(
     """
     Fit a single spectrum by least-squared fitting.
 
+    As this function fits a single full spectrum, all arrays mentioned are of 
+    shape ``(P, )``, where ``P`` is the number of pixels in the spectrum.
+
     Parameters
     ----------
-
-    flux: 1D array
+    flux : 1D array
         The normalized flux values.
-    ivar: 1D array
+    ivar : 1D array
         The inverse variance array for the normalized fluxes.
-    initial_labels: 1D array
+    initial_labels : 1D array
         The point(s) to initialize optimization from.
-    vectorizer: `BaseVectorizer` instance
+    vectorizer : :py:class:`BaseVectorizer` instance
         The vectorizer to use when fitting the data.
-    theta:
+    theta : 2D array
         The theta coefficients (spectral derivatives) of the trained model.
-    s2:
-        The pixel scatter (s^2) array for each pixel.
-    dispersion: optional
+        The shape of this array is ``(P, T)``, where ``T`` is the number of terms
+        in the model (including the regularization term).
+    s2 : 1D array
+        The pixel scatter (:math:`s^2`) array for each pixel.
+    dispersion : optional
         The dispersion (e.g., wavelength) points for the normalized fluxes.
-    use_derivatives: Boolean, optional
-        Boolean `True` indicating to use analytic derivatives provided by
-        the vectorizer, `None` to calculate on the fly, or a callable
+    use_derivatives : Boolean or callable, optional
+        ``True`` indicates to use analytic derivatives provided by
+        the vectorizer, ``None`` to calculate on the fly, or a callable
         function to calculate your own derivatives.
-    op_kwds: dict, optional
-        Optimization keywords that get passed to `scipy.optimize.leastsq`.
+    op_kwds : dict, optional
+        Optimization keywords that get passed to :py:meth:`scipy.optimize.leastsq`.
 
     Returns
     -------
@@ -247,7 +249,7 @@ def fit_theta_by_linalg(flux, ivar, s2, design_matrix):
     Parameters
     ----------
     flux: 1D array
-        The normalized fluxes for a single pixel (across many stars).
+        The normalized fluxes for a single pixel (across many stars), shape ``(S, )``.
     ivar: 1D array
         The inverse variance of the normalized flux values for a single pixel
         across many stars.
@@ -285,22 +287,22 @@ def chi_sq(theta, design_matrix, flux, ivar, axis=None, gradient=True):
     Calculate the chi-squared difference between the spectral model and flux, for a single
     pixel over multiple stars.
 
-    Assume a model has `S` stars, each of `P` pixels, and a model with `T` terms (including the
+    Assume a model has ``S`` stars, each of ``P`` pixels, and a model with `T` terms (including the
     regularization term).
 
     Parameters
     ----------
-    theta: 1D array
-        The theta coefficients for this pixel (shape `(T, )`).
-    design_matrix: 2D array
-        The model design matrix (shape `(S, T)`.)
-    flux: 1D array
-        The normalized flux values for this pixel (shape `(S, )`).
-    ivar: 1D array
-        The inverse variances of the normalized flux values for this pixel (shape `(S, )`).
-    axis: int, optional
+    theta : 1D array
+        The theta coefficients for this pixel (shape ``(T, )``).
+    design_matrix : 2D array
+        The model design matrix (shape ``(S, T)``.)
+    flux : 1D array
+        The normalized flux values for this pixel (shape ``(S, )``).
+    ivar : 1D array
+        The inverse variances of the normalized flux values for this pixel (shape ``(S, )``).
+    axi : int, optional
         The axis to sum the chi-squared values across.
-    gradient: bool, optional
+    gradient : bool, optional
         Return the chi-squared value and its derivatives (Jacobian).
 
     Returns
@@ -351,7 +353,7 @@ def L1Norm_variation(theta):
     Parameters
     ----------
     theta: 1D array
-        An array of finite values.
+        An array of finite values, shape ``(P, )``.
 
     Returns
     -------
@@ -507,12 +509,12 @@ def fit_pixel_fixed_scatter(
     Parameters
     ----------
     flux: 1D array
-        The normalized flux values, shape `(S, )`.
+        The normalized flux values, shape ``(S, )``.
     ivar: 1D array
         The inverse variance array for the normalized fluxes.
     initial_thetas: 1D array
         A list of initial theta values to start from, and their source. For
-        example: `[(theta_0, "guess"), (theta_1, "old_theta")]`
+        example: ``[(theta_0, "guess"), (theta_1, "old_theta")]``
     design_matrix: 2D array
         The model design matrix.
     regularization: float
@@ -520,13 +522,14 @@ def fit_pixel_fixed_scatter(
     censoring_mask: `Censor` object
         A per-label censoring mask for each pixel.
     op_method: str, optional
-        The optimization method to use. Valid options are: `l_bfgs_b`, `powell`.
+        The optimization method to use. Valid options are: ``"l_bfgs_b"``, ``"powell"``.
     op_kwds: dict, optional
         A dictionary of arguments that will be provided to the optimizer.
 
     Returns
     -------
-        The optimized theta coefficients, the noise residual `s2`, and
+    (2D array, 2D array, dict)
+        The optimized theta coefficients, the noise residual ``s2``, and
         metadata related to the optimization process.
     """
     # Input checking

@@ -8,8 +8,12 @@ Common classes and utilities in The Cannon are documented here. For more details
 CannonModel
 -----------
 
+.. automodule:: thecannon.model
+   :members: _compare_none_or_arrays, requires_training
+
 .. autoclass:: thecannon.CannonModel
    :members:
+   :private-members:
 
 .. autoclass:: thecannon.restricted.RestrictedCannonModel
    :members:

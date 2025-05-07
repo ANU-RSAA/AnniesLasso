@@ -46,10 +46,10 @@ class wrapper(object):
         The function to apply.
 
     args: list
-        Additional arguments to supply to the function `f`.
+        Additional arguments to supply to the function ``f``.
 
     kwds: dict
-        Keyword arguments to supply to the function `f`.
+        Keyword arguments to supply to the function ``f``.
 
     N: int
         The number of items that will be iterated over.

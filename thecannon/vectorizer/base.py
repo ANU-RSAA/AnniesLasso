@@ -16,9 +16,7 @@ import copy
 
 class BaseVectorizer(object):
     """
-    A vectorizer that models spectral fluxes as combination of polynomial terms.
-    Note that either `label_names` *and* `order` must be provided, or the `terms`
-    keyword argument needs to be explicitly specified.
+    The base class for Vectorizer objects in TheCannon.
 
     Parameters
     ----------
@@ -30,19 +28,19 @@ class BaseVectorizer(object):
         A structured list of lists of tuples that defines the full extent of the label
         vector.
 
-        The list describes the terms of the label vector as follows:
+        The list describes the terms of the label vector as follows::
 
-        ```
-        [[[(<label index>, <label power>), ...], [(<label index>, <label power>), ...)], ...], ...]
-        ```
-
-        So, for example, if `label_names=['a', 'b']`, then the following element in `terms`:
         
-        ```
-        [[(0, 1), (1, 1)], [(1, 2)]]
-        ```
+            [[(<label index>, <label power>), ...], [(<label index>, <label power>), ...)], ...]
+        
 
-        is equivalent to `a^1 * b^1 + b^2`. The actual label names can also be used as the first
+        So, for example, if ``label_names=['a', 'b']``, then the following element in ``terms``::
+        
+        
+            [[(0, 1), (1, 1)], [(1, 2)]]
+        
+
+        is equivalent to :math:`a^1 * b^1 + b^2`. The actual label names can also be used as the first
         element of each tuple.
     """
 
@@ -187,7 +185,12 @@ class BaseVectorizer(object):
         ----------
         labels: list
             The values of the labels. These should match the length and order of
-            the `label_names` attribute.
+            the ``label_names`` attribute.
+
+        Raises
+        ------
+        NotImplementedError
+            Derivative classes must implement this function.
         """
         raise NotImplementedError(
             "the get_label_vector method " "must be specified by the sub-classes"
@@ -202,6 +205,11 @@ class BaseVectorizer(object):
         ----------
         labels: iterable
             The values of the labels to calculate the label vector for.
+
+        Raises
+        ------
+        NotImplementedError
+            Derivative classes must implement this function.
         """
         raise NotImplementedError(
             "the get_label_vector_derivative method "

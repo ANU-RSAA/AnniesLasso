@@ -137,10 +137,12 @@ class Censors(dict):
 
     @property
     def label_names(self):
+        """The label names for this Censors."""
         return self._label_names
 
     @property
     def num_pixels(self):
+        """The num_pixels for this Censors."""
         return self._num_pixels
 
 
@@ -151,9 +153,9 @@ def create_mask(dispersion, censored_regions):
 
     Parameters
     ----------
-    dispersion: array-like of floats
+    dispersion : array-like of floats
         An array of dispersion values.
-    censored_regions: list of two-tuples
+    censored_regions : list of two-tuples
         A list of two-length tuples containing the `(start, end)` points of a
         censored region.
 
@@ -179,62 +181,9 @@ def create_mask(dispersion, censored_regions):
             censored = (end >= dispersion) * (dispersion >= start)
         except (np.core._exceptions._UFuncNoLoopError, TypeError) as e:
             raise ValueError(
-                "Encountered error in computing censored array, likely bad censored_region value type"
+                "Encountered error in computing censored array, " \
+                "likely bad censored_region value type"
             )
         mask[censored] = True
 
     return mask
-
-
-# TODO this function is not used in the package - confirm it is still required
-# def design_matrix_mask(censors, vectorizer):
-#     """
-#     Return a mask of which indices in the design matrix columns should be
-#     used for a given pixel.
-
-#     :param censors:
-#         A censoring dictionary.
-
-#     :param vectorizer:
-#         The model vectorizer:
-
-#     :returns:
-#         A mask of which indices in the model design matrix should be used for a
-#         given pixel.
-#     """
-
-#     if not isinstance(censors, Censors):
-#         raise TypeError("censors must be a Censors class")
-
-#     if not isinstance(vectorizer, BaseVectorizer):
-#         raise TypeError("vectorizer must be a sub-class of BaseVectorizer")
-
-#     # Parse all the terms once-off.
-#     mapper = {}
-#     pixel_masks = np.atleast_2d(list(map(list, censors.values())))
-#     for i, terms in enumerate(vectorizer.terms):
-#         for label_index, power in terms:
-#             # Let's map this directly to the censors that we actually have.
-#             try:
-#                 censor_index = list(censors.keys()).index(
-#                     censors.label_names[label_index]
-#                 )
-
-#             except ValueError:
-#                 # Label name is not censored, so we don't care.
-#                 continue
-
-#             else:
-#                 # Initialize a list if necessary.
-#                 mapper.setdefault(censor_index, [])
-
-#                 # Note that we add +1 because the first term in the design
-#                 # matrix columns will actually be the pivot point.
-#                 mapper[censor_index].append(1 + i)
-
-#     # We already know the number of terms from i.
-#     mask = np.ones((censors.num_pixels, 2 + i), dtype=bool)
-#     for censor_index, pixel in zip(*np.where(pixel_masks)):
-#         mask[pixel, mapper[censor_index]] = False
-
-#     return mask
