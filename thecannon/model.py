@@ -310,7 +310,7 @@ class CannonModel(object):
     @property
     def training_set_labels(self):
         """Return the labels in the training set."""
-        return self._training_set_labels100
+        return self._training_set_labels
 
     @property
     def training_set_flux(self):
