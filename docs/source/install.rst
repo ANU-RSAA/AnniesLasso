@@ -3,21 +3,20 @@
 Installation
 ============
 
-You can install the most recent stable version of The Cannon using `PyPI <https://pypi.python.org/pypi/the-cannon>`_ or the
-development version from `GitHub <http://www.github.com/andycasey/AnniesLasso>`_.
+You can install the most recent stable version of The Cannon from `GitHub <http://www.github.com/ANU-RSAA/AnniesLasso>`_.
 
 
-Stable Version
---------------
+.. Stable Version
+.. --------------
 
-The easiest way to install the most recent stable version of The Cannon is by using `pip <https://pypi.python.org/pypi/pip>`_.
-This will install any of the prerequisites (e.g., `numpy <https://pypi.python.org/pypi/numpy>`_, `scipy <https://pypi.python.org/pypi/scipy>`_), if you don't already have them:
+.. The easiest way to install the most recent stable version of The Cannon is by using `pip <https://pypi.python.org/pypi/pip>`_.
+.. This will install any of the prerequisites (e.g., `numpy <https://pypi.python.org/pypi/numpy>`_, `scipy <https://pypi.python.org/pypi/scipy>`_), if you don't already have them:
 
-::
+.. ::
 
-    pip install the-cannon
+..     pip install the-cannon
 
-.. note:: Make sure you include the ``-`` in ``the-cannon`` in the command above, otherwise you will install `Anna Ho's version of The Cannon <https://annayqho.github.io/TheCannon/>`_, which is excellent, but does not include analytic derivatives, regularization, or censoring.
+.. .. note:: Make sure you include the ``-`` in ``the-cannon`` in the command above, otherwise you will install `Anna Ho's version of The Cannon <https://annayqho.github.io/TheCannon/>`_, which is excellent, but does not include analytic derivatives, regularization, or censoring.
 
 Development Version
 -------------------
@@ -41,8 +40,7 @@ Then install the package by running the following command:
 Testing
 -------
 
-To run all the unit and integration tests, install `nose <http://nose.readthedocs.org>`_ and then run:
-
+To run all the unit and integration tests, install The Cannon and then run:
 ::
 
-    nosetests -v --cover-package=thecannon
+    pytest

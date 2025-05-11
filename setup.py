@@ -11,15 +11,17 @@ if sys.argv[-1] == "publish":
     system("python setup.py sdist upload")
     sys.exit()
 
+
 def read(filename):
     kwds = {"encoding": "utf-8"} if sys.version_info[0] >= 3 else {}
     with open(filename, **kwds) as fp:
         contents = fp.read()
     return contents
 
+
 # Get the version information.
 here = path.abspath(path.dirname(__file__))
-vre = re_compile("__version__ = \"(.*?)\"")
+vre = re_compile('__version__ = "(.*?)"')
 version = vre.findall(read(path.join(here, "thecannon", "__init__.py")))[0]
 
 setup(
@@ -38,14 +40,12 @@ setup(
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.6",
         "Topic :: Scientific/Engineering :: Astronomy",
-        "Topic :: Scientific/Engineering :: Physics"
+        "Topic :: Scientific/Engineering :: Physics",
     ],
     keywords="The Cannon",
     packages=find_packages(exclude=["documents", "tests"]),
-    install_requires=["numpy", "scipy", "six"],
-    extras_require={
-        "test": ["coverage"]
-    },
+    install_requires=["numpy<2.0", "scipy", "six"],
+    extras_require={"test": ["coverage"]},
     package_data={
         "": ["LICENSE"],
     },
@@ -55,5 +55,5 @@ setup(
         "console_scripts": [
             "tc = thecannon.__main__:main",
         ]
-    }
+    },
 )

@@ -1,0 +1,37 @@
+name: test_model_output
+
+on: push
+
+jobs:
+  test_model_output_defaults:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up test Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9.20'
+
+    - name: Install dependencies
+      run: |
+        pip install pandas==2.0.3
+        pip install numpy==1.22.1
+        pip install scipy==1.7.3
+        pip install six==1.16.0
+        pip install --no-deps git+https://github.com/${{ github.repository }}@${{ github.ref_name }}
+
+    - name: Run run_cannon_andy_svens_python.py
+      run: |
+        python ./thecannon/tests/actions/run_cannon_generate_test_model.py
+
+    - name: Compare the prospect models
+      run : |
+        python ./thecannon/tests/actions/compare_generated_prospect_models.py
+
+    - name: Compare the prospect restricted models
+      run : |
+        python ./thecannon/tests/actions/compare_generated_prospect_restricted_models.py
