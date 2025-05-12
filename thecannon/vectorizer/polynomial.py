@@ -19,7 +19,6 @@ __all__ = [
 import numpy as np
 from collections import Counter, OrderedDict
 from itertools import combinations_with_replacement
-from six import string_types
 
 from .base import BaseVectorizer
 
@@ -215,7 +214,7 @@ class PolynomialVectorizer(BaseVectorizer):
         ----------
         mul : str, optional
             String to use to represent a multiplication operator. For example,
-            if giving LaTeX label definitions one may want to use ``"\cdot"`` for
+            if giving LaTeX label definitions one may want to use ``"\\cdot"`` for
             the ``mul`` term.
 
         pow : str, optional
@@ -350,7 +349,7 @@ def parse_label_vector_description(description, label_names=None, **kwargs):
     kwds.update(kwargs)
     sep, mul, pow = (kwds[k] for k in ("sep", "mul", "pow"))
 
-    if isinstance(description, string_types):
+    if isinstance(description, (str, )):
         description = description.split(sep)
     description = [_.strip() for _ in description]
 
@@ -397,7 +396,7 @@ def human_readable_label_term(term, label_names=None, mul="*", pow="^", bracket=
         The names for each label in the label vector.
     mul : str, optional
         String to use to represent a multiplication operator. For example,
-        if giving LaTeX label definitions one may want to use ``"\cdot"`` for
+        if giving LaTeX label definitions one may want to use ``"\\cdot"`` for
         the ``mul`` term.
     pow : str, optional
         String to use to represent a power operator.
@@ -453,7 +452,7 @@ def human_readable_label_vector(
         The names for each label in the label vector.
     mul : str, optional
         String to use to represent a multiplication operator. For example,
-        if giving LaTeX label definitions one may want to use ``"\cdot"`` for
+        if giving LaTeX label definitions one may want to use ``"\\cdot"`` for
         the ``mul`` term.
     pow : str, optional
         String to use to represent a power operator.

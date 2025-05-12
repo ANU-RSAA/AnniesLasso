@@ -178,7 +178,7 @@ class CannonModel(object):
             # table-like objects that could work here
             # Simply catch & re-raise any errors that are encountered (i.e. can't look
             # up like that, invalid key/index, etc.)
-            # Need it to be *exactly* and np.ndarray, because we want np.recarray
+            # Need it to be *exactly* an np.ndarray, because we want np.recarray
             # sent through this code block instead
             try:
                 training_set_labels = np.array(
@@ -718,9 +718,12 @@ class CannonModel(object):
 
             try:
                 # If it's a vectorizer or censoring dict, etc, get the state.
-                value = value.__getstate__()
+                gs_value = value.__getstate__()
+                if gs_value is not None:
+                    # e.g., in NumPy 2.0, ndarray.__getstate__ now exists but returns None
+                    value = gs_value
             except:
-                None
+                pass
 
             state[attribute] = value
 
@@ -748,6 +751,8 @@ class CannonModel(object):
                 "is not already trained. The saved model will not be "
                 "able to be trained when loaded!"
             )
+
+        # import pdb; pdb.set_trace()
 
         with open(path, "wb") as fp:
             pickle.dump(state, fp, protocol)

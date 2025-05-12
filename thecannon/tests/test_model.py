@@ -743,7 +743,7 @@ class TestCannonModelInit:
             )
 
     @pytest.mark.parametrize("training_shape", [None, 10, 100, 1000])
-    @pytest.mark.parametrize("bad_type", [str, np.string_])
+    @pytest.mark.parametrize("bad_type", [str, np.bytes_])
     def test_cannonmodel_dispersion_input_bad_type(
         self,
         test_model,
