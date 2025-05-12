@@ -752,8 +752,6 @@ class CannonModel(object):
                 "able to be trained when loaded!"
             )
 
-        # import pdb; pdb.set_trace()
-
         with open(path, "wb") as fp:
             pickle.dump(state, fp, protocol)
         return None
