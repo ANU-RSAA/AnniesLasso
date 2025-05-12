@@ -10,7 +10,8 @@ try:
 except ImportError:
     # For numpy >= 1.24 fallback
     RankWarning = getattr(np.linalg, 'LinAlgWarning', RuntimeWarning)
-from warnings import simplefilter
+
+import warnings
 
 from .model import CannonModel
 from . import censoring, fitting, plot, utils, vectorizer
