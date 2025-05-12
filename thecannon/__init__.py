@@ -4,8 +4,13 @@
 __version__ = "0.2.93"
 
 import logging
-from numpy import RankWarning
-import warnings
+import numpy as np
+try:
+    from numpy import RankWarning
+except ImportError:
+    # For numpy >= 1.24 fallback
+    RankWarning = getattr(np.linalg, 'LinAlgWarning', RuntimeWarning)
+from warnings import simplefilter
 
 from .model import CannonModel
 from . import censoring, fitting, plot, utils, vectorizer
