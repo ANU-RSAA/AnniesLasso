@@ -3,12 +3,14 @@
 *.log
 *.pdf
 vc.tex
+.coverage*
 
 .gitignore
 
 sandbox_*.py
 *.pyc
 *.pkl
+/*.model
 
 build/
 dist/

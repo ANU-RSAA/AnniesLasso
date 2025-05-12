@@ -10,13 +10,12 @@ Before we get started, you should know that the following ingredients are requir
  - some *test set* spectra that you want to derive labels from, which has been processed the same way as the training set spectra.
 
 In this guide we will provide you with the training set labels and spectra, and the test set spectra. If you want more information about `constructing a training set <tutorials.html#constructing-a-training-set>`_ or `continuum-normalizing your spectra <tutorials.html#continuum-normalization>`_, see the linked tutorials. 
- 
-.. note:: We use `Travis continuous integration <https://travis-ci.org/andycasey/AnniesLasso>`_ to test every change to The Cannon in Python versions 2.7, 3.5, and 3.6. The code examples here should work in any of these Python versions. 
-
 
 In this guide we will train a model using `APOGEE DR14 <http://www.sdss.org/dr14/irspec/>`_ spectra and `ASPCAP <http://www.sdss.org/dr14/irspec/parameters/>`_ labels to derive effective temperature :math:`T_{\rm eff}`, surface gravity :math:`\log{g}`, and two chemical abundance ratios (:math:`[{\rm Fe}/{\rm H}]`, and :math:`[{\rm Mg}/{\rm Fe}]`.  These spectra have been pseudo-continuum-normalized using a sum of sine and cosine functions (which is a different process `ASPCAP <http://www.sdss.org/dr14/irspec/parameters/>`_ uses for normalization), and individual visits have been stacked.
 
 Here we won't use any `regularization <tutorials.html#regularization>`_ or `wavelength censoring <tutorials.html#censoring>`_, but these can be applied at the end, and the ``CannonModel`` object can be retrained to make use of regularization and/or censoring by using the ``.train()`` function.
+
+We recommend running this tutorial in a `Jupyter` notebook.
 
 Downloading the data
 --------------------
@@ -25,7 +24,7 @@ You can download the required data for this guide using the following command:
 
 ::
 
-    wget zenodo-link #TODO  
+    #TODO  
 
 Creating a model
 ----------------
@@ -37,8 +36,7 @@ After you have `installed The Cannon <install>`_, you can use the following Pyth
     :linenos:
 
     from astropy.table import Table
-    from six.moves import cPickle as pickle
-    from sys import version_info
+    import pickle
 
     import thecannon as tc
 
@@ -46,9 +44,8 @@ After you have `installed The Cannon <install>`_, you can use the following Pyth
     training_set_labels = Table.read("apogee-dr14-giants.fits")
 
     # Load the training set spectra.
-    pkl_kwds = dict(encoding="latin-1") if version_info[0] >= 3 else {}
     with open("apogee-dr14-giants-flux-ivar.pkl", "rb") as fp:
-        training_set_flux, training_set_ivar = pickle.load(fp, **pkl_kwds)
+        training_set_flux, training_set_ivar = pickle.load(fp)
 
     # Specify the labels that we will use to construct this model.
     label_names = ("TEFF", "LOGG", "FE_H", "MG_FE")
@@ -131,11 +128,11 @@ The code above will produce the following figure, which is zoomed to the first 3
                  0.01897458,  0.00580555],
                ..., 
                [ 1.        ,  0.        ,  0.        , ...,  0.        ,
-                 0.        ,  0.        ],
+                 1.        ,  0.        ],
                [ 1.        ,  0.        ,  0.        , ...,  0.        ,
-                 0.        ,  0.        ],
+                 2.        ,  0.        ],
                [ 1.        ,  0.        ,  0.        , ...,  0.        ,
-                 0.        ,  0.        ]])
+                 3.        ,  0.        ]])
 
 
     fig_theta = tc.plot.theta(model, 
