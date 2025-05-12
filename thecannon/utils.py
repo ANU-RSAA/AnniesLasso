@@ -13,10 +13,14 @@ import os
 import pickle
 import signal
 import sys
-from six import string_types
 from tempfile import mkstemp
 from time import time
-from collections.abc import Iterable
+
+# Adjustment to be compatible with python 3.12
+try:
+    from collections import Iterable
+except:
+    from collections.abc import Iterable
 from hashlib import md5
 from multiprocessing.pool import Pool
 from multiprocessing import Lock, TimeoutError, Value
@@ -200,7 +204,7 @@ def _unpack_value(value):
     The original value, or the unpacked contents if a valid path was given.
     """
 
-    if isinstance(value, string_types) and os.path.exists(value):
+    if isinstance(value, (str,)) and os.path.exists(value):
         with open(value, "rb") as fp:
             contents = pickle.load(fp)
         return contents

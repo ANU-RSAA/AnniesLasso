@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools >= 70"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "thecannon"
+dynamic = ["version"]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=2.0",
+    "scipy",
+]
+authors = [{name="Andrew R. Casey"}, {name="David W. Hogg"}, {name="Melissa Ness"}, {name="Marc White"}]
+maintainers = [{name="Marc White", email="marc.white@anu.edu.au"}, ]
+description = "A data-driven approach to stellar spectroscopy"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Science/Research",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Topic :: Scientific/Engineering :: Astronomy",
+        "Topic :: Scientific/Engineering :: Physics",
+    ]
+keywords = ["The Cannon", "spectroscopy"]
+
+[project.optional-dependencies]
+test = [
+    "pytest"
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "thecannon.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["."]

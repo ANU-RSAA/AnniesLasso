@@ -53,7 +53,7 @@ def _compare_none_or_arrays(
     bool
         Whether the arguments ``first`` and ``second`` can be considered equal or not. The rules
         for doing so are as follows:
-        
+
         - If both ``first`` and ``second`` are ``None``, then the function returns ``True``.
         - If exactly one of ``first`` and ``second`` are ``None``, and ``allow_one_none`` is
           ``True``, then the function returns ``True``.
@@ -178,7 +178,7 @@ class CannonModel(object):
             # table-like objects that could work here
             # Simply catch & re-raise any errors that are encountered (i.e. can't look
             # up like that, invalid key/index, etc.)
-            # Need it to be *exactly* and np.ndarray, because we want np.recarray
+            # Need it to be *exactly* an np.ndarray, because we want np.recarray
             # sent through this code block instead
             try:
                 training_set_labels = np.array(
@@ -718,9 +718,12 @@ class CannonModel(object):
 
             try:
                 # If it's a vectorizer or censoring dict, etc, get the state.
-                value = value.__getstate__()
+                gs_value = value.__getstate__()
+                if gs_value is not None:
+                    # e.g., in NumPy 2.0, ndarray.__getstate__ now exists but returns None
+                    value = gs_value
             except:
-                None
+                pass
 
             state[attribute] = value
 
@@ -828,7 +831,7 @@ class CannonModel(object):
         threads : int, optional
             The number of parallel threads to use.
         p_method : str, optional
-            The optimization algorithm to use: ``"l_bfgs_b"`` (default) and 
+            The optimization algorithm to use: ``"l_bfgs_b"`` (default) and
             ``"powell"`` are available.
         op_strict : bool, optional
             Default to Powell's optimization method if BFGS fails.

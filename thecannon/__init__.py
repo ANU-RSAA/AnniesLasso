@@ -1,10 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__version__ = "0.2.93"
+__version__ = "0.9.00"
 
 import logging
-from numpy import RankWarning
+import numpy as np
+
+try:
+    from numpy import RankWarning
+except ImportError:
+    # For numpy >= 1.24 fallback
+    RankWarning = getattr(np.linalg, "LinAlgWarning", RuntimeWarning)
+
 import warnings
 
 from .model import CannonModel

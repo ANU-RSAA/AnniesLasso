@@ -30,15 +30,15 @@ class BaseVectorizer(object):
 
         The list describes the terms of the label vector as follows::
 
-        
+
             [[(<label index>, <label power>), ...], [(<label index>, <label power>), ...)], ...]
-        
+
 
         So, for example, if ``label_names=['a', 'b']``, then the following element in ``terms``::
-        
-        
+
+
             [[(0, 1), (1, 1)], [(1, 2)]]
-        
+
 
         is equivalent to :math:`a^1 * b^1 + b^2`. The actual label names can also be used as the first
         element of each tuple.
@@ -57,7 +57,7 @@ class BaseVectorizer(object):
         self.update_labels_terms(tuple(label_names), terms)
         self.metadata = kwargs.get("metadata", {})
         return None
-    
+
     def __eq__(self, other):
         if self.__class__.__name__ != other.__class__.__name__:
             return False
@@ -65,7 +65,7 @@ class BaseVectorizer(object):
             return False
         if self.terms != other.terms:
             return False
-        
+
         return True
 
     # These can be over-written by sub-classes, but it is useful to have some
