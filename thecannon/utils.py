@@ -15,6 +15,7 @@ import signal
 import sys
 from tempfile import mkstemp
 from time import time
+
 # Adjustment to be compatible with python 3.12
 try:
     from collections import Iterable
@@ -203,7 +204,7 @@ def _unpack_value(value):
     The original value, or the unpacked contents if a valid path was given.
     """
 
-    if isinstance(value, (str, )) and os.path.exists(value):
+    if isinstance(value, (str,)) and os.path.exists(value):
         with open(value, "rb") as fp:
             contents = pickle.load(fp)
         return contents

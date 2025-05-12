@@ -8,13 +8,13 @@ A polynomial vectorizer for The Cannon.
 from __future__ import division, print_function, absolute_import, unicode_literals
 
 __all__ = [
-    "PolynomialVectorizer", 
+    "PolynomialVectorizer",
     "parse_label_vector_description",
     "human_readable_label_term",
     "human_readable_label_vector",
     "terminator",
     "get_label_names",
-    ]
+]
 
 import numpy as np
 from collections import Counter, OrderedDict
@@ -40,10 +40,10 @@ class PolynomialVectorizer(BaseVectorizer):
 
     terms : list of list of 2-tuples, optional
         A structured list of tuples that defines the full extent of the label
-        vector. Note that ``terms`` *must* be ``None`` if ``label_names`` 
+        vector. Note that ``terms`` *must* be ``None`` if ``label_names``
         and ``order`` are provided.
 
-        The terms list should be structured as for 
+        The terms list should be structured as for
         :py:class:`thecannon.vectorizer.base.BaseVectorizer`.
     """
 
@@ -106,7 +106,7 @@ class PolynomialVectorizer(BaseVectorizer):
         This function computes term-by-term values of the model terms, for the input
         vector of individual label values/input array of label values for a number of
         test cases.
-        
+
         Parameters
         ----------
         labels : 1D or 2D array
@@ -349,7 +349,7 @@ def parse_label_vector_description(description, label_names=None, **kwargs):
     kwds.update(kwargs)
     sep, mul, pow = (kwds[k] for k in ("sep", "mul", "pow"))
 
-    if isinstance(description, (str, )):
+    if isinstance(description, (str,)):
         description = description.split(sep)
     description = [_.strip() for _ in description]
 
@@ -474,7 +474,9 @@ def human_readable_label_vector(
         human_terms = ["1"]
     for term in terms:
         human_terms.append(
-            human_readable_label_term(term, label_names=label_names, mul=mul, pow=pow, bracket=bracket)
+            human_readable_label_term(
+                term, label_names=label_names, mul=mul, pow=pow, bracket=bracket
+            )
         )
     return f" {sep} ".join(human_terms)
 

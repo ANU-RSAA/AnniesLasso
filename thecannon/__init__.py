@@ -5,11 +5,12 @@ __version__ = "0.9.00"
 
 import logging
 import numpy as np
+
 try:
     from numpy import RankWarning
 except ImportError:
     # For numpy >= 1.24 fallback
-    RankWarning = getattr(np.linalg, 'LinAlgWarning', RuntimeWarning)
+    RankWarning = getattr(np.linalg, "LinAlgWarning", RuntimeWarning)
 
 import warnings
 

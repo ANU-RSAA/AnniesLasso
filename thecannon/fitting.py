@@ -73,7 +73,7 @@ def fit_spectrum(
     """
     Fit a single spectrum by least-squared fitting.
 
-    As this function fits a single full spectrum, all arrays mentioned are of 
+    As this function fits a single full spectrum, all arrays mentioned are of
     shape ``(P, )``, where ``P`` is the number of pixels in the spectrum.
 
     Parameters
@@ -116,7 +116,7 @@ def fit_spectrum(
     L = len(vectorizer.label_names)
 
     if not np.any(use):
-        logger.warn("No information in spectrum!")
+        logger.warning("No information in spectrum!")
         return (
             np.nan * np.ones(L),
             None,
@@ -137,7 +137,7 @@ def fit_spectrum(
 
         except NotImplementedError:
             Dfun = None
-            logger.warn(
+            logger.warning(
                 "No label vector derivatives available in {}!".format(vectorizer)
             )
 
@@ -199,7 +199,7 @@ def fit_spectrum(
         results.append((op_labels, cov, meta))
 
     if len(results) == 0:
-        logger.warn("No results found!")
+        logger.warning("No results found!")
         return (np.nan * np.ones(L), None, dict(fail_message="No results found"))
 
     best_result_index = np.nanargmin([m["chi_sq"] for (o, c, m) in results])
@@ -210,7 +210,7 @@ def fit_spectrum(
     op_labels = op_labels * scales + fiducials
 
     if np.allclose(op_labels, meta["x0"]):
-        logger.warn(
+        logger.warning(
             "Discarding optimized result because it is exactly the same as the "
             "initial value!"
         )
@@ -223,7 +223,7 @@ def fit_spectrum(
         cov = np.ones((len(op_labels), len(op_labels)))
 
     if not np.any(np.isfinite(cov)):
-        logger.warn("Non-finite covariance matrix returned!")
+        logger.warning("Non-finite covariance matrix returned!")
 
     # Save additional information.
     meta.update(
@@ -455,7 +455,7 @@ def _remove_forbidden_op_kwds(op_method, op_kwds):
     except KeyError:
         raise ValueError(f"Unknown op_method {op_method}")
     if forbidden_keys:
-        logger.warn(
+        logger.warning(
             "Ignoring forbidden optimization keywords for {}: {}".format(
                 op_method, ", ".join(forbidden_keys)
             )
@@ -542,7 +542,7 @@ def fit_pixel_fixed_scatter(
         metadata = dict(message="No pixel information.", op_time=0.0)
         fiducial = np.hstack([1.0, np.zeros(design_matrix.shape[1] - 1)])
         return (fiducial, np.inf, metadata)  # MAGIC
-    
+
     # If we get past here, need to input check the rest
     # Note that we may be able to do some input checking by catching errors further below,
     # if not too far down
@@ -552,9 +552,9 @@ def fit_pixel_fixed_scatter(
     op_method = str(op_method).lower()
     if op_method not in PIXEL_FITTING_METHODS:
         raise ValueError(
-                "unknown optimization method '{}' -- "
-                "{} are available".format(op_method, ",".join(PIXEL_FITTING_METHODS))
-            )
+            "unknown optimization method '{}' -- "
+            "{} are available".format(op_method, ",".join(PIXEL_FITTING_METHODS))
+        )
     op_strict = kwargs.get("op_strict", True)
 
     # Determine if any theta coefficients will be censored.
@@ -563,7 +563,9 @@ def fit_pixel_fixed_scatter(
     design_matrix[:, censored_theta] = 0
 
     # These calls will check the initial_thetas, design_matrix, and regularization values
-    initial_theta, initial_theta_source = _select_theta(flux, ivar, initial_thetas, design_matrix, regularization)
+    initial_theta, initial_theta_source = _select_theta(
+        flux, ivar, initial_thetas, design_matrix, regularization
+    )
 
     base_op_kwds = dict(
         x0=initial_theta,
@@ -639,7 +641,7 @@ def fit_pixel_fixed_scatter(
                     if warnflag == 1
                     else metadata["task"]
                 )
-                logger.warn("Optimization warning (l_bfgs_b): {}".format(reason))
+                logger.warning("Optimization warning (l_bfgs_b): {}".format(reason))
 
                 if op_strict:
                     # Do optimization again.

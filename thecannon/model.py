@@ -53,7 +53,7 @@ def _compare_none_or_arrays(
     bool
         Whether the arguments ``first`` and ``second`` can be considered equal or not. The rules
         for doing so are as follows:
-        
+
         - If both ``first`` and ``second`` are ``None``, then the function returns ``True``.
         - If exactly one of ``first`` and ``second`` are ``None``, and ``allow_one_none`` is
           ``True``, then the function returns ``True``.
@@ -831,7 +831,7 @@ class CannonModel(object):
         threads : int, optional
             The number of parallel threads to use.
         p_method : str, optional
-            The optimization algorithm to use: ``"l_bfgs_b"`` (default) and 
+            The optimization algorithm to use: ``"l_bfgs_b"`` (default) and
             ``"powell"`` are available.
         op_strict : bool, optional
             Default to Powell's optimization method if BFGS fails.

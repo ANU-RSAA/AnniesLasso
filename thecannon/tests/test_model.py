@@ -1208,36 +1208,41 @@ class TestCannonModelInit:
         )
         assert m == m2, "__eq__ does not recognize identically-created Model"
 
-    @pytest.mark.parametrize("bad_theta_bound", [
-        1,    # int
-        1.0,  # float
-        (1.0, ),  # 1-tuple
-        (1.0, 2.0, 3.0, ),  # 3-tuple
-        [1.0, 2.0, 3.0],  # len 3 list
-        [1.0, ], # len 1 list
-        [2.0, 1.0], # Reversed list
-        (2.0, 1.0), # Reversed tuple
-    ])
+    @pytest.mark.parametrize(
+        "bad_theta_bound",
+        [
+            1,  # int
+            1.0,  # float
+            (1.0,),  # 1-tuple
+            (
+                1.0,
+                2.0,
+                3.0,
+            ),  # 3-tuple
+            [1.0, 2.0, 3.0],  # len 3 list
+            [
+                1.0,
+            ],  # len 1 list
+            [2.0, 1.0],  # Reversed list
+            (2.0, 1.0),  # Reversed tuple
+        ],
+    )
     def test_restrictedcannonmodel_theta_bounds_bad_values(
-        self,
-        test_model,
-        module,
-        name,
-        vectorizer,
-        label_names,
-        terms,
-        bad_theta_bound
+        self, test_model, module, name, vectorizer, label_names, terms, bad_theta_bound
     ):
         if test_model != restricted.RestrictedCannonModel:
             pytest.skip()
 
         m = test_model(
             np.ones((10, len(label_names))),
-            None, None,
-            vectorizer(label_names=label_names, terms=terms)
+            None,
+            None,
+            vectorizer(label_names=label_names, terms=terms),
         )
 
-        tb = {m.vectorizer.human_readable_label_vector.split(" + ")[-1]: bad_theta_bound}
+        tb = {
+            m.vectorizer.human_readable_label_vector.split(" + ")[-1]: bad_theta_bound
+        }
 
         with pytest.raises(ValueError, match="bounds must"):
             m.theta_bounds = tb
@@ -1359,7 +1364,7 @@ class TestCannonModelInit:
             fiducial,
             theta_bounds,
             trained,
-            tmp_path
+            tmp_path,
         ):
             if theta_bounds == "arr" and test_model != restricted.RestrictedCannonModel:
                 pytest.skip()
@@ -1418,7 +1423,9 @@ class TestCannonModelInit:
             # Confirm a saved-and-loaded model is considered equivalent
             m1.write(tmp_path / "model.model", overwrite=True)
             m5 = test_model.read(tmp_path / "model.model")
-            assert m1 == m5 and m5 == m1, "__eq__ did not correctly identify a model loaded from disk"
+            assert (
+                m1 == m5 and m5 == m1
+            ), "__eq__ did not correctly identify a model loaded from disk"
 
         def test_cannonmodel_ne_diff_models(
             self,
@@ -1923,7 +1930,7 @@ class TestCannonModelInit:
             label_names,
             terms,
             training_set_shape,
-            comparison_theta_bounds
+            comparison_theta_bounds,
         ):
             if test_model != restricted.RestrictedCannonModel:
                 pytest.skip()
@@ -1941,7 +1948,9 @@ class TestCannonModelInit:
                 vectorizer(label_names=label_names, terms=terms),
                 # Defaults
             )
-            m1.theta_bounds = {l: (-1, 11) for l in m1.vectorizer.human_readable_label_vector}
+            m1.theta_bounds = {
+                l: (-1, 11) for l in m1.vectorizer.human_readable_label_vector
+            }
 
             m2 = test_model(
                 training_set_labels,
@@ -1949,9 +1958,15 @@ class TestCannonModelInit:
                 training_set_ivar,
                 vectorizer(label_names=label_names, terms=terms),
             )
-            m2.theta_bounds = None if comparison_theta_bounds is None else {l: (-2, 12) for l in m2.vectorizer.human_readable_label_vector}
-    
-            assert m1 != m2 and m2 != m1, "__eq__ failed to detect different theta_bounds"
+            m2.theta_bounds = (
+                None
+                if comparison_theta_bounds is None
+                else {l: (-2, 12) for l in m2.vectorizer.human_readable_label_vector}
+            )
+
+            assert (
+                m1 != m2 and m2 != m1
+            ), "__eq__ failed to detect different theta_bounds"
 
     @pytest.mark.parametrize(
         "test_value",

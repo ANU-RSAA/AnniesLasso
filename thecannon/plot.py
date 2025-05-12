@@ -19,7 +19,7 @@ try:
     from matplotlib.ticker import MaxNLocator
 
 except ImportError:
-    logger.warn("Could not import matplotlib; plotting functionality disabled")
+    logger.warning("Could not import matplotlib; plotting functionality disabled")
 
 
 def theta(
@@ -103,7 +103,7 @@ def theta(
     label_indices = np.array(label_indices)
 
     if len(set(label_indices)) < label_indices.size:
-        logger.warn("Removing duplicate label indices")
+        logger.warning("Removing duplicate label indices")
         label_indices = np.unique(label_indices)
 
     K = len(label_indices)
@@ -313,7 +313,7 @@ def one_to_one(
             try:
                 label_name = r"${}$".format(latex_label_names[i])
             except:
-                logger.warn(
+                logger.warning(
                     "Could not access latex label name for index {} ({})".format(
                         i, label_name
                     )

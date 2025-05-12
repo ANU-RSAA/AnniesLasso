@@ -82,7 +82,7 @@ class RestrictedCannonModel(CannonModel):
         regularization=None,
         censors=None,
         theta_bounds=None,
-        **kwargs
+        **kwargs,
     ):
 
         super(RestrictedCannonModel, self).__init__(
@@ -93,7 +93,7 @@ class RestrictedCannonModel(CannonModel):
             dispersion=dispersion,
             regularization=regularization,
             censors=censors,
-            **kwargs
+            **kwargs,
         )
 
         self.theta_bounds = theta_bounds
@@ -132,7 +132,7 @@ class RestrictedCannonModel(CannonModel):
                 term = str(term)
 
                 if term not in terms:
-                    logging.warn(
+                    logging.warning(
                         "Boundary on term '{}' ignored because it is "
                         "not in the label vector: {}".format(term, label_vector)
                     )
