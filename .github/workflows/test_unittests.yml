@@ -3,7 +3,7 @@ name: test_unittests
 on: [push, pull_request]
 
 jobs:
-  test_model_output_defaults:
+  test_unittests_success:
     strategy:
       matrix:
         py-version:  ["3.10", 3.11, 3.12]

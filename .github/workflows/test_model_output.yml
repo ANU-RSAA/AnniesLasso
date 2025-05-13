@@ -3,7 +3,7 @@ name: test_model_output
 on: pull_request
 
 jobs:
-  test_model_output_defaults:
+  test_model_output_regression:
     strategy:
       matrix:
         py-version:  ["3.10", 3.11, 3.12]
