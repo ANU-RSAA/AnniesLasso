@@ -27,7 +27,12 @@ jobs:
         pip install numpy~=${{matrix.np-version}}.0
         pip install scipy~=${{matrix.sp-version}}.0
         pip install pandas
+        pip install pytest
         pip install --no-deps git+https://github.com/${{ github.repository }}@${{ github.ref_name }}
+
+    - name: Run pytest
+      run: |
+        pytest ./thecannon/tests
 
     - name: Run run_cannon_andy_svens_python.py
       run: |
