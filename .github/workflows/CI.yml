@@ -1,9 +1,9 @@
-name: test_model_output
+name: CI
 
-on: [pull_request, workflow_dispatch]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  test_model_output_regression:
+  unittests:
     strategy:
       matrix:
         py-version:  ["3.10", 3.11, 3.12]
@@ -28,17 +28,9 @@ jobs:
         pip install numpy~=${{matrix.np-version}}.0
         pip install scipy~=${{matrix.sp-version}}.0
         pip install pandas
-        pip install pytest
+        pip install pytest pytest-cov
         python -m pip install .
 
-    - name: Run run_cannon_andy_svens_python.py
+    - name: Run pytest
       run: |
-        python ./thecannon/tests/actions/run_cannon_generate_test_model.py
-
-    - name: Compare the prospect models
-      run : |
-        python ./thecannon/tests/actions/compare_generated_prospect_models.py
-
-    - name: Compare the prospect restricted models
-      run : |
-        python ./thecannon/tests/actions/compare_generated_prospect_restricted_models.py
+        pytest --cov-report term-missing --cov=thecannon ./thecannon/tests
