@@ -28,7 +28,7 @@ jobs:
         pip install scipy~=${{matrix.sp-version}}.0
         pip install pandas
         pip install pytest pytest-cov
-        pip install --no-deps git+https://github.com/${{ github.repository }}@${{ github.ref_name }}
+        pip install --no-deps git+https://github.com/${{ github.repository }}@${{ github.head_ref }}
 
     - name: Run pytest
       run: |
