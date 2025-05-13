@@ -9,8 +9,9 @@ jobs:
         py-version:  ["3.10", 3.11, 3.12]
         np-version:  ["2.0", 2.1, 2.2]
         sp-version:  [1.13, 1.14, 1.15]
+        runner: [macos-13, macos-latest, ubuntu-latest]
 
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.runner}}
 
     steps:
 
