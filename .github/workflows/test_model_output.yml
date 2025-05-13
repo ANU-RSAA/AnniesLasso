@@ -4,6 +4,12 @@ on: push
 
 jobs:
   test_model_output_defaults:
+    strategy:
+      matrix:
+        py-version: [3.9, 3.10, 3.11, 3.12, 3.13]
+        np-version:  [2.0, 2.1, 2.2]
+        sp-version:  [1.9, 1.10, 1.11, 1.12, 1.13, 1.14, 1.15]
+
     runs-on: ubuntu-latest
 
     steps:
@@ -11,17 +17,16 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set up test Python
+    - name: Set up test Python ${{matrix.py-version}}
       uses: actions/setup-python@v5
       with:
-        python-version: '3.9.20'
+        python-version: '~=${{matrix.py-version}}.0'
 
-    - name: Install dependencies
+    - name: Install dependencies (NumPy ${{matrix.np-version}}, SciPy ${{matrix.sp-version}})
       run: |
-        pip install pandas==2.0.3
-        pip install numpy==1.22.1
-        pip install scipy==1.7.3
-        pip install six==1.16.0
+        pip install numpy~=${{matrix.np-version}}.0
+        pip install scipy~=${{matrix.sp-version}}.0
+        pip install pandas
         pip install --no-deps git+https://github.com/${{ github.repository }}@${{ github.ref_name }}
 
     - name: Run run_cannon_andy_svens_python.py
