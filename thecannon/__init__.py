@@ -15,6 +15,7 @@ except ImportError:
 import warnings
 
 from .model import CannonModel
+from .restricted import RestrictedCannonModel
 from . import censoring, fitting, plot, utils, vectorizer
 
 logger = logging.getLogger(__name__)
