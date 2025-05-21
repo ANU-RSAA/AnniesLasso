@@ -13,6 +13,7 @@ __all__ = ["RestrictedCannonModel"]
 
 import logging
 from .model import CannonModel
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -166,6 +167,7 @@ class RestrictedCannonModel(CannonModel):
 
             If a label does not appear in ``label_bounds``, it will be assumed to have no 
             limits, and no limits will be applied to any term (theta) containing that label.
+            Labels that do not appear in any term will be ignored.
 
         Raises
         ------
@@ -176,7 +178,35 @@ class RestrictedCannonModel(CannonModel):
             The latter is to catch the situation where a bound of, e.g., ``(np.inf, <some number>)`` is
             supplied, when the user really meant ``(-np.inf, <some number>)``.
         """
-        pass
+        # Input checking
+        if not isinstance(label_bounds, dict):
+            raise ValueError("label_bounds must be a dict")
+        for label, bounds in label_bounds.items():
+            try:
+                assert bounds[0] < bounds[1]
+            except AssertionError:  # Bounds reversed
+                raise ValueError(f"Bounds for label '{label}' appear to be reversed")
+            except (TypeError, IndexError):  # Bounds are formatted wrong
+                raise ValueError(f"Bounds for label '{label}' do not appear to be a two-tuple, "
+                                 f"or may contain non-numeric values")
+            
+        theta_bounds = {}
+        # Now have to go through every term in the model, and compute the min and max bounds
+        label_vector = self.vectorizer.human_readable_label_vector
+        terms = label_vector.split(" + ")
+        for term in terms:
+            # Split the term into constituent parts
+            components = {l: int(p) for l, p in [_split_pow(_, "^") for _ in term.split("*")]}
+            # Check if all term components are bound - if not, continue
+            if not all([_ in label_bounds.keys for _ in components.keys()]):
+                logger.debug(f"Not all components of term {term} are bound - skipping")
+                continue
+
+            # Construct an array of test values
+            values = np.ones((2, ) * len(components))
+            for i, (l, p) in enumerate(components.items()):
+                #... how? need to broadcast along dimension (i+1).
+                pass
 
     def train(self, threads=None, op_kwds=None):
         """
@@ -207,3 +237,22 @@ class RestrictedCannonModel(CannonModel):
         kwds["op_kwds"].update(bounds=op_bounds)
 
         return super(RestrictedCannonModel, self).train(threads=threads, **kwds)
+    
+def _split_pow(s, c, extra="1"):
+        """
+        Split string by character, appending an extra value to the return of the split
+        if the standard result is length 1.
+
+        Parameters
+        ----------
+        str : str
+            String to split
+        c : str
+            char/str to split s by
+        extra : str, optional
+            String to append to the split result if it is only length 1
+        """
+        r = s.split(c)
+        if len(r) == 1:
+            r.append(extra)
+        return r
