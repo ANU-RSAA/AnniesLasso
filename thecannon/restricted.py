@@ -148,6 +148,35 @@ class RestrictedCannonModel(CannonModel):
 
         else:
             raise TypeError("theta_bounds must be a dictionary-like object")
+        
+    def generate_theta_bounds(self, label_bounds):
+        """
+        Generate `theta_bounds` from a list (or similar) of term bounds.
+
+        Parameters
+        ----------
+        label_bounds : dict
+            The label limits to apply, e.g.::
+            
+                label_bounds = {"T": (None, 1500.0), "Fe_H": (0.1, np.inf)}
+
+            Where no lower/upper limit applies, ``None`` or ``(+/-)np.inf`` may be used.
+            ``None`` is considered a safer option, as the function will safely convert that
+            to ``(+/-)np.inf``, depending on which bound(s) is ``None``.
+
+            If a label does not appear in ``label_bounds``, it will be assumed to have no 
+            limits, and no limits will be applied to any term (theta) containing that label.
+
+        Raises
+        ------
+        ValueError
+            If a bounds tuple contains a non-numeric value, or if a minimum bound is found to 
+            be greater than a maximum bound.
+
+            The latter is to catch the situation where a bound of, e.g., ``(np.inf, <some number>)`` is
+            supplied, when the user really meant ``(-np.inf, <some number>)``.
+        """
+        pass
 
     def train(self, threads=None, op_kwds=None):
         """
