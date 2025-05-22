@@ -189,8 +189,20 @@ class RestrictedCannonModel(CannonModel):
             except (TypeError, IndexError):  # Bounds are formatted wrong
                 raise ValueError(f"Bounds for label '{label}' do not appear to be a two-tuple, "
                                  f"or may contain non-numeric values")
+            # Deal with any None bounds
+            # (None, None) -> unbound, remove
+            # (None, *) -> -np.inf
+            # (*, None) -> np.inf
+            if bounds == (None, None):
+                del(label_bounds[label])
+            elif bounds[0] is None:
+                label_bounds[label] = (-np.inf, bounds[1])
+            elif bounds[1] is None:
+                label_bounds[label] = (bounds[0], np.inf)
+
             
         theta_bounds = {}
+
         # Now have to go through every term in the model, and compute the min and max bounds
         label_vector = self.vectorizer.human_readable_label_vector
         terms = label_vector.split(" + ")
@@ -205,8 +217,18 @@ class RestrictedCannonModel(CannonModel):
             # Construct an array of test values
             values = np.ones((2, ) * len(components))
             for i, (l, p) in enumerate(components.items()):
-                #... how? need to broadcast along dimension (i+1).
-                pass
+                for j in [0, 1]:  # 0 = min, 1 = max
+                    values[(slice(None, None), ) * i + (j, ) + (slice(None, None), ) * (len(components) - i - 1)] *= label_bounds[l][j] ** p
+
+            # Doing 0 * np.inf returns a nan - for bounds purposes, these should be returned to 0
+            values[values == np.nan] = 0
+
+            # Set the term limits based off the values array
+            theta_bounds[term] = (np.min(values), np.max(values))
+
+        self.theta_bounds = theta_bounds
+        return
+
 
     def train(self, threads=None, op_kwds=None):
         """
