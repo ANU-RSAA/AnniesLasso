@@ -12,8 +12,10 @@ from __future__ import division, print_function, absolute_import, unicode_litera
 __all__ = ["RestrictedCannonModel"]
 
 import logging
+import warnings
 from .model import CannonModel
 import numpy as np
+import scipy.optimize as op
 
 logger = logging.getLogger(__name__)
 
@@ -162,8 +164,7 @@ class RestrictedCannonModel(CannonModel):
                 label_bounds = {"T": (None, 1500.0), "Fe_H": (0.1, np.inf)}
 
             Where no lower/upper limit applies, ``None`` or ``(+/-)np.inf`` may be used.
-            ``None`` is considered a safer option, as the function will safely convert that
-            to ``(+/-)np.inf``, depending on which bound(s) is ``None``.
+            ``None`` is preferred.
 
             If a label does not appear in ``label_bounds``, it will be assumed to have no 
             limits, and no limits will be applied to any term (theta) containing that label.
@@ -181,9 +182,12 @@ class RestrictedCannonModel(CannonModel):
         # Input checking
         if not isinstance(label_bounds, dict):
             raise ValueError("label_bounds must be a dict")
+        
+        mid_points = {}
         for label, bounds in label_bounds.items():
             try:
-                assert bounds[0] < bounds[1]
+                if bounds[0] is not None and bounds[1] is not None:
+                    assert bounds[0] < bounds[1]
             except AssertionError:  # Bounds reversed
                 raise ValueError(f"Bounds for label '{label}' appear to be reversed")
             except (TypeError, IndexError):  # Bounds are formatted wrong
@@ -195,10 +199,14 @@ class RestrictedCannonModel(CannonModel):
             # (*, None) -> np.inf
             if bounds == (None, None):
                 del(label_bounds[label])
-            elif bounds[0] is None:
-                label_bounds[label] = (-np.inf, bounds[1])
-            elif bounds[1] is None:
-                label_bounds[label] = (bounds[0], np.inf)
+            elif bounds[0] == -np.inf:
+                label_bounds[label] = (None, bounds[1])
+                mid_points[label] = bounds[1]
+            elif bounds[1] == np.inf:
+                label_bounds[label] = (bounds[0], None)
+                mid_points[label] = bounds[0]
+            else:
+                mid_points[label] = (bounds[0] + bounds[1]) / 2.0
 
             
         theta_bounds = {}
@@ -207,24 +215,42 @@ class RestrictedCannonModel(CannonModel):
         label_vector = self.vectorizer.human_readable_label_vector
         terms = label_vector.split(" + ")
         for term in terms:
+            # Check if this is just a single-component linear label, so just set the label bounds
+            if term in label_bounds.keys():
+                theta_bounds[term] = label_bounds[term]
+                continue
+
             # Split the term into constituent parts
             components = {l: int(p) for l, p in [_split_pow(_, "^") for _ in term.split("*")]}
+
             # Check if all term components are bound - if not, continue
-            if not all([_ in label_bounds.keys for _ in components.keys()]):
+            if not all([_ in label_bounds.keys() for _ in components.keys()]):
                 logger.debug(f"Not all components of term {term} are bound - skipping")
                 continue
 
-            # Construct an array of test values
-            values = np.ones((2, ) * len(components))
-            for i, (l, p) in enumerate(components.items()):
-                for j in [0, 1]:  # 0 = min, 1 = max
-                    values[(slice(None, None), ) * i + (j, ) + (slice(None, None), ) * (len(components) - i - 1)] *= label_bounds[l][j] ** p
+            # Construct the functions and bounds for minimization
+            def term_func(x):
+                val = 1.0
+                for i, p in enumerate(components.values()):
+                    val *= (x[i] ** p)
+                return val
+            def neg_term_func(x):
+                return -1.0 * term_func(x)
+            this_term_bounds = [label_bounds[label] for label in components.keys()]
 
-            # Doing 0 * np.inf returns a nan - for bounds purposes, these should be returned to 0
-            values[values == np.nan] = 0
+            with warnings.catch_warnings():
+                # With lack of better guesses, assume the min/max label values as a start point for the min/max combined value
+                min_start_point = [_ if _ is not None else 1.0 for _ in [label_bounds[label][0] for label in components.keys()]]
+                max_start_point = [_ if _ is not None else 1.0 for _ in [label_bounds[label][1] for label in components.keys()]]
+                min_sol = op.minimize(term_func, x0=[mid_points[_] for _ in self.vectorizer.label_names if _ in components.keys()], bounds=this_term_bounds, method="TNC")
+                max_sol = op.minimize(neg_term_func, x0=[mid_points[_] for _ in self.vectorizer.label_names if _ in components.keys()], bounds=this_term_bounds, method="TNC")
 
-            # Set the term limits based off the values array
-            theta_bounds[term] = (np.min(values), np.max(values))
+                theta_bounds[term] = (
+                    min_sol.fun if min_sol.success == True else None, 
+                    -1.0 * max_sol.fun if max_sol.success == True else None,
+                )
+
+                # import pdb; pdb.set_trace()
 
         self.theta_bounds = theta_bounds
         return

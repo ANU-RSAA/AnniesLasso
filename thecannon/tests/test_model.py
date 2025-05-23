@@ -2033,3 +2033,38 @@ class TestCannonModelInit:
             assert np.all(
                 m.regularization == test_value
             ), "design_matrix property broken"
+
+
+class TestRestrictedCannonModelSpecifics:
+
+    @pytest.mark.parametrize(
+        "order,label_names,label_limits,term_limits",
+        [
+            [
+                2,
+                ["a", "b"],
+                {
+                    "a": (-1.0, 1.0),
+                    "b": (0.0, np.inf),
+                },
+                {
+                    "a^2": (0.0, 1.0),
+                    "a*b": (None, None),
+                    "b^2": (0.0, None),
+                }
+            ],
+            # [["a", "b", "c"], ]
+        ],
+    )
+    def test_restrictedcannonmodel_generate_theta_bounds(
+        self, order, label_names, label_limits, term_limits
+    ):
+        model = restricted.RestrictedCannonModel(
+            np.ones((1, len(label_names))),
+            None,
+            None,
+            PolynomialVectorizer(label_names=label_names, order=order),
+        )
+
+        model.generate_theta_bounds(label_limits)
+        assert model.theta_bounds == label_limits | term_limits, "Failed to correctly set theta_bounds"
