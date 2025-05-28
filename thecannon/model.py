@@ -858,7 +858,7 @@ class CannonModel(object):
         T = self.design_matrix.shape[1]
 
         logger.info(
-            "Training {0}-label {1} with {2} stars and {3} pixels/star".format(
+            "Training {0}-label {1} with {2} input spectra and {3} pixels/spectrum".format(
                 len(self.vectorizer.label_names), type(self).__name__, S, P
             )
         )

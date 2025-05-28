@@ -20,34 +20,38 @@ from time import time
 
 logger = logging.getLogger(__name__)
 
-FITTING_ALLOWED_KEYS = dict(
+FITTING_COMMON_KEYS = (
+    "x0",
+    "args",
+    "method",
+    "jac",
+    "hess",
+    "hessp",
+    "bounds",
+    "constraints",
+    "tol",
+    "callback",
+)
+
+FITTING_ALLOWED_OPTS = dict(
     l_bfgs_b=(
-        "x0",
-        "args",
-        "bounds",
-        "m",
-        "factr",
-        "pgtol",
-        "epsilon",
-        "iprint",
+        "maxcor",
+        "ftol",
+        "gtol",
+        "eps",
         "maxfun",
         "maxiter",
-        "disp",
-        "callback",
         "maxls",
+        "finite_diff_rel_step",
     ),
     powell=(
-        "x0",
-        "args",
+        "disp",
         "xtol",
         "ftol",
         "maxiter",
-        "maxfun",
-        "full_output",
-        "disp",
-        "retall",
-        "callback",
-        "initial_simplex",
+        "maxfev",
+        "direc",
+        "return_all",
     ),
 )
 
@@ -451,7 +455,7 @@ def _remove_forbidden_op_kwds(op_method, op_kwds):
         `None`. The dictionary of `op_kwds` will be updated.
     """
     try:
-        forbidden_keys = set(op_kwds).difference(FITTING_ALLOWED_KEYS[op_method])
+        forbidden_keys = set(op_kwds).difference(FITTING_ALLOWED_OPTS[op_method] + FITTING_COMMON_KEYS)
     except KeyError:
         raise ValueError(f"Unknown op_method {op_method}")
     if forbidden_keys:
@@ -570,7 +574,6 @@ def fit_pixel_fixed_scatter(
     base_op_kwds = dict(
         x0=initial_theta,
         args=(design_matrix, flux, ivar, regularization),
-        disp=False,
         maxfun=np.inf,
         maxiter=np.inf,
     )
@@ -610,7 +613,7 @@ def fit_pixel_fixed_scatter(
             op_kwds = dict()
             op_kwds.update(base_op_kwds)
             # FIXME shift to constants
-            op_kwds.update(m=design_matrix.shape[1], maxls=20, factr=10.0, pgtol=1e-6)
+            op_kwds.update(maxcor=design_matrix.shape[1], maxls=20, ftol=10.0 * np.finfo(float).eps, gtol=1e-6)
             op_kwds.update((kwargs.get("op_kwds", {}) or {}))
 
             # If op_bounds are given and we are censoring some theta terms, then we
@@ -625,11 +628,13 @@ def fit_pixel_fixed_scatter(
             # Just-in-time to remove forbidden keywords.
             _remove_forbidden_op_kwds(op_method, op_kwds)
 
-            op_params, fopt, metadata = op.fmin_l_bfgs_b(
+            op_params, fopt, metadata = op.minimize(
                 _pixel_objective_function_fixed_scatter,
+                method=op_method,
                 fprime=None,
                 approx_grad=None,
-                **op_kwds,
+                options={k:v for k,v in op_kwds.values() if k in FITTING_ALLOWED_OPTS[op_method]}
+                **{k:v for k,v in op_kwds.values() if k in FITTING_COMMON_KEYS},
             )
 
             metadata.update(dict(fopt=fopt))
@@ -670,8 +675,10 @@ def fit_pixel_fixed_scatter(
             # Just-in-time to remove forbidden keywords.
             _remove_forbidden_op_kwds(op_method, op_kwds)
 
-            op_params, fopt, direc, n_iter, n_funcs, warnflag = op.fmin_powell(
-                _pixel_objective_function_fixed_scatter, full_output=True, **op_kwds
+            op_params, fopt, direc, n_iter, n_funcs, warnflag = op.minimize(
+                _pixel_objective_function_fixed_scatter, full_output=True, method=op_method,
+                options={k:v for k,v in op_kwds.values() if k in FITTING_ALLOWED_OPTS[op_method]}
+                **{k:v for k,v in op_kwds.values() if k in FITTING_COMMON_KEYS},
             )
 
             metadata = dict(

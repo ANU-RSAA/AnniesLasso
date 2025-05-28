@@ -328,14 +328,14 @@ def test__remove_forbidden_op_kwds_bad_method(bad_method):
     ],
 )
 def test__remove_forbidden_op_kwds(method, forbidden_kw):
-    kwg = {k: None for k in fitting.FITTING_ALLOWED_KEYS[method]}
+    kwg = {k: None for k in fitting.FITTING_ALLOWED_OPTS[method]}
     for k in forbidden_kw:
         kwg[k] = None
 
     fitting._remove_forbidden_op_kwds(method, kwg)
 
     assert set(kwg.keys()) == set(
-        fitting.FITTING_ALLOWED_KEYS[method]
+        fitting.FITTING_ALLOWED_OPTS[method]
     ), "Failed to remove all bad keys"
 
 
