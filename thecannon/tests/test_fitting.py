@@ -209,7 +209,7 @@ class TestHelperFunctionReturns:
 
         # Base case - should return a two-tuple
         fg = fitting._pixel_objective_function_fixed_scatter(
-            theta, design_matrix, flux, ivar, reg
+            theta, design_matrix, flux, ivar, reg, gradient=True
         )
         with pytest.raises(AttributeError):
             _ = fg.shape  # Will fail if fg is an array
