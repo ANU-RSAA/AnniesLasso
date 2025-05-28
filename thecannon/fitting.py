@@ -633,7 +633,7 @@ def fit_pixel_fixed_scatter(
                 method=op_method,
                 fprime=None,
                 approx_grad=None,
-                options={k:v for k,v in op_kwds.items() if k in FITTING_ALLOWED_OPTS[op_method]}
+                options={k:v for k,v in op_kwds.items() if k in FITTING_ALLOWED_OPTS[op_method]},
                 **{k:v for k,v in op_kwds.items() if k in FITTING_COMMON_KEYS},
             )
 
@@ -677,7 +677,7 @@ def fit_pixel_fixed_scatter(
 
             op_params, fopt, direc, n_iter, n_funcs, warnflag = op.minimize(
                 _pixel_objective_function_fixed_scatter, full_output=True, method=op_method,
-                options={k:v for k,v in op_kwds.items() if k in FITTING_ALLOWED_OPTS[op_method]}
+                options={k:v for k,v in op_kwds.items() if k in FITTING_ALLOWED_OPTS[op_method]},
                 **{k:v for k,v in op_kwds.items() if k in FITTING_COMMON_KEYS},
             )
 
