@@ -374,7 +374,7 @@ def L1Norm_variation(theta):
 
 
 def _pixel_objective_function_fixed_scatter(
-    theta, design_matrix, flux, ivar, regularization, gradient=True
+    theta, design_matrix, flux, ivar, regularization, gradient=False
 ):
     """
     The objective function for a single regularized pixel with fixed scatter.
