@@ -628,7 +628,8 @@ def fit_pixel_fixed_scatter(
             # Just-in-time to remove forbidden keywords.
             _remove_forbidden_op_kwds(op_method, op_kwds)
 
-            op_params, fopt, metadata = op.minimize(
+            # op_params, fopt, metadata 
+            op_return = op.minimize(
                 _pixel_objective_function_fixed_scatter,
                 method="L-BFGS-B",
                 # fprime=None,
@@ -636,7 +637,14 @@ def fit_pixel_fixed_scatter(
                 options={k:v for k,v in op_kwds.items() if k in FITTING_ALLOWED_OPTS[op_method]},
                 **{k:v for k,v in op_kwds.items() if k in FITTING_COMMON_KEYS},
             )
-
+            op_params = op_return.x
+            fopt = op_return.fun
+            metadata = {
+                "warnflag": op_return.status,
+                "funcalls": op_return.nfev,
+                "nit": op_return.nit,
+                "message": op_return.message,
+            }
             metadata.update(dict(fopt=fopt))
 
             warnflag = metadata.get("warnflag", -1)
@@ -644,7 +652,7 @@ def fit_pixel_fixed_scatter(
                 reason = (
                     "too many function evaluations or too many iterations"
                     if warnflag == 1
-                    else metadata["task"]
+                    else metadata["message"]
                 )
                 logger.warning("Optimization warning (l_bfgs_b): {}".format(reason))
 
@@ -675,13 +683,18 @@ def fit_pixel_fixed_scatter(
             # Just-in-time to remove forbidden keywords.
             _remove_forbidden_op_kwds(op_method, op_kwds)
 
-            op_params, fopt, direc, n_iter, n_funcs, warnflag = op.minimize(
+            op_return = op.minimize(
                 _pixel_objective_function_fixed_scatter, 
-                return_all=True, 
                 method="Powell",
                 options={k:v for k,v in op_kwds.items() if k in FITTING_ALLOWED_OPTS[op_method]},
                 **{k:v for k,v in op_kwds.items() if k in FITTING_COMMON_KEYS},
             )
+            op_params = op_return.x
+            fopt = op_return.fun
+            warnflag = op_return.status
+            n_iter = op_return.nit
+            n_funcs = op_return.nfev
+            direc = op_return.direc
 
             metadata = dict(
                 fopt=fopt,
