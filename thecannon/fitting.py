@@ -691,7 +691,8 @@ def fit_pixel_fixed_scatter(
             _remove_forbidden_op_kwds(op_method, op_kwds)
 
             op_return = op.minimize(
-                _pixel_objective_function_fixed_scatter, 
+                _pixel_objective_function_fixed_scatter,
+                jac=_pixel_objective_function_fixed_scatter_jac,
                 method="Powell",
                 options={k:v for k,v in op_kwds.items() if k in FITTING_ALLOWED_OPTS[op_method]},
                 **{k:v for k,v in op_kwds.items() if k in FITTING_COMMON_KEYS},
