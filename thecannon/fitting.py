@@ -437,6 +437,11 @@ def _scatter_objective_function(scatter, residuals_squared, ivar):
     chi_sq = residuals_squared * adjusted_ivar
     return (np.median(chi_sq) - 1.0) ** 2
 
+def _pixel_objective_function_fixed_scatter_jac(
+    theta, design_matrix, flux, ivar, regularization
+):
+    return _pixel_objective_function_fixed_scatter(theta, design_matrix, flux, ivar, regularization, gradient=True)[1]
+
 
 def _remove_forbidden_op_kwds(op_method, op_kwds):
     """
@@ -631,6 +636,7 @@ def fit_pixel_fixed_scatter(
             # op_params, fopt, metadata 
             op_return = op.minimize(
                 _pixel_objective_function_fixed_scatter,
+                jac=_pixel_objective_function_fixed_scatter_jac,
                 method="L-BFGS-B",
                 # fprime=None,
                 # approx_grad=None,
@@ -670,6 +676,7 @@ def fit_pixel_fixed_scatter(
             op_kwds = dict()
             op_kwds.update(base_op_kwds)
             op_kwds.update(xtol=1e-6, ftol=1e-6)
+            del(op_kwds["maxfun"])
             op_kwds.update((kwargs.get("op_kwds", {}) or {}))
 
             # Set 'False' in args so that we don't return the gradient,
