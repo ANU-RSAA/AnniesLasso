@@ -33,7 +33,7 @@ new_cov_arr = np.load(new_labels)
 try:
     assert np.allclose(orig_cov_arr, new_cov_arr)
 except AssertionError:
-    cov_delta = new_cov_arr - old_cov_arr
+    cov_delta = new_cov_arr - orig_cov_arr
     raise AssertionError(
         f"Test cov mismatch: delta stats: (abs)mean={np.mean(np.abs(cov_delta))}, "
         f"median={np.median(cov_delta)}, std={np.std(cov_delta)}"
