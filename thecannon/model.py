@@ -835,7 +835,7 @@ class CannonModel(object):
             ``"powell"`` are available.
         op_strict : bool, optional
             Default to Powell's optimization method if BFGS fails.
-        op_kwds : bool, optional
+        op_kwds : dict, optional
             Keyword arguments to provide directly to the optimization function.
 
         Returns

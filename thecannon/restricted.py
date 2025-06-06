@@ -54,9 +54,10 @@ class RestrictedCannonModel(CannonModel):
         A :py:class:`censoring.Censors` object or dictionary, containing label names
         as keys, and boolean censoring masks as values.
     theta_bounds : dict, optional
-        A dictionary containing label names as keys and two-length tuples as
-        values, indicating acceptable minimum and maximum values. Specify
-        `None` to indicate no limit on a boundary.  For example::
+        A dictionary containing terms as keys and two-length tuples as
+        values, indicating acceptable minimum and maximum values for theta 
+        for that term. Specify `None` to indicate no limit on a boundary.  
+        For example::
 
                 theta_bounds={"FE_H": (None, 0), "TEFF^3": (None, None)}
     """
@@ -174,7 +175,7 @@ class RestrictedCannonModel(CannonModel):
             for term in self.vectorizer.human_readable_label_vector.split(" + ")
         ]
 
-        kwds = dict(op_method="l_bfgs_b", op_strict=False, op_kwds=(op_kwds or {}))
+        kwds = dict(op_method="l_bfgs_b", op_strict=True, op_kwds=(op_kwds or {}))
         kwds["op_kwds"].update(bounds=op_bounds)
 
         return super(RestrictedCannonModel, self).train(threads=threads, **kwds)
