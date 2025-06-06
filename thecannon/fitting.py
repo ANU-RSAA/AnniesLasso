@@ -171,16 +171,18 @@ def fit_spectrum(
         return weights * (func(parameters) - flux)
 
     kwds = {
-        "func": residuals,
-        "Dfun": Dfun,
-        "col_deriv": True,
+        "fun": residuals,
+        # "Dfun": Dfun,
+        # "col_deriv": True,
+        "method": "dogbox",
         # These get passed through to leastsq:
         "ftol": 7.0 / 3 - 4.0 / 3 - 1,  # Machine precision.
         "xtol": 7.0 / 3 - 4.0 / 3 - 1,  # Machine precision.
-        "gtol": 0.0,
-        "maxfev": 100000,  # MAGIC
-        "epsfcn": None,
-        "factor": 1.0,
+        "gtol": 5e-16,
+        "max_nfev": 100000,  # MAGIC
+        "diff_step": None,
+        # "factor": 1.0,
+        "bounds": None,
     }
 
     # Only update the keywords with things that op.curve_fit/op.leastsq expects.
@@ -188,12 +190,26 @@ def fit_spectrum(
         for key in set(op_kwds).intersection(kwds):
             kwds[key] = op_kwds[key]
 
+    if kwds["bounds"] is None:
+        kwds["method"] = "lm"  # Use traditional LM solver if no bounds
+        del(kwds["bounds"])
+
     results = []
     for x0 in initial_labels:
         try:
-            op_labels, cov, meta, mesg, ier = op.leastsq(
-                x0=(x0 - fiducials) / scales, full_output=True, **kwds
+            opt_res  = op.least_squares(
+                x0=(x0 - fiducials) / scales, **kwds
             )
+            op_labels, cov, meta, mesg, ier = (
+                opt_res.x, 
+                None, 
+                {
+                    "nfev": opt_res.nfev,
+                    "fvec": opt_res.cost,
+                }, 
+                opt_res.message, 
+                opt_res.status,
+                )
 
         except RuntimeError:
             logger.exception("Exception in fitting from {}".format(x0))
@@ -240,7 +256,7 @@ def fit_spectrum(
             "r_chi_sq": meta["chi_sq"] / (use.sum() - L - 1),
         }
     )
-    for key in ("ftol", "xtol", "gtol", "maxfev", "factor", "epsfcn"):
+    for key in ("ftol", "xtol", "gtol", "max_nfev"):
         meta[key] = kwds[key]
 
     return (op_labels, cov, meta)
