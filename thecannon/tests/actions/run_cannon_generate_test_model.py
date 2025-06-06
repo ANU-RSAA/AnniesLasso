@@ -63,6 +63,8 @@ prospect_test_labels, prospect_test_cov, prospect_metadata = prospect_model.test
 
 
 prospect_model.write("prospect_model_test.model", overwrite=True)
+np.save("prospect_model_labels.npy", prospect_test_labels)
+np.save("prospect_model_cov.npy", prospect_test_cov)
 
 
 # In[ ]:
@@ -96,3 +98,5 @@ prospect_theta_restricted, prospect_s2_restricted, prospect_metadata_restricted 
 
 
 prospect_model_restricted.write("prospect_model_restricted_test.model", overwrite=True)
+np.save("prospect_model_labels_restricted.npy", prospect_test_labels_restricted)
+np.save("prospect_model_cov_restricted.npy", prospect_test_cov_restricted)
