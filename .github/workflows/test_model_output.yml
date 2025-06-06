@@ -31,7 +31,7 @@ jobs:
         pip install pytest
         python -m pip install .
 
-    - name: Run run_cannon_andy_svens_python.py
+    - name: Run run_cannon_generate_test_model.py
       run: |
         python ./thecannon/tests/actions/run_cannon_generate_test_model.py
 
