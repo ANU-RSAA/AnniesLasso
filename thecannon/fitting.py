@@ -175,6 +175,8 @@ def fit_spectrum(
         # "Dfun": Dfun,
         # "col_deriv": True,
         "method": "dogbox",
+        "x_scale": "jac",
+        "loss": "soft_l1",
         # These get passed through to leastsq:
         "ftol": 7.0 / 3 - 4.0 / 3 - 1,  # Machine precision.
         "xtol": 7.0 / 3 - 4.0 / 3 - 1,  # Machine precision.
