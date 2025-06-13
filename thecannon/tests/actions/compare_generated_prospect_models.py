@@ -18,7 +18,7 @@ new_labels_arr = np.load(new_labels)
 try:
     assert np.allclose(orig_labels_arr, new_labels_arr, atol=0, rtol=1e-3)
 except AssertionError:
-    labels_delta = new_labels_arr - orig_labels_arr
+    labels_delta = orig_labels_arr - new_labels_arr
     raise AssertionError(
         f"Test labels mismatch: delta stats mean={np.mean(np.abs(labels_delta))}, "
         f"median={np.median(labels_delta)}, std={np.std(labels_delta)}, "
@@ -34,7 +34,7 @@ new_cov_arr = np.load(new_labels)
 try:
     assert np.allclose(orig_cov_arr, new_cov_arr, atol=0, rtol=1e-3)
 except AssertionError:
-    cov_delta = new_cov_arr - orig_cov_arr
+    cov_delta = orig_cov_arr - new_cov_arr
     raise AssertionError(
         f"Test cov mismatch: delta stats: (abs)mean={np.mean(np.abs(cov_delta))}, "
         f"median={np.median(cov_delta)}, std={np.std(cov_delta)}, "
