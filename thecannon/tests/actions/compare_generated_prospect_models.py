@@ -16,7 +16,7 @@ orig_labels_arr = np.load(orig_labels)
 new_labels_arr = np.load(new_labels)
 
 try:
-    assert np.allclose(orig_labels_arr, new_labels_arr, atol=0, rtol=1e-4)
+    assert np.allclose(orig_labels_arr, new_labels_arr, atol=0, rtol=1e-5)
 except AssertionError:
     labels_delta = orig_labels_arr - new_labels_arr
     raise AssertionError(
@@ -32,7 +32,7 @@ new_cov = "prospect_model_cov.npy"
 orig_cov_arr = np.load(orig_labels)
 new_cov_arr = np.load(new_labels)
 try:
-    assert np.allclose(orig_cov_arr, new_cov_arr, atol=0, rtol=1e-4)
+    assert np.allclose(orig_cov_arr, new_cov_arr, atol=0, rtol=1e-5)
 except AssertionError:
     cov_delta = orig_cov_arr - new_cov_arr
     raise AssertionError(
