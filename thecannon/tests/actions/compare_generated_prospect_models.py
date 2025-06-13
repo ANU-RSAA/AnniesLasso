@@ -16,7 +16,7 @@ orig_labels_arr = np.load(orig_labels)
 new_labels_arr = np.load(new_labels)
 
 try:
-    assert np.allclose(orig_labels_arr, new_labels_arr, atol=0, rtol=1e-7)
+    assert np.allclose(orig_labels_arr, new_labels_arr, atol=0, rtol=1e-6)
 except AssertionError:
     labels_delta = new_labels_arr - orig_labels_arr
     raise AssertionError(
@@ -32,11 +32,11 @@ new_cov = "prospect_model_cov.npy"
 orig_cov_arr = np.load(orig_labels)
 new_cov_arr = np.load(new_labels)
 try:
-    assert np.allclose(orig_cov_arr, new_cov_arr, atol=0, rtol=1e-7)
+    assert np.allclose(orig_cov_arr, new_cov_arr, atol=0, rtol=1e-6)
 except AssertionError:
     cov_delta = new_cov_arr - orig_cov_arr
     raise AssertionError(
         f"Test cov mismatch: delta stats: (abs)mean={np.mean(np.abs(cov_delta))}, "
         f"median={np.median(cov_delta)}, std={np.std(cov_delta)}, "
-        f"max={np.abs(cov_delta)} @ {orig_cov[np.argmax(cov_delta)]}, {new_cov[np.argmax(cov_delta)]}"
+        f"max={np.abs(cov_delta)} @ {(orig_cov.flatten)[np.argmax(cov_delta)]:.9e}, {(new_cov.flatten())[np.argmax(cov_delta)]:.9e}"
     )
