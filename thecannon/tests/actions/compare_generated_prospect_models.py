@@ -21,7 +21,8 @@ except AssertionError:
     labels_delta = new_labels_arr - orig_labels_arr
     raise AssertionError(
         f"Test labels mismatch: delta stats mean={np.mean(np.abs(labels_delta))}, "
-        f"median={np.median(labels_delta)}, std={np.std(labels_delta)}, max={np.max(labels_delta)}"
+        f"median={np.median(labels_delta)}, std={np.std(labels_delta)}, "
+        f"max={np.max(labels_delta)} @ {orig_labels_arr[np.argmax(cov_delta)]}, {new_labels_arr[np.argmax(cov_delta)]}"
     )
 
 
@@ -36,5 +37,6 @@ except AssertionError:
     cov_delta = new_cov_arr - orig_cov_arr
     raise AssertionError(
         f"Test cov mismatch: delta stats: (abs)mean={np.mean(np.abs(cov_delta))}, "
-        f"median={np.median(cov_delta)}, std={np.std(cov_delta)}, max={np.abs(cov_delta)}"
+        f"median={np.median(cov_delta)}, std={np.std(cov_delta)}, "
+        f"max={np.abs(cov_delta)} @ {orig_cov[np.argmax(cov_delta)]}, {new_cov[np.argmax(cov_delta)]}"
     )
