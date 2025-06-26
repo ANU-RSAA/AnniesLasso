@@ -143,7 +143,7 @@ def theta(
 
         if show_label_terms:
             rhs_ylabel = model.vectorizer.get_human_readable_label_term(
-                label_index, label_names=label_names, mul="\cdot", pow="^"
+                label_index, label_names=label_names, mul="\\cdot", pow="^"
             )
             ax_rhs = ax.twinx()
             if latex_label_names is not None:

@@ -175,14 +175,11 @@ def fit_spectrum(
         # "Dfun": Dfun,
         # "col_deriv": True,
         "method": "dogbox",
-        "x_scale": "jac",
-        "loss": "soft_l1",
         # These get passed through to leastsq:
         "ftol": 7.0 / 3 - 4.0 / 3 - 1,  # Machine precision.
         "xtol": 7.0 / 3 - 4.0 / 3 - 1,  # Machine precision.
         "gtol": 5e-16,
         "max_nfev": 100000,  # MAGIC
-        "diff_step": None,
         # "factor": 1.0,
         "bounds": None,
     }
@@ -195,6 +192,17 @@ def fit_spectrum(
     if kwds["bounds"] is None:
         kwds["method"] = "lm"  # Use traditional LM solver if no bounds
         del(kwds["bounds"])
+    else:
+
+        # TODO Get the x0 inside the bounds, if necessary
+
+        if isinstance(kwds["bounds"], op.Bounds):
+            kwds["bounds"].ub = (kwds["bounds"].ub - fiducials) / scales
+            kwds["bounds"].lb = (kwds["bounds"].lb - fiducials) / scales
+        else:
+            for ul in kwds["bounds"]:  # Upper and lower
+                ul = (ul - fiducials) / scales
+                
 
     results = []
     for x0 in initial_labels:
@@ -216,6 +224,13 @@ def fit_spectrum(
         except RuntimeError:
             logger.exception("Exception in fitting from {}".format(x0))
             continue
+
+        # Do a bounds check
+        if kwds.get("bounds", None) is not None and isinstance(kwds["bounds"], op.Bounds):
+            bounds_resids = kwds["bounds"].residual(op_labels)
+            if np.any([np.any(np.asarray(_) < 0.0) for _ in bounds_resids]):
+                print("BOUNDS VIOLATION!")
+                import pdb; pdb.set_trace()
 
         meta.update(dict(x0=x0, chi_sq=np.sum(meta["fvec"] ** 2), ier=ier, mesg=mesg))
         results.append((op_labels, cov, meta))
@@ -250,7 +265,7 @@ def fit_spectrum(
     # Save additional information.
     meta.update(
         {
-            "method": "leastsq",
+            "method": "least_squares",
             "label_names": vectorizer.label_names,
             "best_result_index": best_result_index,
             "derivatives_used": Dfun is not None,
