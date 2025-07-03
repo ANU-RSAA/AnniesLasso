@@ -1,9 +1,9 @@
 # The Cannon
 
-[![Build Status](https://img.shields.io/travis/andycasey/AnniesLasso/master.svg)](https://travis-ci.org/andycasey/AnniesLasso)
+<!-- [![Build Status](https://img.shields.io/travis/andycasey/AnniesLasso/master.svg)](https://travis-ci.org/andycasey/AnniesLasso)
 [![Coverage Status](https://img.shields.io/coveralls/andycasey/AnniesLasso/master.svg)](https://coveralls.io/github/andycasey/AnniesLasso?branch=master)
 [![Scrutinizer](https://img.shields.io/scrutinizer/g/andycasey/AnniesLasso.svg?b=master)](https://scrutinizer-ci.com/g/andycasey/AnniesLasso/?branch=master)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/andycasey/AnniesLasso/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/andycasey/AnniesLasso/blob/master/LICENSE) -->
 
 ## Authors
 - **Andy Casey** (Cambridge) (Monash)
@@ -12,13 +12,14 @@
 - **Hans-Walter Rix** (MPIA)
 - **Anna Y. Q. Ho** (Caltech)
 - **Gerry Gilmore** (Cambridge)
+- **Marc White** (ANU)
 
 
 ## Installation
 
-``
-pip install https://github.com/andycasey/AnniesLasso/archive/master.zip
-``
+```term
+pip install https://github.com/ANU-RSAA/AnniesLasso/archive/master.zip
+```
 
 
 ## Getting Started
@@ -68,6 +69,6 @@ You can follow this example further in the complete [Getting Started](#) tutoria
 
 
 ## License
-**Copyright 2017 the authors**.
+**Copyright 2017-2025 the authors**.
 The code in this repository is released under the open-source **MIT License**.
 See the file `LICENSE` for more details.
