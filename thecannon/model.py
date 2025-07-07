@@ -983,9 +983,21 @@ class CannonModel(object):
                 S, -1, len(self._fiducials)
             )
 
+        # Tweak the initial labels to ensure they are within the bounds specified
+        # by the op_kwds["bounds"], if they exist
+        if isinstance(op_kwds, dict) and "bounds" in op_kwds.keys():
+            bnds = op_kwds["bounds"]
+            for i in range(len(self.vectorizer.label_names)):
+                pass
+                # FIXME make it work if the bounds are not expressed as Bounds objects
+                # import pdb; pdb.set_trace()
+                # initial_labels[initial_labels[:,i] < bnds.lb[i]][:,i] = bnds.lb[i]
+                # initial_labels[initial_labels[:,i] > bnds.ub[i]][:,i] = bnds.ub[i]
+
         args = (self.vectorizer, self.theta, self.s2, self._fiducials, self._scales)
         kwargs = dict(use_derivatives=use_derivatives, op_kwds=op_kwds)
 
+        # import pdb; pdb.set_trace()
         func = utils.wrapper(
             fitting.fit_spectrum,
             args,

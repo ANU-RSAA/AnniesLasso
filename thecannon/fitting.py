@@ -184,6 +184,11 @@ def fit_spectrum(
         "bounds": None,
     }
 
+    # Scale the initial values likewise
+    # TODO check if initial_labels will ever be truly 2D, and not just (1, N)
+    for i, label_list in enumerate(initial_labels):  # Forced to be 2D by this point
+        initial_labels[i] = (label_list - fiducials) / scales
+
     # Only update the keywords with things that op.curve_fit/op.leastsq expects.
     if op_kwds is not None:
         for key in set(op_kwds).intersection(kwds):
@@ -194,17 +199,24 @@ def fit_spectrum(
         del(kwds["bounds"])
     else:
 
-        # TODO Get the x0 inside the bounds, if necessary
-
         if isinstance(kwds["bounds"], op.Bounds):
             kwds["bounds"].ub = (kwds["bounds"].ub - fiducials) / scales
             kwds["bounds"].lb = (kwds["bounds"].lb - fiducials) / scales
-        else:
-            for ul in kwds["bounds"]:  # Upper and lower
-                ul = (ul - fiducials) / scales
-                
+        else:  # must be list of 2-tuples - convert to Bounds here for consistency
+            kwds["bounds"] = op.Bounds(
+                lb=[(_[0] - fiducials) / scales for _ in kwds["bounds"]],
+                ub=[(_[1] - fiducials) / scales for _ in kwds["bounds"]],
+            )
+
+        # Force the initial_labels to be inside the bounds
+        for i, initials in enumerate(initial_labels): # TODO check if initial_labels will ever be truly 2D, and not just (1, N)
+            sl, sb = kwds["bounds"].residual(initials)
+            initials[sl < 0] = kwds["bounds"].lb[sl < 0]
+            initials[sb < 0] = kwds["bounds"].ub[sb < 0]
+            initial_labels[i] = initials
 
     results = []
+    print(f"About to go in with initial labels: {initial_labels}")
     for x0 in initial_labels:
         try:
             opt_res  = op.least_squares(
