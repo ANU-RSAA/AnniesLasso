@@ -64,10 +64,8 @@ model = tc.CannonModel(training_set, normalized_flux, normalized_ivar,
 model.train()
 ````
 
-You can follow this example further in the complete [Getting Started](#) tutorial.
-
 
 ## License
-**Copyright 2017 the authors**.
+**Copyright 2017-2025 the authors**.
 The code in this repository is released under the open-source **MIT License**.
 See the file `LICENSE` for more details.
