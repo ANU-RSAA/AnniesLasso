@@ -123,7 +123,7 @@ def fit_spectrum(
         logger.warning("No information in spectrum!")
         return (
             np.nan * np.ones(L),
-            None,
+            np.nan * np.ones((L, L)),
             {"fail_message": "Pixels contained no information"},
         )
 
