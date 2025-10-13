@@ -153,7 +153,7 @@ def theta(
             ax_rhs.yaxis.labelpad = 30
             ax_rhs.set_yticks([])
 
-        if ax.is_last_row():
+        if ax.get_subplotspec().is_last_row():
             if model.dispersion is None:
                 xlabel = r"${\rm Pixel}$"
             else:
