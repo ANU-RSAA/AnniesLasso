@@ -211,6 +211,9 @@ def fit_spectrum(
 
     # De-scale the optimized labels.
     meta["model_flux"] = func(op_labels)
+    meta["model_flux_masked"] = np.empty(use.shape)
+    meta["model_flux_masked"][use] = meta["model_flux"]
+    meta["model_flux_masked"][~use] = np.nan
     op_labels = op_labels * scales + fiducials
 
     if np.allclose(op_labels, meta["x0"]):
