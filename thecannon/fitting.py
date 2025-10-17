@@ -191,7 +191,7 @@ def fit_spectrum(
     results = []
     for x0 in initial_labels:
         try:
-            op_labels, cov, meta, mesg, ier = op.leastsq(
+            op_labels, cov, meta, mesg, ier = op.least_squares(
                 x0=(x0 - fiducials) / scales, full_output=True, **kwds
             )
 
@@ -204,7 +204,7 @@ def fit_spectrum(
 
     if len(results) == 0:
         logger.warning("No results found!")
-        return (np.nan * np.ones(L), None, dict(fail_message="No results found"))
+        return (np.nan * np.ones(L), np.nan * np.ones((L, L)), dict(fail_message="No results found"))
 
     best_result_index = np.nanargmin([m["chi_sq"] for (o, c, m) in results])
     op_labels, cov, meta = results[best_result_index]
