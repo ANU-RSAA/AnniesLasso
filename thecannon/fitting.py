@@ -191,7 +191,7 @@ def fit_spectrum(
     results = []
     for x0 in initial_labels:
         try:
-            op_labels, cov, meta, mesg, ier = op.least_squares(
+            op_labels, cov, meta, mesg, ier = op.leastsq(
                 x0=(x0 - fiducials) / scales, full_output=True, **kwds
             )
 
