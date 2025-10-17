@@ -180,15 +180,20 @@ def fit_spectrum(
         "gtol": 0.0,
         "max_nfev": 100000,  # MAGIC
         "diff_step": None,
+        "bounds": (-np.inf, np.inf),
         # "factor": 1.0,
     }
 
-    # Only update the keywords with things that op.curve_fit/op.leastsq expects.
+    # Only update the keywords with things that op.least_squares expects.
     if op_kwds is not None:
         for key in set(op_kwds).intersection(kwds):
             kwds[key] = op_kwds[key]
 
     results = []
+    print("Kwds for fit_spectrum:")
+    print(kwds)
+    print(f"Fiducials: {fiducials}")
+    print(f"Scales: {scales}")
     for x0 in initial_labels:
         try:
             opres = op.least_squares(
