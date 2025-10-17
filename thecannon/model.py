@@ -988,12 +988,12 @@ class CannonModel(object):
                 # Update the bounds to account for scaling, if they exist
                 if op_kwds["bounds"] is not None:
                     print("")
-                    print(f"Original bounds: {op_kwds["bounds"]}")
+                    print(f"Original bounds: {op_kwds['bounds']}")
                     if isinstance(op_kwds["bounds"], op.Bounds):
                         op_kwds["bounds"].lb = (np.asarray(op_kwds["bounds"].lb) - self._fiducials) / self._scales
                         op_kwds["bounds"].ub = (np.asarray(op_kwds["bounds"].ub) - self._fiducials) / self._scales
                     else:
-                        op_kwds["bounds"] = (np.asarray((op_kwds["bounds"][0]) - self._fiducials) / self._scales, (np.asarray(kwds["bounds"][1]) - self._fiducials) / self._scales)
+                        op_kwds["bounds"] = (np.asarray((op_kwds["bounds"][0]) - self._fiducials) / self._scales, (np.asarray(op_kwds["bounds"][1]) - self._fiducials) / self._scales)
 
         args = (self.vectorizer, self.theta, self.s2, self._fiducials, self._scales)
         kwargs = dict(use_derivatives=use_derivatives, op_kwds=op_kwds)
