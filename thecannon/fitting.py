@@ -184,6 +184,9 @@ def fit_spectrum(
         # "factor": 1.0,
     }
 
+    if kwds["bounds"] == (-np.inf. np.inf):
+        kwds["method"] = "lm"  # Standard MINPACK for unbounded problems - otherwise, default "trf" used
+
     # Only update the keywords with things that op.least_squares expects.
     if op_kwds is not None:
         for key in set(op_kwds).intersection(kwds):
