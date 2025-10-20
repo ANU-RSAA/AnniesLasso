@@ -928,6 +928,7 @@ class CannonModel(object):
         threads=None,
         use_derivatives=True,
         op_kwds=None,
+        fit_func=fitting.fit_spectrum
     ):
         """
         Run the test step on spectra.
@@ -1008,7 +1009,7 @@ class CannonModel(object):
         kwargs = dict(use_derivatives=use_derivatives, op_kwds=op_kwds)
 
         func = utils.wrapper(
-            fitting.fit_spectrum,
+            fit_func,
             args,
             kwargs,
             S,
