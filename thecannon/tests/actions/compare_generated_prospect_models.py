@@ -22,7 +22,9 @@ except AssertionError:
     raise AssertionError(
         f"Test labels mismatch: delta stats mean={np.mean(np.abs(labels_delta))}, "
         f"median={np.median(labels_delta)}, std={np.std(labels_delta)}, "
-        f"max={np.max(labels_delta)} @ {(orig_labels_arr.flatten())[np.argmax(labels_delta)]:.9e}, {(new_labels_arr.flatten())[np.argmax(labels_delta)]:.9e}"
+        f"max={np.max(labels_delta)} @ {(orig_labels_arr.flatten())[np.argmax(labels_delta)]:.9e}, {(new_labels_arr.flatten())[np.argmax(labels_delta)]:.9e}\n"
+        f"Original labels: {orig_labels_arr}\n",
+        f"New labels: {new_labels_arr}"
     )
 
 
