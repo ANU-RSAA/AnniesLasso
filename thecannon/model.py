@@ -568,8 +568,8 @@ class CannonModel(object):
             )
 
         if self.training_set_flux.shape != self.training_set_ivar.shape:
-            print(self.training_set_flux)
-            print(self.training_set_ivar)
+            logger.debug(self.training_set_flux)
+            logger.debug(self.training_set_ivar)
             raise ValueError(
                 "the training set flux and inverse variance arrays"
                 " for the labelled set must have the same shape"
@@ -987,8 +987,8 @@ class CannonModel(object):
         if "bounds" in op_kwds.keys():
                 # Update the bounds to account for scaling, if they exist
                 if op_kwds["bounds"] is not None:
-                    print("")
-                    print(f"Original bounds: {op_kwds['bounds']}")
+                    logger.debug("")
+                    logger.debug(f"Original bounds: {op_kwds['bounds']}")
                     if isinstance(op_kwds["bounds"], op.Bounds):
                         op_kwds["bounds"].lb = (np.asarray(op_kwds["bounds"].lb) - self._fiducials) / self._scales
                         op_kwds["bounds"].ub = (np.asarray(op_kwds["bounds"].ub) - self._fiducials) / self._scales

@@ -190,10 +190,10 @@ def fit_spectrum(
             kwds[key] = op_kwds[key]
 
     results = []
-    print("Kwds for fit_spectrum:")
-    print(kwds)
-    print(f"Fiducials: {fiducials}")
-    print(f"Scales: {scales}")
+    logger.debug("Kwds for fit_spectrum:")
+    logger.debug(kwds)
+    logger.debug(f"Fiducials: {fiducials}")
+    logger.debug(f"Scales: {scales}")
     for x0 in initial_labels:
         try:
             opres = op.least_squares(
