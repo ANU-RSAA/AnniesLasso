@@ -196,9 +196,7 @@ def fit_spectrum(
     logger.debug(f"Scales: {scales}")
     for x0 in initial_labels:
         try:
-            opres = op.least_squares(
-                x0=(x0 - fiducials) / scales, **kwds
-            )
+            opres = op.least_squares(x0=(x0 - fiducials) / scales, **kwds)
             op_labels = opres.x
             cov = 1.0 / opres.jac
             meta = {
@@ -453,10 +451,13 @@ def _scatter_objective_function(scatter, residuals_squared, ivar):
     chi_sq = residuals_squared * adjusted_ivar
     return (np.median(chi_sq) - 1.0) ** 2
 
+
 def _pixel_objective_function_fixed_scatter_jac(
     theta, design_matrix, flux, ivar, regularization
 ):
-    return _pixel_objective_function_fixed_scatter(theta, design_matrix, flux, ivar, regularization, gradient=True)[1]
+    return _pixel_objective_function_fixed_scatter(
+        theta, design_matrix, flux, ivar, regularization, gradient=True
+    )[1]
 
 
 def _remove_forbidden_op_kwds(op_method, op_kwds):
@@ -476,7 +477,9 @@ def _remove_forbidden_op_kwds(op_method, op_kwds):
         `None`. The dictionary of `op_kwds` will be updated.
     """
     try:
-        forbidden_keys = set(op_kwds).difference(FITTING_ALLOWED_OPTS[op_method] + FITTING_COMMON_KEYS)
+        forbidden_keys = set(op_kwds).difference(
+            FITTING_ALLOWED_OPTS[op_method] + FITTING_COMMON_KEYS
+        )
     except KeyError:
         raise ValueError(f"Unknown op_method {op_method}")
     if forbidden_keys:
@@ -634,7 +637,12 @@ def fit_pixel_fixed_scatter(
             op_kwds = dict()
             op_kwds.update(base_op_kwds)
             # FIXME shift to constants
-            op_kwds.update(maxcor=design_matrix.shape[1], maxls=20, ftol=10.0 * np.finfo(float).eps, gtol=1e-6)
+            op_kwds.update(
+                maxcor=design_matrix.shape[1],
+                maxls=20,
+                ftol=10.0 * np.finfo(float).eps,
+                gtol=1e-6,
+            )
             op_kwds.update((kwargs.get("op_kwds", {}) or {}))
 
             # If op_bounds are given and we are censoring some theta terms, then we
@@ -649,15 +657,19 @@ def fit_pixel_fixed_scatter(
             # Just-in-time to remove forbidden keywords.
             _remove_forbidden_op_kwds(op_method, op_kwds)
 
-            # op_params, fopt, metadata 
+            # op_params, fopt, metadata
             op_return = op.minimize(
                 _pixel_objective_function_fixed_scatter,
                 jac=_pixel_objective_function_fixed_scatter_jac,
                 method="L-BFGS-B",
                 # fprime=None,
                 # approx_grad=None,
-                options={k:v for k,v in op_kwds.items() if k in FITTING_ALLOWED_OPTS[op_method]},
-                **{k:v for k,v in op_kwds.items() if k in FITTING_COMMON_KEYS},
+                options={
+                    k: v
+                    for k, v in op_kwds.items()
+                    if k in FITTING_ALLOWED_OPTS[op_method]
+                },
+                **{k: v for k, v in op_kwds.items() if k in FITTING_COMMON_KEYS},
             )
             op_params = op_return.x
             fopt = op_return.fun
@@ -692,7 +704,7 @@ def fit_pixel_fixed_scatter(
             op_kwds = dict()
             op_kwds.update(base_op_kwds)
             op_kwds.update(xtol=1e-6, ftol=1e-6)
-            del(op_kwds["maxfun"])
+            del op_kwds["maxfun"]
             op_kwds.update((kwargs.get("op_kwds", {}) or {}))
 
             # Set 'False' in args so that we don't return the gradient,
@@ -710,8 +722,12 @@ def fit_pixel_fixed_scatter(
                 _pixel_objective_function_fixed_scatter,
                 jac=_pixel_objective_function_fixed_scatter_jac,
                 method="Powell",
-                options={k:v for k,v in op_kwds.items() if k in FITTING_ALLOWED_OPTS[op_method]},
-                **{k:v for k,v in op_kwds.items() if k in FITTING_COMMON_KEYS},
+                options={
+                    k: v
+                    for k, v in op_kwds.items()
+                    if k in FITTING_ALLOWED_OPTS[op_method]
+                },
+                **{k: v for k, v in op_kwds.items() if k in FITTING_COMMON_KEYS},
             )
             op_params = op_return.x
             fopt = op_return.fun
