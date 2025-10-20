@@ -18,7 +18,7 @@ from .model import CannonModel
 from . import censoring, fitting, plot, utils, vectorizer, restricted
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)  # TODO: Remove this when stable.
+logger.setLevel(logging.INFO)  # TODO: Remove this when stable.
 
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))

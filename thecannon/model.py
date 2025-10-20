@@ -986,23 +986,23 @@ class CannonModel(object):
 
         if "bounds" in op_kwds.keys():
             # Update the bounds to account for scaling, if they exist
+            # FIXME - should be more robust/elegant than this
             if op_kwds["bounds"] is not None:
                 logger.debug("")
                 logger.debug(f"Original bounds: {op_kwds['bounds']}")
-                if isinstance(op_kwds["bounds"], op.Bounds):
-                    op_kwds["bounds"].lb = (
-                        np.asarray(op_kwds["bounds"].lb) - self._fiducials
-                    ) / self._scales
-                    op_kwds["bounds"].ub = (
-                        np.asarray(op_kwds["bounds"].ub) - self._fiducials
-                    ) / self._scales
-                else:
-                    op_kwds["bounds"] = (
-                        np.asarray((op_kwds["bounds"][0]) - self._fiducials)
-                        / self._scales,
-                        (np.asarray(op_kwds["bounds"][1]) - self._fiducials)
-                        / self._scales,
+                if not (isinstance(op_kwds["bounds"], op.Bounds)):
+                    op_kwds["bounds"] = op.Bounds(
+                        lb=op_kwds["bounds"][0], ub=op_kwds["bounds"][1]
                     )
+                shifted_bounds = [
+                    (b - self._fiducials) / self._scales
+                    for b in [op_kwds["bounds"].lb, op_kwds["bounds"].ub]
+                ]
+                for i, bound_pair in enumerate(zip(*shifted_bounds)):
+                    op_kwds["bounds"].lb[i], op_kwds["bounds"].ub[i] = np.min(
+                        bound_pair
+                    ), np.max(bound_pair)
+                logger.debug(f"Finalized bounds: {op_kwds['bounds']}")
 
         args = (self.vectorizer, self.theta, self.s2, self._fiducials, self._scales)
         kwargs = dict(use_derivatives=use_derivatives, op_kwds=op_kwds)
