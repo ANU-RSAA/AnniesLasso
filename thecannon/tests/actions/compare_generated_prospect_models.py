@@ -19,12 +19,14 @@ try:
     assert np.allclose(orig_labels_arr, new_labels_arr, atol=0, rtol=1e-4)
 except AssertionError:
     labels_delta = orig_labels_arr - new_labels_arr
+    print("Original labels:")
+    print(orig_labels_arr)
+    print("New labels:")
+    print(new_labels_arr)
     raise AssertionError(
         f"Test labels mismatch: delta stats mean={np.mean(np.abs(labels_delta))}, "
         f"median={np.median(labels_delta)}, std={np.std(labels_delta)}, "
-        f"max={np.max(labels_delta)} @ {(orig_labels_arr.flatten())[np.argmax(labels_delta)]:.9e}, {(new_labels_arr.flatten())[np.argmax(labels_delta)]:.9e}\n"
-        f"Original labels: {orig_labels_arr}\n",
-        f"New labels: {new_labels_arr}"
+        f"max={np.max(labels_delta)} @ {(orig_labels_arr.flatten())[np.argmax(labels_delta)]:.9e}, {(new_labels_arr.flatten())[np.argmax(labels_delta)]:.9e}"
     )
 
 
