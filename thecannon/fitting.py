@@ -177,7 +177,7 @@ def fit_spectrum(
         # These get passed through to leastsq:
         "ftol": 7.0 / 3 - 4.0 / 3 - 1,  # Machine precision.
         "xtol": 7.0 / 3 - 4.0 / 3 - 1,  # Machine precision.
-        "gtol": 0.0,
+        "gtol": 7.0 / 3 - 4.0 / 3 - 1,  # Machine precision.
         "max_nfev": 100000,  # MAGIC
         "diff_step": None,
         "bounds": (-np.inf, np.inf),
