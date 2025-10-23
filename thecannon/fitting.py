@@ -192,9 +192,9 @@ def fit_spectrum(
 
     if kwds["bounds"] == (-np.inf, np.inf):
         kwds["method"] = "lm"  # Standard MINPACK for unbounded problems - otherwise, default "trf" used
-        logger.info("Using least squares solver method 'lm'.")
+        logger.debug("Using least squares solver method 'lm'.")
     else:
-        logger.info("Using least squares solver method 'trf'.")
+        logger.debug("Using least squares solver method 'trf'.")
 
     results = []
     logger.debug("Kwds for fit_spectrum:")
