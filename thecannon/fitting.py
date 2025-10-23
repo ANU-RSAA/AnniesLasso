@@ -191,8 +191,8 @@ def fit_spectrum(
             kwds[key] = op_kwds[key]
 
     if kwds["bounds"] == (-np.inf, np.inf):
-        kwds["method"] = "lm"  # Standard MINPACK for unbounded problems - otherwise, default "trf" used
-        logger.debug("Using least squares solver method 'lm'.")
+        kwds["method"] = "dogbox"  # Standard MINPACK for unbounded problems - otherwise, default "trf" used
+        logger.debug("Using least squares solver method 'dogbox'.")
     else:
         logger.debug("Using least squares solver method 'trf'.")
 
@@ -205,7 +205,8 @@ def fit_spectrum(
         try:
             opres = op.least_squares(x0=(x0 - fiducials) / scales, **kwds)
             op_labels = opres.x
-            cov = 1.0 / opres.jac
+            # https://stackoverflow.com/questions/40187517/getting-covariance-matrix-of-fitted-parameters-from-scipy-optimize-least-squares
+            cov = np.linalg.inv(np.dot(opres.jac.T, opres.jac))
             meta = {
                 "nfev": opres.nfev,
                 "fvec": opres.fun,
