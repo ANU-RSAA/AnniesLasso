@@ -154,12 +154,12 @@ def fit_spectrum(
 
         else:
             # Use the label vector derivative.
-            Dfun = (
-                lambda parameters: weights
+            Dfun = lambda parameters: (
+                weights
                 * np.dot(
                     use_theta, vectorizer.get_label_vector_derivative(parameters)
                 ).T
-            )
+            ).T
 
     else:
         Dfun = None
@@ -172,16 +172,15 @@ def fit_spectrum(
 
     kwds = {
         "fun": residuals,
-        # "Dfun": Dfun,
-        # "col_deriv": True,
+        "jac": Dfun,
         # These get passed through to leastsq:
         "ftol": 7.0 / 3 - 4.0 / 3 - 1,  # Machine precision.
         "xtol": 7.0 / 3 - 4.0 / 3 - 1,  # Machine precision.
         "gtol": 7.0 / 3 - 4.0 / 3 - 1,  # Machine precision.
         "max_nfev": 100000,  # MAGIC
+        "method": "lm",
         "diff_step": None,
         "bounds": (-np.inf, np.inf),
-        # "factor": 1.0,
         "verbose": 0,
     }
 
@@ -190,11 +189,11 @@ def fit_spectrum(
         for key in set(op_kwds).intersection(kwds):
             kwds[key] = op_kwds[key]
 
-    if kwds["bounds"] == (-np.inf, np.inf):
-        kwds["method"] = "dogbox"  # Standard MINPACK for unbounded problems - otherwise, default "trf" used
-        logger.debug("Using least squares solver method 'dogbox'.")
-    else:
+    if kwds["bounds"] != (-np.inf, np.inf):
+        kwds["method"] = "trf"  # Force 'trf' for bounded problems
         logger.debug("Using least squares solver method 'trf'.")
+    else:
+        logger.debug(f"Using least squares solver method '{kwds['method']}'.")
 
     results = []
     logger.debug("Kwds for fit_spectrum:")
@@ -254,7 +253,7 @@ def fit_spectrum(
     # Save additional information.
     meta.update(
         {
-            "method": "leastsq",
+            "method": "least_squares",
             "label_names": vectorizer.label_names,
             "best_result_index": best_result_index,
             "derivatives_used": Dfun is not None,
@@ -384,7 +383,7 @@ def fit_spectrum_orig(
         # These get passed through to leastsq:
         "ftol": 7.0 / 3 - 4.0 / 3 - 1,  # Machine precision.
         "xtol": 7.0 / 3 - 4.0 / 3 - 1,  # Machine precision.
-        "gtol": 0.0,
+        "gtol": 7.0 / 3 - 4.0 / 3 - 1,
         "maxfev": 100000,  # MAGIC
         "epsfcn": None,
         "factor": 1.0,
