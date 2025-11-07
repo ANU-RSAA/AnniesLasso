@@ -15,6 +15,7 @@ import signal
 import sys
 from tempfile import mkstemp
 from time import time
+import numpy as np
 
 # Adjustment to be compatible with python 3.12
 try:
@@ -233,3 +234,53 @@ def _pack_value(value, protocol=-1):
     with open(temporary_filename, "wb") as fp:
         pickle.dump(value, fp, protocol)
     return temporary_filename
+
+
+class TransformFunc(object):
+    """A class for describing a label transform within TheCannon.
+
+    Parameters
+    ----------
+    object : _type_
+        _description_
+    """
+
+    def __init__(self, *args,
+                 forward=None,
+                 inverse=None,
+                 min=-np.inf, 
+                 max=np.inf, 
+                 **kwargs):
+        self._forward = None
+        self._inverse = None
+        self._min = -np.inf
+        self._max = np.inf
+
+        self.forward = forward
+        self.inverse = inverse
+        self.min = min
+        self.max = max
+
+    @property
+    def max(self):
+        return self._max
+    
+    @max.setter
+    def max(self, m):
+        if m is None: self._max = np.inf
+        try:
+            self._max = float(m)
+        except TypeError as e:
+            raise e
+        
+    @property
+    def min(self):
+        return self._min
+    
+    @min.setter
+    def min(self, m):
+        if m is None: self._min = -np.inf
+        try:
+            self._min = float(m)
+        except TypeError as e:
+            raise e

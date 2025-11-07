@@ -6,6 +6,7 @@ Unit tests for general utility functions.
 """
 
 import pytest
+import numpy as np
 
 from thecannon import utils
 
@@ -31,3 +32,12 @@ def test_short_hash_different_boolean():
 def test_hash_consistency(input, hash):
     """Ensure hashing does not change with time and break old hashes."""
     assert utils.short_hash(input) == hash, "Hash value has changed!"
+
+
+def test_transform_func_init():
+    tf = utils.TransformFunc()
+
+    assert tf.forward is None, ".forward did not init to default"
+    assert tf.inverse is None, ".inverse did not init to default"
+    assert tf.min == -np.inf, ".min did not init to default"
+    assert tf.max == np.inf, ".max did not init to default"
