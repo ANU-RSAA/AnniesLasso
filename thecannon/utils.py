@@ -281,6 +281,52 @@ def slog_inv(c, e):
     
     return lambda x: c * (np.exp(x) - e)
 
+def rst(m, c):
+    """The rational saturating transform.
+
+    Parameters
+    ----------
+    m : numeric
+        The saturation ceiling, >0.
+    c : numeric
+        The knee, >0.
+
+    Returns
+    -------
+    callable
+        A function that accepts a single value, and computes the rational saturating transform.
+    """
+    try:
+        assert m > 0, "m must be > 0."
+        assert c > 0, "c must be > 0."
+    except AssertionError as e:
+        raise ValueError(e)
+    
+    return lambda x: m * (x / (x + c))
+
+def rst_inv(m, c):
+    """The inverse rational saturating transform.
+
+    Parameters
+    ----------
+    m : numeric
+        The saturation ceiling, >0.
+    c : numeric
+        The knee, >0.
+
+    Returns
+    -------
+    callable
+        A function that accepts a single value, and computes the inverse rational saturating transform.
+    """
+    try:
+        assert m > 0, "m must be > 0."
+        assert c > 0, "c must be > 0."
+    except AssertionError as e:
+        raise ValueError(e)
+    
+    return lambda x: x * c / (m - x)
+
 
 class TransformFunc(object):
     """A class for describing a label transform within TheCannon.
@@ -393,5 +439,19 @@ class TransformFunc(object):
 class TransformSlog(TransformFunc):
 
     def __init__(self, c, e, *args, min=1e-12, max=np.inf, **kwargs):
+        try:
+            min > 0, "min must be >0 for scaled log transform"
+        except AssertionError as err:
+            raise ValueError(err)
+
         super().__init__(min=min, max=max, forward=slog(c, e), inverse=slog_inv(c, e))
 
+class TransformRst(TransformFunc):
+
+    def __init__(self, m, c, *args, min=-1e12, max=1e12, **kwargs):
+        try:
+            assert np.isfinite(min) and np.isfinite(max), "Rational scaled transform does not support non-finite values"
+        except AssertionError as e:
+            raise ValueError(e)
+
+        super().__init__(min=min, max=max, forward=rst(m, c), inverse=rst_inv(m, c))
