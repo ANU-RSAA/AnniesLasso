@@ -11,6 +11,7 @@ __all__ = ["short_hash", "wrapper"]
 import logging
 import os
 import pickle
+
 # import signal
 import sys
 from tempfile import mkstemp
@@ -256,8 +257,9 @@ def slog(c, e):
         assert c > 0, "c must be >0"
     except AssertionError as err:
         raise ValueError(err)
-    
+
     return lambda x: np.log((x / c) + e)
+
 
 def slog_inv(c, e):
     """The inverse scaled log transform.
@@ -278,8 +280,9 @@ def slog_inv(c, e):
         assert c > 0, "c must be >0"
     except AssertionError as err:
         raise ValueError(err)
-    
+
     return lambda x: c * (np.exp(x) - e)
+
 
 def rst(m, c):
     """The rational saturating transform.
@@ -301,8 +304,9 @@ def rst(m, c):
         assert c > 0, "c must be > 0."
     except AssertionError as e:
         raise ValueError(e)
-    
+
     return lambda x: m * (x / (x + c))
+
 
 def rst_inv(m, c):
     """The inverse rational saturating transform.
@@ -324,7 +328,7 @@ def rst_inv(m, c):
         assert c > 0, "c must be > 0."
     except AssertionError as e:
         raise ValueError(e)
-    
+
     return lambda x: x * c / (m - x)
 
 
@@ -342,12 +346,9 @@ class TransformFunc(object):
     _min = -np.inf
     _max = np.inf
 
-    def __init__(self, *args,
-                 forward=None,
-                 inverse=None,
-                 min=-np.inf, 
-                 max=np.inf, 
-                 **kwargs):
+    def __init__(
+        self, *args, forward=None, inverse=None, min=-np.inf, max=np.inf, **kwargs
+    ):
 
         self.min = min
         self.max = max
@@ -356,22 +357,24 @@ class TransformFunc(object):
     @property
     def max(self):
         return self._max
-    
+
     @max.setter
     def max(self, m):
-        if m is None: self._max = np.inf
+        if m is None:
+            self._max = np.inf
         try:
             self._max = float(m)
         except TypeError as e:
             raise e
-        
+
     @property
     def min(self):
         return self._min
-    
+
     @min.setter
     def min(self, m):
-        if m is None: self._min = -np.inf
+        if m is None:
+            self._min = -np.inf
         try:
             self._min = float(m)
         except TypeError as e:
@@ -380,29 +383,29 @@ class TransformFunc(object):
     @property
     def forward(self):
         return self._forward
-    
+
     @forward.setter
     def forward(self, fnc):
         raise RuntimeError("You cannot set forward directly - please use set_funcs")
-    
+
     @property
     def inverse(self):
         return self._inverse
-    
+
     @inverse.setter
     def inverse(self, fnc):
         raise RuntimeError("You cannot set inverse directly - please use set_funcs")
-    
+
     def set_funcs(self, forward, inverse):
         """Set the forward and inverse functions.
 
         Parameters
         ----------
         forward : callable
-            The forward transformation function. Should be a callable accepting a 
+            The forward transformation function. Should be a callable accepting a
             single numeric argument.
         inverse : callable
-            The inverse transformation function. Should be a callable accepting a 
+            The inverse transformation function. Should be a callable accepting a
             single numeric argument.
         """
 
@@ -410,31 +413,38 @@ class TransformFunc(object):
             self._forward = lambda x: x
             self._inverse = lambda x: x
             return
-        
+
         # Input checking
         try:
             assert callable(forward), "Forward is not callable"
             assert callable(inverse), "Inverse is not callable"
         except AssertionError as e:
             raise ValueError(e)
-        
-        # We can't possibly check that the functions run over all 
-        # possible values - as a best effort, we make sure they 
-        # run successfully over the object min and max, and that 
+
+        # We can't possibly check that the functions run over all
+        # possible values - as a best effort, we make sure they
+        # run successfully over the object min and max, and that
         # the inverse comes back to the original value.
         try:
             interim_vals = [forward(_) for _ in (self.min, self.max)]
-            assert not np.any([np.isnan(_) for _ in interim_vals]), "Forward function returned a NaN"
+            assert not np.any(
+                [np.isnan(_) for _ in interim_vals]
+            ), "Forward function returned a NaN"
             vals = [inverse(_) for _ in interim_vals]
-            assert not np.any([np.isnan(_) for _ in vals]), "Inverse function returned a NaN"
-            assert np.allclose(vals, [self.min, self.max]), "Forward, then inverse, did not return original values!"
+            assert not np.any(
+                [np.isnan(_) for _ in vals]
+            ), "Inverse function returned a NaN"
+            assert np.allclose(
+                vals, [self.min, self.max]
+            ), "Forward, then inverse, did not return original values!"
         except (ValueError, TypeError, RuntimeError) as e:
             raise ValueError(e)
         except AssertionError as e:
             raise ValueError(e)
-        
+
         self._forward = forward
         self._inverse = inverse
+
 
 class TransformSlog(TransformFunc):
 
@@ -446,11 +456,14 @@ class TransformSlog(TransformFunc):
 
         super().__init__(min=min, max=max, forward=slog(c, e), inverse=slog_inv(c, e))
 
+
 class TransformRst(TransformFunc):
 
     def __init__(self, m, c, *args, min=-1e12, max=1e12, **kwargs):
         try:
-            assert np.isfinite(min) and np.isfinite(max), "Rational scaled transform does not support non-finite values"
+            assert np.isfinite(min) and np.isfinite(
+                max
+            ), "Rational scaled transform does not support non-finite values"
         except AssertionError as e:
             raise ValueError(e)
 
