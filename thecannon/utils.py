@@ -260,6 +260,7 @@ class TransformFunc(object):
 
         self.min = min
         self.max = max
+        self.set_funcs(forward, inverse)
 
     @property
     def max(self):
@@ -300,3 +301,46 @@ class TransformFunc(object):
     @inverse.setter
     def inverse(self, fnc):
         raise RuntimeError("You cannot set inverse directly - please use set_funcs")
+    
+    def set_funcs(self, forward, inverse):
+        """Set the forward and inverse functions.
+
+        Parameters
+        ----------
+        forward : callable
+            The forward transformation function. Should be a callable accepting a 
+            single numeric argument.
+        inverse : callable
+            The inverse transformation function. Should be a callable accepting a 
+            single numeric argument.
+        """
+
+        if forward is None and inverse is None:
+            self._forward = lambda x: x
+            self._inverse = lambda x: x
+            return
+        
+        # Input checking
+        try:
+            assert callable(forward), "Forward is not callable"
+            assert callable(inverse), "Inverse is not callable"
+        except AssertionError as e:
+            raise ValueError(e)
+        
+        # We can't possibly check that the functions run over all 
+        # possible values - as a best effort, we make sure they 
+        # run successfully over the object min and max, and that 
+        # the inverse comes back to the original value.
+        try:
+            interim_vals = [forward(_) for _ in (self.min, self.max)]
+            assert not np.any([np.isnan(_) for _ in interim_vals]), "Forward function returned a NaN"
+            vals = [inverse(_) for _ in interim_vals]
+            assert not np.any([np.isnan(_) for _ in vals]), "Inverse function returned a NaN"
+            assert np.allclose(vals, [self.min, self.max]), "Forward, then inverse, did not return original values!"
+        except (ValueError, TypeError, RuntimeError) as e:
+            raise ValueError(e)
+        except AssertionError as e:
+            raise ValueError(e)
+        
+        self._forward = forward
+        self._inverse = inverse
