@@ -7,15 +7,16 @@ General utility functions.
 
 __all__ = ["short_hash", "wrapper"]
 
-import functools
+# import functools
 import logging
 import os
 import pickle
-import signal
+# import signal
 import sys
 from tempfile import mkstemp
 from time import time
 import numpy as np
+import inspect
 
 # Adjustment to be compatible with python 3.12
 try:
@@ -245,19 +246,18 @@ class TransformFunc(object):
         _description_
     """
 
+    _forward = None
+    _inverse = None
+    _min = -np.inf
+    _max = np.inf
+
     def __init__(self, *args,
                  forward=None,
                  inverse=None,
                  min=-np.inf, 
                  max=np.inf, 
                  **kwargs):
-        self._forward = None
-        self._inverse = None
-        self._min = -np.inf
-        self._max = np.inf
 
-        self.forward = forward
-        self.inverse = inverse
         self.min = min
         self.max = max
 
@@ -284,3 +284,19 @@ class TransformFunc(object):
             self._min = float(m)
         except TypeError as e:
             raise e
+
+    @property
+    def forward(self):
+        return self._forward
+    
+    @forward.setter
+    def forward(self, fnc):
+        raise RuntimeError("You cannot set forward directly - please use set_funcs")
+    
+    @property
+    def inverse(self):
+        return self._inverse
+    
+    @inverse.setter
+    def inverse(self, fnc):
+        raise RuntimeError("You cannot set inverse directly - please use set_funcs")
