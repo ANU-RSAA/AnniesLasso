@@ -237,6 +237,51 @@ def _pack_value(value, protocol=-1):
     return temporary_filename
 
 
+def slog(c, e):
+    """The scaled log transform.
+
+    Parameters
+    ----------
+    c : numeric
+        Dynamic range pivot, > 0.
+    e : numeric
+        Small number safety factor.
+
+    Returns
+    -------
+    callable
+        A function that accepts a single value, and computes the scaled log transform.
+    """
+    try:
+        assert c > 0, "c must be >0"
+    except AssertionError as err:
+        raise ValueError(err)
+    
+    return lambda x: np.log((x / c) + e)
+
+def slog_inv(c, e):
+    """The inverse scaled log transform.
+
+    Parameters
+    ----------
+    c : _type_
+        Dynamic range pivot, > 0.
+    e : _type_
+        Small number safety factor
+
+    Returns
+    -------
+    callable
+        A function that accepts a single value, and computes the inverse scaled log transform.
+    """
+    try:
+        assert c > 0, "c must be >0"
+    except AssertionError as err:
+        raise ValueError(err)
+    
+    return lambda x: c * (np.exp(x) - e)
+
+
 class TransformFunc(object):
     """A class for describing a label transform within TheCannon.
 
@@ -344,3 +389,9 @@ class TransformFunc(object):
         
         self._forward = forward
         self._inverse = inverse
+
+class TransformSlog(TransformFunc):
+
+    def __init__(self, c, e, *args, min=1e-12, max=np.inf, **kwargs):
+        super().__init__(min=min, max=max, forward=slog(c, e), inverse=slog_inv(c, e))
+
