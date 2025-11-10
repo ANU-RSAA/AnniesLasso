@@ -37,7 +37,7 @@ def test_hash_consistency(input, hash):
 def test_transform_func_init():
     tf = utils.TransformFunc()
 
-    assert tf.forward is None, ".forward did not init to default"
-    assert tf.inverse is None, ".inverse did not init to default"
+    assert callable(tf.forward), ".forward did not get set to a callable"
+    assert callable(tf.inverse), ".inverse did not get set to a callable"
     assert tf.min == -np.inf, ".min did not init to default"
     assert tf.max == np.inf, ".max did not init to default"
