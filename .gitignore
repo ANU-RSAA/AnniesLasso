@@ -11,6 +11,7 @@ sandbox_*.py
 *.pyc
 *.pkl
 /*.model
+/*.npy
 
 build/
 dist/

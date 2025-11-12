@@ -65,8 +65,6 @@ model = tc.CannonModel(training_set, normalized_flux, normalized_ivar,
 model.train()
 ````
 
-You can follow this example further in the complete [Getting Started](#) tutorial.
-
 
 ## License
 **Copyright 2017-2025 the authors**.

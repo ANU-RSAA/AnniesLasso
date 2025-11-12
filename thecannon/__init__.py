@@ -15,7 +15,7 @@ except ImportError:
 import warnings
 
 from .model import CannonModel
-from . import censoring, fitting, plot, utils, vectorizer
+from . import censoring, fitting, plot, utils, vectorizer, restricted
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)  # TODO: Remove this when stable.
