@@ -204,7 +204,7 @@ def fit_spectrum(
 
     if len(results) == 0:
         logger.warning("No results found!")
-        return (np.nan * np.ones(L), None, dict(fail_message="No results found"))
+        return (np.nan * np.ones(L), np.nan * np.ones((L, L)), dict(fail_message="No results found"))
 
     best_result_index = np.nanargmin([m["chi_sq"] for (o, c, m) in results])
     op_labels, cov, meta = results[best_result_index]
