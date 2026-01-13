@@ -6,7 +6,7 @@ Plotting utilities for The Cannon.
 """
 
 from __future__ import division, print_function, absolute_import, unicode_literals
-
+from matplotlib.lines import Line2D
 __all__ = ["theta", "scatter", "one_to_one"]
 
 import logging
@@ -337,3 +337,125 @@ def one_to_one(
         ax.set_aspect(1.0)
 
     return fig
+
+def one_to_one_updated(test_labels,
+                       predicted_labels,
+                       suptitle,
+                       bounds = None,
+                       xdim=12, ydim=8, wspace=0.3, hspace=0.3,
+                       label_names=('EWT','LMA','N','CHL','CAR','ANT')):
+    """
+    Plot a one-to-one comparison of the true labels and the predicted labels.
+
+    Parameters
+    ----------
+    test_labels: array
+        An array of true labels with shape (N, K).
+
+    predicted_labels: array
+        An array of predicted labels with shape (N, K).
+
+    suptitle: str
+        Super-title for the figure.
+
+    bounds: list of 2-tuples or array, optional
+        Per-label axis limits given as [[min, max], ...] of length K. If not
+        provided, limits are inferred per label from the data.
+
+    xdim: float, optional
+        Figure width in inches.
+
+    ydim: float, optional
+        Figure height in inches.
+
+    wspace: float, optional
+        Horizontal spacing between subplots (passed to ``fig.subplots_adjust``).
+
+    hspace: float, optional
+        Vertical spacing between subplots (passed to ``fig.subplots_adjust``).
+
+    label_names: list of str, optional
+        Display names for each label. The length defines K.
+
+    Returns
+    -------
+        A figure showing the one-to-one comparison for each label.
+    """
+    K = len(label_names)
+    y_true = (np.asarray(test_labels))
+    y_pred = (np.asarray(predicted_labels))
+    fig, axes = plt.subplots(3, 2, figsize=(ydim, xdim))
+    axes = axes.flatten()
+    fig.subplots_adjust(wspace=wspace, hspace=hspace)
+    fig.suptitle(suptitle, fontsize=20)
+
+    for i, label in enumerate(label_names):
+        ax = axes[i]
+        true_vals = y_true[:, i]
+        pred_vals = y_pred[:, i]
+
+        if bounds is not None:
+            vmin, vmax = bounds[i]
+        else:
+            vmin = np.nanmin([true_vals.min(), pred_vals.min()])
+            vmax = np.nanmax([true_vals.max(), pred_vals.max()])
+            if not np.isfinite(vmin) or not np.isfinite(vmax) or vmax <= vmin:
+                vmin, vmax = 0.0, 1.0  # fallback
+
+        ax.scatter(true_vals, pred_vals, s=10, alpha=0.5)
+        ax.plot([vmin, vmax], [vmin, vmax], 'r--', lw=2)
+
+        ax.set_title(label, fontsize=18)
+        ax.set_xlabel("True", fontsize=12)
+        ax.set_ylabel("Predicted", fontsize=12)
+
+        r = residual_metrics(true_vals, pred_vals)
+
+        handles = [
+            Line2D([], [], color='none', label=fr"$\mu=$ {r[0]:.3e}"),
+            Line2D([], [], color='none', label=fr"$\sigma=$ {r[1]:.3e}"),
+            Line2D([], [], color='none', label=fr"$\mathrm{{RMSE}}=$ {r[2]:.3e}"),
+            Line2D([], [], color='none', label=fr"$\mathrm{{MAD}}=$ {r[3]:.3e}"),
+        ]
+        ax.legend(handles=handles, loc='upper left', fontsize=8,
+                  frameon=True, handlelength=0, handletextpad=0.4)
+
+        ax.set_xlim(vmin, vmax)
+        ax.set_ylim(vmin, vmax)
+        ax.set_aspect('equal', adjustable='box')
+
+    for j in range(K, len(axes)):
+        axes[j].axis("off")
+
+    plt.tight_layout()
+    plt.show()
+
+def residual_metrics(test_label, predicted_label):
+    """
+    Compute residual summary statistics for predicted vs. true values.
+
+    Parameters
+    ----------
+    test_label: array
+        Ground-truth values.
+
+    predicted_label: array
+        Predicted values aligned with ``test_label``.
+
+    Returns
+    -------
+        A four-element NumPy array ``[mu, sigma, rmse, mad]`` where ``mu`` is the
+        mean residual, ``sigma`` the standard deviation of residuals, ``rmse`` the
+        root-mean-square error, and ``mad`` the median absolute deviation.
+    """
+    t = np.asarray(test_label, dtype=float).ravel()
+    p = np.asarray(predicted_label, dtype=float).ravel()
+    d = p - t
+
+    mu = np.nanmean(d)
+    sigma = np.nanstd(d)
+    rmse = np.sqrt(np.nanmean(d**2))
+    mad = np.nanmedian(np.abs(d - np.nanmedian(d)))
+
+    r = np.array([mu, sigma, rmse, mad], dtype=float)
+    return r
