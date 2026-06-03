@@ -7,7 +7,7 @@ name = "thecannon"
 dynamic = ["version"]
 requires-python = ">=3.9,<3.13"
 dependencies = [
-    "numpy>=2.0",
+    "numpy>=2.0, <2.4",
     "scipy>=1.13",
 ]
 authors = [{name="Andrew R. Casey"}, {name="David W. Hogg"}, {name="Melissa Ness"}, {name="Marc White"}]
