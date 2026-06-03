@@ -6,9 +6,9 @@ jobs:
   test_model_output_regression:
     strategy:
       matrix:
-        py-version:  ["3.10", 3.11, 3.12]
-        np-version:  ["2.0", 2.1, 2.2]
-        sp-version:  [1.13, 1.14, 1.15]
+        py-version:  [3.9, "3.10", 3.11, 3.12, 3.13]
+        np-version:  ["2.0", 2.1, 2.2, 2.3]
+        sp-version:  [1.13, 1.14, 1.15, 1.16, 1.17]
         runner: [macos-13, macos-latest, ubuntu-latest]
 
     runs-on: ${{matrix.runner}}
