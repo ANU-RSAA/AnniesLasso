@@ -8,8 +8,17 @@ jobs:
       matrix:
         py-version:  [3.9, "3.10", 3.11, 3.12, 3.13]
         np-version:  ["2.0", 2.1, 2.2, 2.3]
-        sp-version:  [1.14, 1.15, 1.16, 1.17]
+        sp-version:  [1.13, 1.14, 1.15, 1.16, 1.17]
         runner: [macos-13, macos-latest, ubuntu-latest]
+        exclude:
+          - py-version: 3.9
+            sp-version: [1.14, 1.15, 1.16, 1.17]
+            np-version: [2.1, 2.2, 2.3]
+          - py-version: "3.10"
+            sp-version: 1.17
+            np-version: [2.3, 2.4]
+          - py-version: 3.11
+            sp-version: 1.18
 
     runs-on: ${{matrix.runner}}
 
